@@ -1,0 +1,55 @@
+/* Footer.css */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e7e7e7;
+    color: #495057;
+    padding: 0px 0; /* Reduced padding */
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+
+.footer h5 {
+    font-weight: bold;
+    color: #343a40;
+    font-size: 1rem; /* Reduced font size */
+    margin-bottom: 5px; /* Reduce spacing below the heading */
+}
+
+.footer a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9rem; /* Slightly smaller font for links */
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.footer p {
+    margin: 0;
+    color: #495057;
+    font-size: 0.85rem; /* Reduced font size for normal text */
+}
+
+.footer-content {
+    margin: 0;
+    font-size: 1rem;
+}
+.footer-toggle {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.collapsed-footer {
+    max-height: 0; /* When collapsed, max-height is 0 */
+}
+
+.expanded-footer {
+    max-height: 200px; /* Adjust height as needed for expanded state */
+}

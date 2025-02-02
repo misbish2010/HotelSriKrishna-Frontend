@@ -1,0 +1,140 @@
+.gst-bill {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    border: 1px solid #ddd;
+    background-color: #fff;
+}
+
+.bill-header {
+    text-align: center;
+}
+
+.hotel-logo {
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.guest-details, .charges {
+    margin-top: 20px;
+}
+
+.billing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.billing-table th, .billing-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.billing-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.total-row td {
+    font-weight: bold;
+}
+
+hr {
+    margin: 15px 0;
+}
+
+.print-button {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@media print {
+    /* Hide everything except the bill */
+    body * {
+        visibility: hidden;
+    }
+
+    .gst-bill, .gst-bill * {
+        visibility: visible;
+    }
+
+    /* Make sure the bill form is centered and uses full width in print */
+    .gst-bill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    /* Hide the print button in the printed version */
+    .print-button {
+        display: none;
+    }
+}
+.guest-details-container {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.guest-card, .stay-card {
+    flex: 1;
+    min-width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.guest-card h3, .stay-card h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.guest-info p, .stay-info p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.guest-info p strong, .stay-info p strong {
+    color: #333;
+}
+
+@media print {
+    .edit-button,
+    .confirm-button {
+        display: none !important;
+    }
+}
+.signature-box {
+  width: 192px; /* Width for the box */
+  height: 128px; /* Height for the box */
+  border: 1px solid #555; /* Border for the box */
+  border-radius: 8px; /* Rounded corners */
+  margin: 0 auto; /* Center the box */
+}
+
+.signature-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.signature-container {
+  display: flex; /* Makes the boxes align horizontally */
+  justify-content: space-between; /* Adds space between the boxes */
+  gap: 20px; /* Optional: Adjusts the gap between the boxes */
+  margin-top: 20px; /* Adds some spacing above the signature section */
+}
+

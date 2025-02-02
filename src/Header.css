@@ -1,0 +1,41 @@
+/* Header.css */
+
+.main-navbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distributes items evenly */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 0 20px; /* Optional: adds spacing on sides */
+}
+.logo img {
+    height: 50px;
+}
+
+.hotel-name h1 {
+    font-family: 'Georgia', serif;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #343a40;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.date-time {
+    font-size: 1.1rem;
+    color: #495057;
+    color: white;
+    font-weight: bold;
+}
+
+.auth-container {
+    background-color: #f8f9fa;
+}
+
+.welcome-message {
+    font-size: 1.1rem;
+    color: #007bff;
+    margin-right: 20px;
+}
