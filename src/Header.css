@@ -1,41 +1,75 @@
 /* Header.css */
-
 .main-navbar {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Distributes items evenly */
+    justify-content: space-between;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 0 20px; /* Optional: adds spacing on sides */
+    padding: 10px 20px; /* Adjusted padding */
+    background-color: #343a40; /* Ensure background is visible */
+    flex-wrap: wrap; /* Allows elements to wrap on small screens */
 }
+
+/* Logo */
 .logo img {
-    height: 50px;
+    height: 50px; /* Default size */
 }
 
 .hotel-name h1 {
     font-family: 'Georgia', serif;
     font-size: 2rem;
     font-weight: bold;
-    color: #343a40;
     color: white;
     text-transform: uppercase;
     letter-spacing: 2px;
     margin: 0;
 }
 
+/* Date and Time */
 .date-time {
     font-size: 1.1rem;
-    color: #495057;
     color: white;
     font-weight: bold;
 }
 
+/* Auth Container */
 .auth-container {
     background-color: #f8f9fa;
+    padding: 5px 10px;
 }
 
+/* Welcome Message */
 .welcome-message {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: #007bff;
     margin-right: 20px;
+}
+
+/* ✅ Mobile Adjustments */
+@media (max-width: 768px) {
+    .main-navbar {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 10px;
+    }
+
+    .logo img {
+        height: 40px; /* Smaller logo for mobile */
+        margin-bottom: 5px;
+    }
+
+    .hotel-name h1 {
+        font-size: 1.5rem; /* Smaller font for mobile */
+        letter-spacing: 1px;
+    }
+
+    .date-time {
+        font-size: 1rem;
+        margin-top: 5px;
+    }
+
+    .welcome-message {
+        font-size: 0.9rem;
+        margin-right: 0;
+    }
 }

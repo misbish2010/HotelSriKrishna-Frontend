@@ -1,4 +1,4 @@
-/* sidebar.css */
+/* Sidebar.css */
 
 /* Basic styles for the sidebar */
 .sidebar {
@@ -7,35 +7,47 @@
   color: white;
   padding-top: 20px;
   position: fixed;
-  top: 80px;  /* Adjust this to the height of your header */
-  bottom: 0;  /* Make it stick to the bottom */
-  overflow-y: auto;  /* Allow scrolling if the content overflows */
-  height: calc(100vh - 80px); /* Sidebar height = full viewport height minus header height */
-  transition: all 0.3s;
-}
-.sidebar.expanded {
-  width: 250px; /* Full width when expanded */
+  top: 80px;  /* Adjust to header height */
+  bottom: 0;
+  overflow-y: auto; /* Allow scrolling */
+  height: calc(100vh - 80px); /* Sidebar height = Full viewport height minus header height */
+  transition: all 0.3s ease-in-out;
+  z-index: 1000;
 }
 
-.sidebar.collapsed {
-  width: 30px; /* Reduced width when collapsed */
+/* Sidebar when expanded */
+.sidebar.expanded {
+  width: 250px;
 }
+
+/* Sidebar when collapsed */
+.sidebar.collapsed {
+  width: 60px; /* Keep a small width when collapsed */
+}
+
+/* Sidebar toggle button */
 .sidebar .toggle-btn {
   position: absolute;
-  top: 10px;  /* Slightly lower than the top edge */
-  right: -50px; /* Position the button outside of the sidebar */
-  background-color: #4CAF50; /* Fresh green color */
-  color: white; /* White text color */
+  top: 10px;
+  right: -45px; /* Keep the button visible */
+  background-color: #4CAF50; /* Green color */
+  color: white;
   border: none;
-  padding: 12px 15px; /* Slightly larger padding */
-  border-radius: 5px; /* Rounded corners */
+  padding: 10px 12px;
+  border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover effects */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
+
+.sidebar .toggle-btn:hover {
+  background-color: #3e8e41;
+  transform: scale(1.05);
+}
+
 /* Sidebar links styling */
 .sidebar .sidebar-link {
-  color: #fff;
+  color: white;
   padding: 15px 20px;
   display: block;
   text-decoration: none;
@@ -44,15 +56,27 @@
 }
 
 .sidebar .sidebar-link:hover {
-  background-color: #495057; /* Hover background color */
-  color: #fff; /* Text color on hover */
+  background-color: #495057;
+  color: white;
 }
 
-/* Make sidebar responsive on small screens */
+/* ✅ Responsive Sidebar Adjustments */
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;  /* Full width on small screens */
-    top: 60px;  /* Adjust top position for mobile */
-    height: auto; /* Set height to auto for smaller screens */
+    width: 0; /* Hide sidebar by default on small screens */
+    height: 100vh; /* Full height */
+    top: 60px; /* Adjust for smaller headers */
+    left: -250px; /* Move it out of view */
+  }
+
+  .sidebar.expanded {
+    left: 0; /* Slide in when expanded */
+    width: 250px;
+  }
+
+  .sidebar .toggle-btn {
+    position: fixed;
+    left: 10px; /* Keep button accessible */
+    top: 15px;
   }
 }

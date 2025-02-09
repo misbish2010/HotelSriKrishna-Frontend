@@ -1,25 +1,23 @@
-/* App.css */
-
 /* Resetting default body margins and padding */
 body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-x: hidden; /* Prevent horizontal overflow */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Container styling */
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Full viewport height for app */
+  height: 100vh; /* Full viewport height */
 }
 
 /* Header styling */
 .app-header {
   background-color: #343a40;
   color: white;
-  padding: 20px;
+  padding: 15px 20px; /* Adjusted for mobile */
   position: fixed;
   top: 0;
   width: 100%;
@@ -28,8 +26,10 @@ body, html {
   height: 80px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
+/* Header title */
 .app-header h1 {
   margin: 0;
   font-size: 1.5em;
@@ -41,11 +41,27 @@ body, html {
   background-color: #343a40;
   color: white;
   position: fixed;
-  top: 80px; /* Aligns below the header */
-  bottom: 50px; /* Aligns above the footer */
+  top: 80px; /* Align below the header */
+  bottom: 50px; /* Align above the footer */
   overflow-y: auto;
   padding-top: 20px;
   padding-bottom: 20px;
+  transition: all 0.3s ease-in-out;
+  z-index: 999;
+}
+
+/* Sidebar Collapsible Mode */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0; /* Hide sidebar by default */
+    left: -250px; /* Move it out of view */
+    height: 100vh; /* Full height */
+  }
+
+  .sidebar.expanded {
+    left: 0; /* Slide in when expanded */
+    width: 250px;
+  }
 }
 
 /* Sidebar links styling */
@@ -70,7 +86,17 @@ body, html {
   padding-top: 100px; /* Adjust for header */
   padding-bottom: 60px; /* Adjust for footer */
   overflow-y: auto;
-  flex: 1; /* Takes remaining height between header and footer */
+  flex: 1; /* Takes remaining height */
+}
+
+/* Adjust for mobile screens */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0; /* No sidebar on small screens */
+    padding: 15px;
+    padding-top: 90px; /* Account for header */
+    padding-bottom: 60px;
+  }
 }
 
 /* Footer styling */
@@ -78,7 +104,6 @@ body, html {
   background-color: #343a40;
   color: white;
   padding: 10px;
-
   bottom: 0;
   width: 100%;
   text-align: center;
@@ -90,22 +115,33 @@ body, html {
   overflow: hidden; /* Keeps content hidden when collapsed */
 }
 
+/* Room grid */
 .room-grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto;
 }
 
+/* Room row */
 .room-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap; /* Allows wrapping on mobile */
 }
 
+/* Room button */
 .room-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Responsive buttons */
+@media (max-width: 768px) {
+  .room-button {
+    width: 100%; /* Full width buttons */
+    padding: 10px;
+  }
+}
