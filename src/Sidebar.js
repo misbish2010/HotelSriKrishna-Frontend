@@ -1,104 +1,104 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Nav } from "react-bootstrap";
 import "./Sidebar.css";
 
 function Sidebar({ isAdmin, onClick }) {
-  const [isCollapsed, setIsCollapsed] = useState(false); // Track collapse state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isCollapsed, setIsCollapsed] = useState(isMobile); // Default collapsed for mobile only
+  const sidebarRef = useRef(null);
 
-  // Function to toggle collapse/expand
+  // Toggle sidebar manually (for mobile only)
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    if (isMobile) {
+      setIsCollapsed(!isCollapsed);
+    }
   };
+
+  // Close sidebar when clicking outside (only if expanded on mobile)
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        isMobile &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
+        setIsCollapsed(true);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobile]);
+
+  // Handle window resize
+  useEffect(() => {
+    function handleResize() {
+      const mobileView = window.innerWidth < 768;
+      setIsMobile(mobileView);
+      if (!mobileView) {
+        setIsCollapsed(false); // Always expanded on desktop
+      } else {
+        setIsCollapsed(true); // Collapse on mobile
+      }
+    }
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
-    <div className={`sidebar ${isCollapsed ? "collapsed" : "expanded"}`}>
-      <button className="toggle-btn" onClick={toggleSidebar}>
-        {isCollapsed ? ">>>>>" : "<<<<<"}
-      </button>
-      <Nav className="flex-column">
-        <Nav.Link
-          onClick={() => onClick("checkin")}
-          href="#checkin"
-          className="sidebar-link"
-        >
-          CHECK-IN
-        </Nav.Link>
+    <>
+      {/* Toggle button (Only visible on mobile) */}
+      {isMobile && (
+        <button className="menu-btn" onClick={toggleSidebar}>
+          ☰
+        </button>
+      )}
 
-        <Nav.Link
-          onClick={() => onClick("checkout")}
-          href="#checkout"
-          className="sidebar-link"
-        >
-          MANAGE BOOKING
-        </Nav.Link>
-
-        <Nav.Link
-          onClick={() => onClick("advance_booking")}
-          href="#advancebooking"
-          className="sidebar-link"
-        >
-          ADVANCE BOOKING
-        </Nav.Link>
-
-        <Nav.Link
-          onClick={() => onClick("rooms")}
-          href="#rooms"
-          className="sidebar-link"
-        >
-          ROOMS
-        </Nav.Link>
-
-
-        <Nav.Link
-          onClick={() => onClick("dashboard")}
-          href="#dashboard"
-          className="sidebar-link"
-        >
-          BOOKING DASHBOARD
-        </Nav.Link>
-
-        {isAdmin && (
-          <Nav.Link
-            onClick={() => onClick("collection")}
-            href="#collection"
-            className="sidebar-link"
-          >
-            PAYMENT DASHBOARD
+      <div
+        ref={sidebarRef}
+        className={`sidebar ${isCollapsed ? "collapsed" : "expanded"}`}
+      >
+        <Nav className="flex-column">
+          <Nav.Link onClick={() => onClick("checkin")} href="#checkin" className="sidebar-link">
+            CHECK-IN
           </Nav.Link>
-        )}
-
-        <Nav.Link
-          onClick={() => onClick("gst_billing")}
-          href="#gstbilling"
-          className="sidebar-link"
-        >
-          BILLING
-        </Nav.Link>
-
-        <Nav.Link
-          onClick={() => onClick("daily_expense")}
-          href="#dailyexpense"
-          className="sidebar-link"
-        >
-          EXPENSE
-        </Nav.Link>
-
-
-
-        {isAdmin && (
-          <Nav.Link
-            onClick={() => onClick("gst_report")}
-            href="#gstreport"
-            className="sidebar-link"
-          >
-            GST Monthly Bills
+          <Nav.Link onClick={() => onClick("checkout")} href="#checkout" className="sidebar-link">
+            MANAGE BOOKING
           </Nav.Link>
-        )}
+          <Nav.Link onClick={() => onClick("advance_booking")} href="#advancebooking" className="sidebar-link">
+            ADVANCE BOOKING
+          </Nav.Link>
+          <Nav.Link onClick={() => onClick("rooms")} href="#rooms" className="sidebar-link">
+            ROOMS
+          </Nav.Link>
+          <Nav.Link onClick={() => onClick("dashboard")} href="#dashboard" className="sidebar-link">
+            BOOKING DASHBOARD
+          </Nav.Link>
 
-        {/*<Nav.Link onClick={() => onClick('payment')} href="#payment" className="sidebar-link">PAYMENT</Nav.Link>
-        <Nav.Link onClick={() => onClick('refund')} href="#refund" className="sidebar-link">REFUND</Nav.Link>
-        <Nav.Link onClick={() => onClick('cancel_booking')} href="#cancelbooking" className="sidebar-link">CANCEL BOOKING</Nav.Link>*/}
-      </Nav>
-    </div>
+          {isAdmin && (
+            <Nav.Link onClick={() => onClick("collection")} href="#collection" className="sidebar-link">
+              PAYMENT DASHBOARD
+            </Nav.Link>
+          )}
+
+          <Nav.Link onClick={() => onClick("gst_billing")} href="#gstbilling" className="sidebar-link">
+            BILLING
+          </Nav.Link>
+          <Nav.Link onClick={() => onClick("daily_expense")} href="#dailyexpense" className="sidebar-link">
+            EXPENSE
+          </Nav.Link>
+
+          {isAdmin && (
+            <Nav.Link onClick={() => onClick("gst_report")} href="#gstreport" className="sidebar-link">
+              GST Monthly Bills
+            </Nav.Link>
+          )}
+        </Nav>
+      </div>
+    </>
   );
 }
 

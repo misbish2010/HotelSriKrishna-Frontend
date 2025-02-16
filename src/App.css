@@ -1,4 +1,4 @@
-/* Resetting default body margins and padding */
+/* Reset default margins and padding */
 body, html {
   margin: 0;
   padding: 0;
@@ -6,20 +6,22 @@ body, html {
   overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
-/* Container styling */
+/* Main App Container */
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevents extra scrolling */
 }
 
-/* Header styling */
+/* Header Styling */
 .app-header {
   background-color: #343a40;
   color: white;
-  padding: 15px 20px; /* Adjusted for mobile */
+  padding: 15px 20px;
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   z-index: 1000;
   box-shadow: 0 4px 2px -2px gray;
@@ -29,42 +31,35 @@ body, html {
   justify-content: space-between;
 }
 
-/* Header title */
-.app-header h1 {
-  margin: 0;
-  font-size: 1.5em;
-}
-
-/* Sidebar styling */
+/* Sidebar Styling */
 .sidebar {
-  width: 250px;
+  width: 270px;
   background-color: #343a40;
   color: white;
   position: fixed;
-  top: 80px; /* Align below the header */
-  bottom: 50px; /* Align above the footer */
+  top: 80px; /* Starts right below the header */
+  bottom: 0;
+  left: 0;
   overflow-y: auto;
   padding-top: 20px;
-  padding-bottom: 20px;
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
   z-index: 999;
 }
 
-/* Sidebar Collapsible Mode */
+/* Sidebar Collapsible Mode (Only for Mobile) */
 @media (max-width: 768px) {
   .sidebar {
-    width: 0; /* Hide sidebar by default */
-    left: -250px; /* Move it out of view */
-    height: 100vh; /* Full height */
+    transform: translateX(-270px); /* Hide sidebar initially */
+    width: 270px;
+    height: calc(100vh - 80px); /* Adjusted height after header */
   }
 
   .sidebar.expanded {
-    left: 0; /* Slide in when expanded */
-    width: 250px;
+    transform: translateX(0); /* Slide in when expanded */
   }
 }
 
-/* Sidebar links styling */
+/* Sidebar Links */
 .sidebar .sidebar-link {
   color: #fff;
   padding: 15px 20px;
@@ -76,34 +71,35 @@ body, html {
 
 .sidebar .sidebar-link:hover {
   background-color: #495057;
-  color: #fff;
 }
 
-/* Main content styling */
+/* Main Content */
 .main-content {
-  margin-left: 270px; /* Room for the sidebar */
+  flex: 1;
+  margin-left: 270px; /* Space for sidebar */
   padding: 20px;
-  padding-top: 100px; /* Adjust for header */
-  padding-bottom: 60px; /* Adjust for footer */
+  padding-top: 10px; /* Matches header height */
+  height: calc(100vh - 80px); /* Ensures correct fit */
   overflow-y: auto;
-  flex: 1; /* Takes remaining height */
+  transition: margin-left 0.3s ease-in-out;
 }
 
-/* Adjust for mobile screens */
+/* When Sidebar is collapsed (Mobile) */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0; /* No sidebar on small screens */
+    margin-left: 0;
     padding: 15px;
-    padding-top: 90px; /* Account for header */
-    padding-bottom: 60px;
+    padding-top: 80px; /* Header height */
+    height: calc(100vh - 80px);
   }
 }
 
-/* Footer styling */
+/* Footer Styling */
 .app-footer {
   background-color: #343a40;
   color: white;
   padding: 10px;
+  position: fixed;
   bottom: 0;
   width: 100%;
   text-align: center;
@@ -111,11 +107,9 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: max-height 0.3s ease;
-  overflow: hidden; /* Keeps content hidden when collapsed */
 }
 
-/* Room grid */
+/* Room Grid */
 .room-grid {
   display: flex;
   flex-direction: column;
@@ -123,7 +117,7 @@ body, html {
   margin: 20px auto;
 }
 
-/* Room row */
+/* Room Row */
 .room-row {
   display: flex;
   justify-content: center;
@@ -131,17 +125,17 @@ body, html {
   flex-wrap: wrap; /* Allows wrapping on mobile */
 }
 
-/* Room button */
+/* Room Button */
 .room-button {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Responsive buttons */
+/* Responsive Buttons */
 @media (max-width: 768px) {
   .room-button {
-    width: 100%; /* Full width buttons */
+    width: 100%;
     padding: 10px;
   }
 }

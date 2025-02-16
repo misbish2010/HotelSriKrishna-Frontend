@@ -28,19 +28,18 @@ function App() {
   const [activeComponent, setActiveComponent] = useState(null);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Track sidebar state
 
   const handleSidebarClick = (component, bookingId = null, bookingStatus = "") => {
     const statusMapping = {
       "Checked-In": "ACTIVE",
       "Checked-Out": "PAST",
-      Confirmed: "FUTURE",
+      "Confirmed": "FUTURE",
     };
     const mappedStatus = statusMapping[bookingStatus] || "ACTIVE";
     setActiveComponent(component);
     setSelectedBookingId(bookingId || null);
     setSelectedStatus(mappedStatus);
-    setIsSidebarOpen(false); // Close sidebar on mobile when navigating
   };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -56,7 +55,6 @@ function App() {
   const handleSignOut = () => {
     setIsLoggedIn(false);
     setUserName("");
-    setIsSidebarOpen(false);
   };
 
   return (
@@ -66,10 +64,16 @@ function App() {
         <Header isLoggedIn={isLoggedIn} userName={userName} />
 
         {/* Sidebar - Responsive */}
-        {isLoggedIn && <Sidebar isAdmin={isAdmin} onClick={handleSidebarClick} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />}
+        {isLoggedIn && (
+          <Sidebar
+            isAdmin={isAdmin}
+            onClick={handleSidebarClick}
+            onCollapse={setIsSidebarCollapsed} // Pass collapse state handler
+          />
+        )}
 
         {/* Main Content */}
-        <div className={`main-content ${isSidebarOpen ? "sidebar-open" : ""}`}>
+        <div className={`main-content ${isSidebarCollapsed ? "collapsed" : ""}`}>
           <Routes>
             <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />} />
             <Route path="/signup" element={<SignUp />} />
@@ -93,9 +97,9 @@ function App() {
         </div>
 
         {/* Footer Section */}
-              <footer className="app-footer">
-                <Footer />
-              </footer>
+        {/*<footer className="app-footer">
+          <Footer />
+        </footer>*/}
       </div>
     </Router>
   );

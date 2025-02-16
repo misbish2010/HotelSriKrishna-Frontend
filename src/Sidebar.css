@@ -1,82 +1,67 @@
-/* Sidebar.css */
-
-/* Basic styles for the sidebar */
+/* Sidebar styling */
 .sidebar {
-  width: 250px;
-  background-color: #343a40; /* Dark background color */
-  color: white;
-  padding-top: 20px;
   position: fixed;
-  top: 80px;  /* Adjust to header height */
-  bottom: 0;
-  overflow-y: auto; /* Allow scrolling */
-  height: calc(100vh - 80px); /* Sidebar height = Full viewport height minus header height */
-  transition: all 0.3s ease-in-out;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  background-color: #333;
+  color: white;
+  transition: width 0.3s ease-in-out;
+  overflow-x: hidden;
   z-index: 1000;
 }
 
-/* Sidebar when expanded */
 .sidebar.expanded {
   width: 250px;
 }
 
-/* Sidebar when collapsed */
 .sidebar.collapsed {
-  width: 60px; /* Keep a small width when collapsed */
+  width: 60px;
 }
 
-/* Sidebar toggle button */
-.sidebar .toggle-btn {
-  position: absolute;
-  top: 10px;
-  right: -45px; /* Keep the button visible */
-  background-color: #4CAF50; /* Green color */
-  color: white;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.sidebar .toggle-btn:hover {
-  background-color: #3e8e41;
-  transform: scale(1.05);
-}
-
-/* Sidebar links styling */
+/* Sidebar links */
 .sidebar .sidebar-link {
-  color: white;
-  padding: 15px 20px;
   display: block;
+  padding: 10px;
+  color: white;
   text-decoration: none;
-  font-size: 16px;
-  transition: background-color 0.3s;
 }
 
 .sidebar .sidebar-link:hover {
-  background-color: #495057;
-  color: white;
+  background: #555;
 }
 
-/* ✅ Responsive Sidebar Adjustments */
+/* Mobile menu button */
+.menu-btn {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 1100;
+}
+
+/* Show menu button only on mobile */
 @media (max-width: 768px) {
+  .menu-btn {
+    display: block;
+  }
+
   .sidebar {
-    width: 0; /* Hide sidebar by default on small screens */
-    height: 100vh; /* Full height */
-    top: 60px; /* Adjust for smaller headers */
-    left: -250px; /* Move it out of view */
+    width: 0;
   }
 
   .sidebar.expanded {
-    left: 0; /* Slide in when expanded */
     width: 250px;
   }
 
-  .sidebar .toggle-btn {
-    position: fixed;
-    left: 10px; /* Keep button accessible */
-    top: 15px;
+  .sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
   }
 }
