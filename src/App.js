@@ -55,6 +55,7 @@ function App() {
   const handleSignOut = () => {
     setIsLoggedIn(false);
     setUserName("");
+    setActiveComponent(null);
   };
 
   return (
