@@ -50,24 +50,21 @@ const transformToRoomTable = (booked_rooms = [], checked_out_rooms = [], availab
                         (total, payment) => total + payment.payment_amount,
                         0
                     ),
-                    totalPrice: 0, // Will be calculated below
+                    totalPrice: (booking.duration_of_stay || 0) * (booking.final_price_per_night || 0),
                     pricePerNight: booking.final_price_per_night || 0.0,
-                    durationOfStay: room.duration_of_stay[0] || '-',
-                    checkInDate: formatDate(room.check_in_dates[0] || '-'),
-                    probableCheckOutDate: formatDate(room.probable_check_out_dates[0] || '-'),
+                    durationOfStay: booking.duration_of_stay || '-',
+                    checkInDate: formatDate(booking.check_in_date || '-'),
+                    probableCheckOutDate: formatDate(booking.probable_check_out_date || '-'),
                     paymentDetails: booking.payment_details || [],
-                    rooms: [], // Collect room details here
+                    roomType: `${booking.is_ac ? 'AC' : ''} ${booking.occupancy} ${booking.room_type}`,
+                    rooms: []  // ✅ Store room details here
                 };
 
-                // Add room details to the existing booking
+                // ✅ Collect room details
                 existingBooking.rooms.push({
                     roomNumber: room.room_number,
-                    roomType: `${room.is_ac ? 'AC' : ''} ${room.occupancy} ${room.room_type}`,
+                    roomType: `${booking.is_ac ? 'AC' : ''} ${booking.occupancy} ${booking.room_type}`
                 });
-
-                // Calculate total price
-                existingBooking.totalPrice =
-                    (room.duration_of_stay[0] || 0) * (booking.final_price_per_night || 0);
 
                 // Save back to the grouped object
                 acc[booking.booking_id] = existingBooking;
@@ -75,6 +72,7 @@ const transformToRoomTable = (booked_rooms = [], checked_out_rooms = [], availab
             return acc;
         }, {});
     };
+
 
     // Transform booked rooms
     const bookedGrouped = groupByBookingID(booked_rooms);
@@ -92,6 +90,7 @@ const transformToRoomTable = (booked_rooms = [], checked_out_rooms = [], availab
         rooms: booking.rooms
             .map((room) => `${room.roomNumber}-${room.roomType}`)
             .join(', '), // Combine room details into a single string
+
         paymentDetails: booking.paymentDetails,
     }));
 
@@ -158,7 +157,9 @@ const transformToRoomTable = (booked_rooms = [], checked_out_rooms = [], availab
         console.log(selectedFromDate)
         console.log(selectedToDate)
             const data = await fetchBookingDashboard(selectedFromDate, selectedToDate);
+            console.log(data)
             const transformedData = transformToRoomTable(data.booked_rooms,data.checked_out_rooms, data.available_rooms);
+            console.log(transformedData)
             setBookingTableData(transformedData);
         } catch (error) {
             console.error("Error fetching room data:", error);

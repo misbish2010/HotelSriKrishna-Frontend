@@ -26,6 +26,7 @@ const statuses = [
     { label: ">Probable Check-Out", color: "#0dcaf0" },
     { label: "~Check-Out", color: "#6c757d" },
     { label: "Confirmed", color: "#0d6efd" },
+    { label: "Unknown", color: "#212529" },
   ];
     const [roomRows, setRoomRows] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date()); // Default to current date and time
@@ -46,28 +47,31 @@ const statuses = [
     const transformToRoomRows = (booked_rooms, available_rooms) => {
         const groupedRooms = [];
         const roomsPerRow = 5; // Number of rooms per row (adjust as needed)
-        console.log(booked_rooms)
+        console.log(booked_rooms);
+
         // Map API data to the desired structure
         const booked_roomList = booked_rooms.map((room) => ({
             roomNumber: room.room_number,
-            status: room.bookings[0].booking_status,
-            checkInTime: room.check_in_dates,
-            probableCheckOutTime : room.probable_check_out_dates,
-            durationOfStay: room.duration_of_stay,
+            status: room.bookings.length > 0 ? room.bookings[0].booking_status : "Unknown",
+            checkInTime: room.bookings.length > 0 ? room.bookings[0].check_in_date : null,
+            probableCheckOutTime: room.bookings.length > 0 ? room.bookings[0].probable_check_out_date : null,
+            durationOfStay: room.bookings.length > 0 ? room.bookings[0].duration_of_stay : null,
         }));
-        console.log(booked_roomList)
+        console.log(booked_roomList);
+
         const available_roomList = available_rooms.map((room) => ({
             roomNumber: room.room_number,
             status: 'available',
             checkInTime: null,
+            probableCheckOutTime: null,
             durationOfStay: null
         }));
+
         const roomList = [
             ...booked_roomList, // Spread booked rooms
             ...available_roomList, // Spread available rooms
         ];
         roomList.sort((a, b) => a.roomNumber - b.roomNumber); // Sorting rooms by number
-
 
         // Split rooms into rows
         if (roomList.length > 0) {
@@ -82,6 +86,8 @@ const statuses = [
 
         return groupedRooms;
     };
+
+
 
     const fetchRoomData = async () => {
         try {
@@ -99,54 +105,70 @@ const statuses = [
         fetchRoomData();
     }, [selectedDate, windowPeriod]);
 
-    function getRoomStatusColor(room) {
+function getRoomStatusColor(room) {
+    console.log("ROOM DATA:", room); // Debugging
 
-        const currentTime = new Date();
-        // If the room is available
-        if (room.status === 'available') {
-            return 'success'; // Green
-        }
-        if (room.status === 'Confirmed') {
-            return 'primary'; // Blue
-        }
+    const currentTime = new Date();
 
-        // Probable checkout time logic
-        const probableCheckOutTime = room.probableCheckOutTime
-            ? new Date(room.probableCheckOutTime)
-            : null;
-        console.log(room)
-        console.log(probableCheckOutTime)
-        if (
-            probableCheckOutTime &&
-            probableCheckOutTime > currentTime &&
-            probableCheckOutTime - currentTime <= 1 * 60 * 60 * 1000 // Within 1 hour of probable checkout
-        ) {
-            console.log("PROBABLE----------")
-            return 'warning'; // Yellow
-        }
-
-        // Final checkout time logic
-        const finalCheckOutTime = new Date(new Date(room.checkInTime).getTime() + room.durationOfStay * 24 * 60 * 60 * 1000); // Calculate based on duration
-        if (
-            finalCheckOutTime &&
-            finalCheckOutTime > currentTime &&
-            finalCheckOutTime - currentTime <= 1 * 60 * 60 * 1000 // Within 1 hour of final checkout
-        ) {
-            console.log("FINAL---------------")
-            return 'secondary'; // Some other color (e.g., blue)
-        }
-        if (
-            finalCheckOutTime &&
-            finalCheckOutTime > currentTime &&
-            currentTime > probableCheckOutTime
-        ) {
-                console.log("FINAL---------------")
-                return 'info'; // Some other color (e.g., blue)
-          }
-        console.log("LAST-----------")
-        // Default case for occupied or other states
-        return 'danger'; // Red
+    // Strong check for 'unknown' status
+    if (room.status && room.status.toLowerCase() === 'unknown') {
+        console.log("STATUS: UNKNOWN -> Returning 'dark'");
+        return 'dark'; // Dark color for unknown state
     }
+
+    if (room.status === 'available') {
+        return 'success'; // Green
+    }
+
+    if (room.status === 'Confirmed') {
+        return 'primary'; // Blue
+    }
+
+    // Probable checkout time logic
+    const probableCheckOutTime = room.probableCheckOutTime
+        ? new Date(room.probableCheckOutTime)
+        : null;
+
+    if (
+        probableCheckOutTime &&
+        probableCheckOutTime > currentTime &&
+        probableCheckOutTime - currentTime <= 1 * 60 * 60 * 1000 // Within 1 hour of probable checkout
+    ) {
+        console.log("PROBABLE CHECKOUT TIME REACHED -> Returning 'warning'");
+        return 'warning'; // Yellow
+    }
+
+    // Final checkout time logic
+    let finalCheckOutTime = null;
+
+    if (room.checkInTime && room.durationOfStay) {
+        finalCheckOutTime = new Date(
+            new Date(room.checkInTime).getTime() + room.durationOfStay * 24 * 60 * 60 * 1000
+        );
+    }
+
+    if (
+        finalCheckOutTime &&
+        finalCheckOutTime > currentTime &&
+        finalCheckOutTime - currentTime <= 1 * 60 * 60 * 1000 // Within 1 hour of final checkout
+    ) {
+        console.log("FINAL CHECKOUT TIME REACHED -> Returning 'secondary'");
+        return 'secondary'; // Some other color (e.g., blue)
+    }
+
+    if (
+        finalCheckOutTime &&
+        probableCheckOutTime &&
+        finalCheckOutTime > currentTime &&
+        currentTime > probableCheckOutTime
+    ) {
+        return 'info'; // Some other color (e.g., blue)
+    }
+
+    console.log("DEFAULT CASE -> Returning 'danger'");
+    return 'danger'; // Default red for occupied/other states
+}
+
 
 
 
@@ -209,6 +231,8 @@ return (
                         <option value={12}>12 Hours</option>
                         <option value={16}>16 Hours</option>
                         <option value={24}>24 Hours</option>
+                        <option value={24}>32 Hours</option>
+                        <option value={24}>48 Hours</option>
                     </select>
                 </div>
 
