@@ -859,7 +859,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                     dateFormat="dd/MM/yyyy hh:mm a"
                                     className="form-control"
                                     placeholderText="Select date & time"
-                                    minDate={
+                                    minDate={isAdmin ? new Date(new Date().setDate(new Date().getDate() - 15)) :
                                         (() => {
                                             const now = new Date();
                                             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -868,26 +868,22 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                             return tomorrow;
                                         })()
                                     }
-                                    maxDate={new Date(new Date().setDate(new Date().getDate() + 7))} // Limit to 7 days in future
-                                    minTime={(() => {
+                                    maxDate={new Date(new Date().setDate(new Date().getDate() + 15))} // Limit to 7 days in future
+                                    minTime={isAdmin ? null : (() => {
                                         const now = new Date();
                                         const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-
                                         // Set to the start of tomorrow (midnight)
                                         tomorrow.setHours(0, 0, 0, 0);
-
                                         return tomorrow;
                                     })()}
 
-                                    maxTime={
+                                    maxTime={isAdmin ? null :
                                       (() => {
                                         const selectedDate = new Date(formData.stay_info.checkInDateTime || new Date());
-
                                         // If selected date is today, limit to end of the day
                                         if (selectedDate.toDateString() === new Date().toDateString()) {
                                           return new Date(new Date().setHours(23, 59, 59)); // End of today
                                         }
-
                                         // For future dates, allow up to the end of the selected day
                                         return new Date(selectedDate.setHours(23, 59, 59));
                                       })()
@@ -930,13 +926,16 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                                 const checkInDateTime = new Date(
                                                     formData.stay_info.checkInDateTime || now
                                                 );
+                                                if (isAdmin) {
+                                                       return new Date(checkInDateTime.getTime() + 60 * 60 * 1000);
+                                                 }
 
                                                 // Use check-in date if current time is earlier, otherwise use current date
                                                 return now < checkInDateTime ? checkInDateTime : now;
                                             })()
                                         }
-                                        maxDate={new Date(new Date().setDate(new Date().getDate() + 7))} // Limit to 7 days in future
-                                        minTime={
+                                        maxDate={new Date(new Date().setDate(new Date().getDate() + 15))} // Limit to 7 days in future
+                                        minTime={isAdmin ? null :
                                           (() => {
                                             const now = new Date();
                                             const checkInDateTime = new Date(
@@ -960,8 +959,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                             return new Date(selectedDate.setHours(0, 0, 0, 0));
                                           })()
                                         }
-
-                                        maxTime={
+                                        maxTime={isAdmin ? null :
                                           (() => {
                                             const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || new Date());
 
@@ -1017,7 +1015,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                 </Col>
                             </Form.Group>
                              )}
-                            <Form.Group as={Row} controlId="formBookingMode">
+                   <Form.Group as={Row} controlId="formBookingMode">
                                 <Form.Label column sm="3">Booking Mode</Form.Label>
                                 <Col sm="9">
                                     {isEditable ? (
@@ -1061,7 +1059,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                       handleChange(e, 'stay_info');
 
                                       // Also update the check-in date and time to the current time
-                                      const updatedCheckInDateTime = new Date();
+                                      if (!isAdmin) {
+                                     const updatedCheckInDateTime = new Date();
                                       setFormData(prevData => ({
                                         ...prevData,
                                         stay_info: {
@@ -1069,6 +1068,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                           checkInDateTime: updatedCheckInDateTime, // Set current time as check-in time
                                         },
                                       }));
+                                      }
+
                                     } else if (formData.stay_info.bookingStatus !== "Confirmed") {
                                       // Prevent change if status is anything other than "Confirmed"
                                       e.preventDefault();
@@ -1217,7 +1218,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
     </Button>
 ) : null} {/* Render nothing when conditions are false */}
 
-{isEditable && isChangeRoom && lastBookingStatus === "Confirmed" && (
+{isEditable && isChangeRoom && lastBookingStatus === "Confirmed" &&
+(
     <Card className="mb-3">
         <Card.Header>Payment Information</Card.Header>
         <Card.Body>
@@ -1289,7 +1291,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                 dateFormat="dd/MM/yyyy hh:mm a"
                                 className="form-control"
                                 placeholderText="Select date & time"
-                                minDate={new Date(new Date().setDate(new Date().getDate() - 7))}
+                                minDate={new Date(new Date().setDate(new Date().getDate() - 15))}
                                 maxDate={new Date()} // Limit to 7 days in future
 
                               />
@@ -1315,7 +1317,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                     </Card>
 
                     )}
-                    {(searchInput.bookingStatus === "FUTURE") && !isEditable && (
+                 {(searchInput.bookingStatus === "FUTURE") && !isEditable && (
                     <Card className="bg-body text-danger">
                         <Card.Header>Cancellation Info</Card.Header>
                             <Card.Body>
@@ -1336,7 +1338,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                     </Card>
                     )}
 
-                    {!isEditable && (
+                 {!isEditable && (
                     <Card>
                         <Card.Header>Payment Info</Card.Header>
                             <Card.Body>
@@ -1397,7 +1399,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                     )}
 
                  {/* Payment or Refund Card */}
-                       {(balance !== 0) && !isEditable && (
+                 {(balance !== 0) && !isEditable && (
                          <Card className="mb-3">
                            <Card.Header>{balance > 0 ? "New Payment Information" : "New Refund Information"}</Card.Header>
                            <Card.Body>
@@ -1464,7 +1466,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                     )}
 
 
-                     {formData.stay_info.bookingStatus === "Checked-Out"  &&
+                 {formData.stay_info.bookingStatus === "Checked-Out"  &&
                        formData.payment_info.some(payment => payment.paymentStatus === "DUE")  && (
                                              <Card className="mb-3">
                                                <Card.Header>New Payment Information</Card.Header>
@@ -1530,17 +1532,16 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                              </Card>
                                         )}
 
- {/* Checkout Button */}
+      {/* Checkout Button */}
 
- {(formData.stay_info.bookingStatus === "Checked-In" || formData.stay_info.bookingStatus === "Confirmed") &&
-   !isCheckout &&
-   !isCancel && !isEditable &&  (
-     <Button className="mt-3" variant="success" onClick={handleEdit}>
-       EDIT
-     </Button>
-   )}
+      {(formData.stay_info.bookingStatus === "Checked-In" || formData.stay_info.bookingStatus === "Confirmed") &&
+        !isCheckout && !isCancel && !isEditable &&  (
+             <Button className="mt-3" variant="success" onClick={handleEdit}>
+               EDIT
+             </Button>
+      )}
 
-   {isEditable && (
+      {isEditable && (
            <Button className="mt-3" variant="primary" onClick={handleSubmit}>
              SUBMIT
            </Button>
