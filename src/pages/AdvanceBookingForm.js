@@ -436,83 +436,84 @@ const handleRoomChange = (e, index) => {
             <Card className="mb-3" >
                 <Card.Header>Stay Information</Card.Header>
                 <Card.Body >
-                    <Form.Group as={Row} controlId="formCheckInDateTime">
-                      <Form.Label column sm="3">Check-In Date & Time</Form.Label>
-                      <Col sm="9">
-                        <DatePicker
-                          selected={formData.stay_info.checkInDateTime ? new Date(formData.stay_info.checkInDateTime) : null}
-                          onChange={(date) => handleDateChange(date, 'checkInDateTime')}
-                          showTimeSelect
-                          timeFormat="HH:mm"
-                          timeIntervals={15}
-                          dateFormat="dd/MM/yyyy hh:mm a"
-                          className="form-control"
-                          placeholderText="Select date & time"
-                          minDate={
-                            isAdmin
-                              ? null // No minimum date for admin
-                              : new Date(new Date().getHours() >= 18
-                                  ? new Date().setDate(new Date().getDate() + 1) // Tomorrow if after 6 PM
-                                  : new Date()) // Today if before 6 PM
-                          }
-                          maxDate={
-                            isAdmin
-                              ? null // No maximum date for admin
-                              : new Date(new Date().setDate(new Date().getDate() + 60)) // Limit to 60 days in the future
-                          }
-                        />
-                      </Col>
-                    </Form.Group>
+<Form.Group as={Row} controlId="formCheckInDateTime">
+    <Form.Label column sm="3">Check-In Date & Time</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={formData.stay_info.checkInDateTime ? new Date(formData.stay_info.checkInDateTime) : null}
+            onChange={(date) => handleDateChange(date, 'checkInDateTime')}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
 
-                    <Form.Group as={Row} controlId="formProbableCheckOutDateTime">
-                      <Form.Label column sm="3">Probable Check-Out Date & Time</Form.Label>
-                      <Col sm="9">
-                        <DatePicker
-                          selected={formData.stay_info.probableCheckOutDateTime ? new Date(formData.stay_info.probableCheckOutDateTime) : null}
-                          onChange={(date) => handleDateChange(date, 'probableCheckOutDateTime')}
-                          showTimeSelect
-                          timeFormat="HH:mm"
-                          timeIntervals={15}
-                          dateFormat="dd/MM/yyyy hh:mm a"
-                          className="form-control"
-                          placeholderText="Select date & time"
-                          minDate={
-                            formData.stay_info.checkInDateTime
-                              ? new Date(formData.stay_info.checkInDateTime) // Earliest date is check-in date
-                              : new Date() // Default to current date if check-in date is not selected
-                          }
-                          minTime={
-                            formData.stay_info.checkInDateTime
-                              ? (() => {
-                                  const checkInDate = new Date(formData.stay_info.checkInDateTime);
-                                  const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || checkInDate);
-                                  if (checkInDate.toDateString() === selectedDate.toDateString()) {
-                                    return new Date(checkInDate.getTime() + 1 * 60 * 60 * 1000); // 1 hour after check-in time
-                                  } else {
-                                    return new Date(selectedDate.setHours(0, 0, 0, 0)); // Midnight for future dates
-                                  }
-                                })()
-                              : new Date(new Date().setHours(new Date().getHours() + 6, 0, 0, 0)) // Default 6 hours from now
-                          }
-                          maxDate={
-                            isAdmin
-                              ? null // No maximum date for admin
-                              : formData.stay_info.checkInDateTime
-                                  ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(
-                                      new Date(formData.stay_info.checkInDateTime).getDate() + 7
-                                    ))
-                                  : null // No max date if no check-in date
-                          }
-                          maxTime={
-                            formData.stay_info.checkInDateTime
-                              ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(
-                                  new Date(formData.stay_info.checkInDateTime).getDate() + 7
-                                )).setHours(23, 59, 59) // End of the day on max date
-                              : new Date().setHours(23, 59, 59) // End of the current day
-                          }
-                        />
-                      </Col>
-                    </Form.Group>
+            // Admin: Can select any date from 30 days ago up to 6 months in the future
+            minDate={isAdmin ? new Date(new Date().setDate(new Date().getDate() - 30)) : new Date(new Date().setHours(new Date().getHours() + 6))}
+            maxDate={new Date(new Date().setMonth(new Date().getMonth() + 6))} // 6 months in the future
+        />
+    </Col>
+</Form.Group>
+
+<Form.Group as={Row} controlId="formProbableCheckOutDateTime">
+    <Form.Label column sm="3">Probable Check-Out Date & Time</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={formData.stay_info.probableCheckOutDateTime ? new Date(formData.stay_info.probableCheckOutDateTime) : null}
+            onChange={(date) => handleDateChange(date, 'probableCheckOutDateTime')}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+
+            // Checkout date cannot be the same as check-in if 2-hour gap crosses midnight
+            minDate={
+                formData.stay_info.checkInDateTime
+                    ? (() => {
+                        const checkInDate = new Date(formData.stay_info.checkInDateTime);
+                        const minCheckoutTime = new Date(checkInDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+
+                        // If 2-hour gap crosses midnight, force checkout to start from the next day
+                        if (minCheckoutTime.getDate() !== checkInDate.getDate()) {
+                            return new Date(checkInDate.setDate(checkInDate.getDate() + 1)); // Move to next day
+                        }
+                        return minCheckoutTime; // Otherwise, keep same date
+                    })()
+                    : new Date()
+            }
+
+            // Checkout cannot be more than 10 days after check-in
+            maxDate={
+                formData.stay_info.checkInDateTime
+                    ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(new Date(formData.stay_info.checkInDateTime).getDate() + 10))
+                    : new Date(new Date().setDate(new Date().getDate() + 10))
+            }
+
+            // Min time logic: Only restrict time on check-in date
+            minTime={
+                formData.stay_info.checkInDateTime
+                    ? (() => {
+                        const checkInDate = new Date(formData.stay_info.checkInDateTime);
+                        const minCheckoutTime = new Date(checkInDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                        const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || checkInDate);
+
+                        // If checkout date is the same as check-in, enforce 2-hour rule
+                        if (checkInDate.toDateString() === selectedDate.toDateString()) {
+                            return minCheckoutTime;
+                        }
+                        // For next day and beyond, allow all times (start from 12:00 AM)
+                        return new Date(selectedDate.setHours(0, 0, 0, 0));
+                    })()
+                    : null
+            }
+
+            maxTime={new Date().setHours(23, 59, 59)} // End of the day
+        />
+    </Col>
+</Form.Group>
 
 
                     <Form.Group as={Row} controlId="formDurationOfStay">
@@ -524,7 +525,7 @@ const handleRoomChange = (e, index) => {
                                 value={formData.stay_info.durationOfStay} // Accessing nested checkInDateTime
                                 onChange={(e) => handleChange(e, 'stay_info')}
                                 min="1" // Restrict negative input
-                                max="6"
+                                max="10"
                             />
                         </Col>
                     </Form.Group>

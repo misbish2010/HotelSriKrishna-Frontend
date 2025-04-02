@@ -483,68 +483,89 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
             <Card className="mb-3" >
                 <Card.Header>Stay Information</Card.Header>
                 <Card.Body >
-                    <Form.Group as={Row} controlId="formCheckInDateTime">
-                        <Form.Label column sm="3">Check-In Date & Time</Form.Label>
-                        <Col sm="9">
+<Form.Group as={Row} controlId="formCheckInDateTime">
+    <Form.Label column sm="3">Check-In Date & Time</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={
+                isAdmin
+                    ? formData.stay_info.checkInDateTime
+                        ? new Date(formData.stay_info.checkInDateTime)
+                        : new Date()
+                    : new Date() // Non-admin gets auto-populated value
+            }
+            onChange={(date) => isAdmin && handleDateChange(date, 'checkInDateTime')} // Only admin can change
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+            minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+            maxDate={new Date()} // No future date allowed
+            disabled={!isAdmin} // Non-admin cannot change
+        />
+    </Col>
+</Form.Group>
 
-                            <DatePicker
-                                selected={formData.stay_info.checkInDateTime ? new Date(formData.stay_info.checkInDateTime) : null}
-                                onChange={(date) => handleDateChange(date, 'checkInDateTime')}
-                                showTimeSelect
-                                timeFormat="HH:mm"
-                                timeIntervals={15}
-                                dateFormat="dd/MM/yyyy hh:mm a"
-                                className="form-control"
-                                placeholderText="Select date & time"
+<Form.Group as={Row} controlId="formProbableCheckOutDateTime">
+    <Form.Label column sm="3">Probable Check-Out Date & Time</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={formData.stay_info.probableCheckOutDateTime ? new Date(formData.stay_info.probableCheckOutDateTime) : null}
+            onChange={(date) => handleDateChange(date, 'probableCheckOutDateTime')}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
 
-                                minDate={calculateMinDate()}
-                                maxDate={new Date(new Date().setDate(new Date().getDate() + 7))} // Limit to 7 days in future
-                                disabled={!isAdmin}
-                            />
-                        </Col>
-                    </Form.Group>
+            // Checkout date cannot be the same as check-in if 2-hour gap crosses midnight
+            minDate={
+                formData.stay_info.checkInDateTime
+                    ? (() => {
+                        const checkInDate = new Date(formData.stay_info.checkInDateTime);
+                        const minCheckoutTime = new Date(checkInDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
 
-                    <Form.Group as={Row} controlId="formProbableCheckOutDateTime">
-                        <Form.Label column sm="3">Probable Check-Out Date & Time</Form.Label>
-                        <Col sm="9">
-                            <DatePicker
-                                selected={formData.stay_info.probableCheckOutDateTime ? new Date(formData.stay_info.probableCheckOutDateTime) : null}
-                                onChange={(date) => handleDateChange(date, 'probableCheckOutDateTime')}
-                                showTimeSelect
-                                timeFormat="HH:mm"
-                                timeIntervals={15}
-                                dateFormat="dd/MM/yyyy hh:mm a"
-                                className="form-control"
-                                placeholderText="Select date & time"
-                                minDate={new Date()} // Prevent past date selection
-                                maxDate={new Date(new Date().setDate(new Date().getDate() + 7))} // Limit to 7 days in future
+                        // If 2-hour gap crosses midnight, force checkout to start from the next day
+                        return minCheckoutTime.getDate() !== checkInDate.getDate()
+                            ? new Date(checkInDate.setDate(checkInDate.getDate() + 1)) // Move to next day
+                            : checkInDate; // Otherwise, keep same date
+                    })()
+                    : new Date()
+            }
 
-minTime={
-  formData.stay_info.checkInDateTime
-    ? (() => {
-        const checkInDate = new Date(formData.stay_info.checkInDateTime);
-        const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || checkInDate);
+            // Checkout cannot be more than 10 days after check-in
+            maxDate={
+                formData.stay_info.checkInDateTime
+                    ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(new Date(formData.stay_info.checkInDateTime).getDate() + 10))
+                    : new Date(new Date().setDate(new Date().getDate() + 10))
+            }
 
-        // If the selected date is the same as the check-in date
-        if (checkInDate.toDateString() === selectedDate.toDateString()) {
-          return new Date(checkInDate.getTime() + 1 * 60 * 60 * 1000); // 1 hour after check-in
-        } else {
-          // For future dates, allow starting from midnight
-          return new Date(selectedDate.setHours(0, 0, 0, 0));
-        }
-      })()
-    : new Date(new Date().setHours(new Date().getHours() + 6, 0, 0, 0)) // Default 6 hours from now if no check-in date
-}
+            // Min time logic: Only restrict time on check-in date
+            minTime={
+                formData.stay_info.checkInDateTime
+                    ? (() => {
+                        const checkInDate = new Date(formData.stay_info.checkInDateTime);
+                        const minCheckoutTime = new Date(checkInDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                        const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || checkInDate);
 
-                                maxTime={
-                                       formData.stay_info.probableCheckOutDateTime &&
-                                           new Date(formData.stay_info.probableCheckOutDateTime).toDateString() === new Date().toDateString()
-                                              ? new Date(new Date().setHours(23, 59, 59)) // End of day for today
-                                              : new Date(new Date().setHours(23, 59, 59)) // End of day for future dates
-                                        }
-                                    />
-                        </Col>
-                    </Form.Group>
+                        // If checkout date is the same as check-in, enforce 2-hour rule
+                        if (checkInDate.toDateString() === selectedDate.toDateString()) {
+                            return minCheckoutTime;
+                        }
+                        // For next day and beyond, allow all times (start from 12:00 AM)
+                        return new Date(selectedDate.setHours(0, 0, 0, 0));
+                    })()
+                    : null
+            }
+
+            maxTime={new Date().setHours(23, 59, 59)} // End of the day
+        />
+    </Col>
+</Form.Group>
+
 
 
                     <Form.Group as={Row} controlId="formDurationOfStay">
@@ -557,7 +578,7 @@ minTime={
                                 onChange={(e) => handleChange(e, 'stay_info')}
                                 readOnly
                                 min="1" // Restrict negative input
-                                max="6"
+                                max="10"
                             />
                         </Col>
                     </Form.Group>

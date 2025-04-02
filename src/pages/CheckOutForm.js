@@ -847,48 +847,30 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                 {isEditable && lastBookingStatus === "Confirmed" ? (
                                 // DatePicker for editing mode
                                 <DatePicker
-                                    selected={
-                                        formData.stay_info.checkInDateTime
-                                            ? new Date(formData.stay_info.checkInDateTime)
-                                            : null
-                                    }
-                                    onChange={(date) => handleEditDateChange(date, 'checkInDateTime')}
-                                    showTimeSelect
-                                    timeFormat="HH:mm"
-                                    timeIntervals={15}
-                                    dateFormat="dd/MM/yyyy hh:mm a"
-                                    className="form-control"
-                                    placeholderText="Select date & time"
-                                    minDate={isAdmin ? new Date(new Date().setDate(new Date().getDate() - 15)) :
-                                        (() => {
-                                            const now = new Date();
-                                            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                                  selected={
+                                    formData.stay_info.checkInDateTime
+                                      ? new Date(formData.stay_info.checkInDateTime)
+                                      : null
+                                  }
+                                  onChange={(date) => handleEditDateChange(date, 'checkInDateTime')}
+                                  showTimeSelect
+                                  timeFormat="HH:mm"
+                                  timeIntervals={15}
+                                  dateFormat="dd/MM/yyyy hh:mm a"
+                                  className="form-control"
+                                  placeholderText="Select date & time"
 
-                                            // Use check-in date if current time is earlier, otherwise use current date
-                                            return tomorrow;
-                                        })()
-                                    }
-                                    maxDate={new Date(new Date().setDate(new Date().getDate() + 15))} // Limit to 7 days in future
-                                    minTime={isAdmin ? null : (() => {
-                                        const now = new Date();
-                                        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                                        // Set to the start of tomorrow (midnight)
-                                        tomorrow.setHours(0, 0, 0, 0);
-                                        return tomorrow;
-                                    })()}
+                                  // Min Check-in Date
+                                  minDate={isAdmin
+                                    ? new Date(new Date().setDate(new Date().getDate() - 30)) // 30 days prior for admin
+                                    : new Date(new Date().getTime() + 6 * 60 * 60 * 1000) // 6 hours from now for non-admin
+                                  }
 
-                                    maxTime={isAdmin ? null :
-                                      (() => {
-                                        const selectedDate = new Date(formData.stay_info.checkInDateTime || new Date());
-                                        // If selected date is today, limit to end of the day
-                                        if (selectedDate.toDateString() === new Date().toDateString()) {
-                                          return new Date(new Date().setHours(23, 59, 59)); // End of today
-                                        }
-                                        // For future dates, allow up to the end of the selected day
-                                        return new Date(selectedDate.setHours(23, 59, 59));
-                                      })()
-                                    }
+                                  // Max Check-in Date (6 months from today)
+                                  maxDate={new Date(new Date().setMonth(new Date().getMonth() + 6))}
+
                                 />
+
                             ) : (
                         // Text field for display mode
                                 <Form.Control
@@ -908,72 +890,54 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                 {isEditable ? (
                                     // DatePicker for editing mode
                                     <DatePicker
-                                        selected={
-                                            formData.stay_info.probableCheckOutDateTime
-                                                ? new Date(formData.stay_info.probableCheckOutDateTime)
-                                                : null
-                                        }
-                                        onChange={(date) => handleEditDateChange(date, 'probableCheckOutDateTime')}
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        timeIntervals={15}
-                                        dateFormat="dd/MM/yyyy hh:mm a"
-                                        className="form-control"
-                                        placeholderText="Select date & time"
-                                        minDate={
-                                            (() => {
-                                                const now = new Date();
-                                                const checkInDateTime = new Date(
-                                                    formData.stay_info.checkInDateTime || now
-                                                );
-                                                if (isAdmin) {
-                                                       return new Date(checkInDateTime.getTime() + 60 * 60 * 1000);
-                                                 }
+                                      selected={
+                                        formData.stay_info.probableCheckOutDateTime
+                                          ? new Date(formData.stay_info.probableCheckOutDateTime)
+                                          : null
+                                      }
+                                      onChange={(date) => handleEditDateChange(date, 'probableCheckOutDateTime')}
+                                      showTimeSelect
+                                      timeFormat="HH:mm"
+                                      timeIntervals={15}
+                                      dateFormat="dd/MM/yyyy hh:mm a"
+                                      className="form-control"
+                                      placeholderText="Select date & time"
 
-                                                // Use check-in date if current time is earlier, otherwise use current date
-                                                return now < checkInDateTime ? checkInDateTime : now;
-                                            })()
-                                        }
-                                        maxDate={new Date(new Date().setDate(new Date().getDate() + 15))} // Limit to 7 days in future
-                                        minTime={isAdmin ? null :
-                                          (() => {
-                                            const now = new Date();
-                                            const checkInDateTime = new Date(
-                                              formData.stay_info.checkInDateTime || now
-                                            );
-                                            const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || now);
+                                      // 🟢 Earliest checkout date must be at least 2 hours after check-in
+                                      minDate={(() => {
+                                        const checkInDateTime = new Date(formData.stay_info.checkInDateTime || new Date());
+                                        const minCheckoutDate = new Date(checkInDateTime.getTime() + 2 * 60 * 60 * 1000);
 
-                                            // If selected date is today
-                                            if (selectedDate.toDateString() === now.toDateString()) {
-                                              return now < checkInDateTime
-                                                ? new Date(checkInDateTime.getTime() + 1 * 60 * 60 * 1000) // 1 hour after check-in
-                                                : new Date(now.setMinutes(now.getMinutes() + 15)); // 15 minutes from now
-                                            }
+                                        return minCheckoutDate;
+                                      })()}
 
-                                            // If selected date is the same as check-in date
-                                            if (selectedDate.toDateString() === checkInDateTime.toDateString()) {
-                                              return new Date(checkInDateTime.getTime() + 1 * 60 * 60 * 1000); // 1 hour after check-in
-                                            }
+                                      // 🔴 Latest checkout date cannot be more than 10 days from check-in
+                                      maxDate={(() => {
+                                        const checkInDateTime = new Date(formData.stay_info.checkInDateTime || new Date());
+                                        return new Date(checkInDateTime.setDate(checkInDateTime.getDate() + 10));
+                                      })()}
 
-                                            // For future dates, allow starting from midnight
-                                            return new Date(selectedDate.setHours(0, 0, 0, 0));
-                                          })()
-                                        }
-                                        maxTime={isAdmin ? null :
-                                          (() => {
-                                            const selectedDate = new Date(formData.stay_info.probableCheckOutDateTime || new Date());
+                                      minTime={(() => {
+                                        const checkInDateTime = new Date(formData.stay_info.checkInDateTime || new Date());
+                                        const probableCheckOutDate = new Date(formData.stay_info.probableCheckOutDateTime || new Date());
 
-                                            // If selected date is today, limit to end of the day
-                                            if (selectedDate.toDateString() === new Date().toDateString()) {
-                                              return new Date(new Date().setHours(23, 59, 59)); // End of today
-                                            }
-
-                                            // For future dates, allow up to the end of the selected day
-                                            return new Date(selectedDate.setHours(23, 59, 59));
-                                          })()
+                                        // 🟢 If the checkout date is the same as check-in, enforce 2-hour rule
+                                        if (probableCheckOutDate.toDateString() === checkInDateTime.toDateString()) {
+                                          return new Date(checkInDateTime.getTime() + 2 * 60 * 60 * 1000);
                                         }
 
+                                        // 🔴 If checkout is a future date, allow from midnight (00:00)
+                                        return new Date(probableCheckOutDate.setHours(0, 0, 0, 0));
+                                      })()}
+
+                                      maxTime={(() => {
+                                        const probableCheckOutDate = new Date(formData.stay_info.probableCheckOutDateTime || new Date());
+
+                                        // 🔴 Checkout time should be up to 11:59 PM on the selected checkout date
+                                        return new Date(probableCheckOutDate.setHours(23, 59, 59));
+                                      })()}
                                     />
+
                                 ) : (
                                     // Text field for display mode
                                     <Form.Control
@@ -1103,7 +1067,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
 {formData.rooms.map((room, index) => (
   <Card className="mb-3" key={index}>
     <Card.Header>
-      Room-{index + 1}: {room.roomNumber ? `${room.occupancy} occupancy ${room.roomType} room #${room.roomNumber} (${room.isAcRoom ? "AC" : "Non-AC"})` : "(No Room Selected)"}
+      Room-{index + 1}: {room.roomNumber ? `${room.occupancy} occupancy ${room.roomType} room #${room.roomNumber} (${room.isAcRoom ? "AC" : "Non-AC"}) ${room.extraPersons === 0 ? "" : `(${room.extraPersons} persons)`}` : "(No Room Selected)"}
     </Card.Header>
     <Card.Body>
       {isEditable && isChangeRoom && lastBookingStatus === "Confirmed" ? (
@@ -1291,9 +1255,16 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                 dateFormat="dd/MM/yyyy hh:mm a"
                                 className="form-control"
                                 placeholderText="Select date & time"
-                                minDate={new Date(new Date().setDate(new Date().getDate() - 15))}
-                                maxDate={new Date()} // Limit to 7 days in future
-
+                                minDate={
+                                        formData.stay_info.checkInDateTime
+                                          ? new Date(new Date(formData.stay_info.checkInDateTime).getTime() + 2 * 60 * 60 * 1000) // 2 hours after check-in
+                                          : new Date() // Default if check-in not selected
+                                      }
+                                maxDate={
+                                        formData.stay_info.checkInDateTime
+                                          ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(new Date(formData.stay_info.checkInDateTime).getDate() + 10))
+                                          : new Date() // Default if check-in not selected
+                                      } // Limit to 7 days in future
                               />
                             </Col>
                           </Form.Group>
