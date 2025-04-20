@@ -35,6 +35,7 @@ function AdvanceBookingForm({isAdmin}) {
             paymentAmount: '',
             paymentMode: '',
             paymentNote: "",
+            paymentDate: '',
             finalPricePerNight: ''
         },
     };
@@ -65,6 +66,15 @@ function AdvanceBookingForm({isAdmin}) {
             },
         }));
     };
+        const handlePaymentDateChange = (date, field) => {
+            setFormData((prevData) => ({
+                ...prevData,
+                payment_info: {
+                    ...prevData.payment_info,
+                    [field]: date,
+                },
+            }));
+        };
 
     useEffect(() => {
         const calculateDurationOfStay = () => {
@@ -730,6 +740,31 @@ const handleRoomChange = (e, index) => {
                                 <option value="CASH">CASH</option>
                                 <option value="UPI">UPI</option>
                             </Form.Control>
+                        </Col>
+                    </Form.Group>
+<Form.Group as={Row} controlId="formPaymentDate">
+                        <Form.Label column sm="3">Payment Date</Form.Label>
+                        <Col sm="9">
+                            <DatePicker
+                                selected={
+                                    isAdmin
+                                        ? formData.payment_info.paymentDate
+                                            ? new Date(formData.payment_info.paymentDate)
+                                            : new Date()
+                                        : new Date() // Non-admin gets auto-populated value
+                                }
+
+                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="dd/MM/yyyy hh:mm a"
+                                className="form-control"
+                                placeholderText="Select date & time"
+                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+                                maxDate={new Date()} // No future date allowed
+                                disabled={!isAdmin} // Non-admin cannot change
+                            />
                         </Col>
                     </Form.Group>
                 </Card.Body>

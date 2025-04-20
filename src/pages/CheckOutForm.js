@@ -37,7 +37,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
     const [updateInput, setUpdateInput] = useState({
             paymentAmount: '',
             paymentMode: '',
-            paymentNote:''
+            paymentNote:'',
+            paymentDate:''
     });
 
     const defaultFormData = {
@@ -535,6 +536,11 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
             setUpdateInput({ ...updateInput, [name]: value });
         };
 
+    const handlePaymentDateChange = (date, field) => {
+        setUpdateInput({ ...updateInput, [field]: date });
+
+        };
+
     const handleDateChange = (date) => {
         setSearchInput({ ...searchInput, selectDate: date });
     };
@@ -598,6 +604,7 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
         try {
             const response = await checkoutOrCancelBooking(
                         formData.stay_info.bookingId,
+                        checkOutDateTime,
                         stayDuration,
                         formData.stay_info.bookingStatus,
                     );
@@ -1292,6 +1299,35 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                     <Card className="bg-body text-danger">
                         <Card.Header>Cancellation Info</Card.Header>
                             <Card.Body>
+{isAdmin && (
+                          <Form.Group as={Row} controlId="formCheckOutDateTime">
+                            <Form.Label column sm="3">
+                              Cancel Date & Time
+                            </Form.Label>
+                            <Col sm="9">
+                              <DatePicker
+                                selected={checkOutDateTime ? new Date(checkOutDateTime) : null}
+                                onChange={(date) => handleCheckoutDateChange(date, 'checkOutDateTime')}
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="dd/MM/yyyy hh:mm a"
+                                className="form-control"
+                                placeholderText="Select date & time"
+                                minDate={
+                                        formData.stay_info.checkInDateTime
+                                          ? new Date(new Date(formData.stay_info.checkInDateTime).getTime() + 2 * 60 * 60 * 1000) // 2 hours after check-in
+                                          : new Date() // Default if check-in not selected
+                                      }
+                                maxDate={
+                                        formData.stay_info.checkInDateTime
+                                          ? new Date(new Date(formData.stay_info.checkInDateTime).setDate(new Date(formData.stay_info.checkInDateTime).getDate() + 10))
+                                          : new Date() // Default if check-in not selected
+                                      } // Limit to 7 days in future
+                              />
+                            </Col>
+                          </Form.Group>
+                        )}
                                 <Form.Group as={Row} controlId="formIsCancel">
                                 <Form.Label column sm="3">
                                 Proceed to Cancel
@@ -1407,6 +1443,31 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                  </Form.Control>
                                </Col>
                              </Form.Group>
+<Form.Group as={Row} controlId="formPaymentDate">
+                        <Form.Label column sm="3">Payment Date</Form.Label>
+                        <Col sm="9">
+                            <DatePicker
+                               selected={
+                                   isAdmin
+                                     ? updateInput.paymentDate
+                                       ? new Date(updateInput.paymentDate)
+                                       : null
+                                     : new Date() // Non-admin gets current date/time
+                                 }
+
+                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="dd/MM/yyyy hh:mm a"
+                                className="form-control"
+                                placeholderText="Select date & time"
+                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+                                maxDate={new Date()} // No future date allowed
+                                disabled={!isAdmin} // Non-admin cannot change
+                            />
+                        </Col>
+                    </Form.Group>
                 <Form.Group as={Row} controlId="formPaymentNote">
                     <Form.Label column sm="3">Payment Notes</Form.Label>
                     <Col sm="9">
@@ -1475,6 +1536,30 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                                                      </Form.Control>
                                                    </Col>
                                                  </Form.Group>
+
+<Form.Group as={Row} controlId="formPaymentDate">
+                        <Form.Label column sm="3">Payment Date</Form.Label>
+                        <Col sm="9">
+                            <DatePicker
+                                selected={
+                                    isAdmin
+                                        ? new Date()
+                                        : new Date() // Non-admin gets auto-populated value
+                                }
+
+                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="dd/MM/yyyy hh:mm a"
+                                className="form-control"
+                                placeholderText="Select date & time"
+                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+                                maxDate={new Date()} // No future date allowed
+                                disabled={!isAdmin} // Non-admin cannot change
+                            />
+                        </Col>
+                    </Form.Group>
                                     <Form.Group as={Row} controlId="formPaymentNote">
                                         <Form.Label column sm="3">Payment Notes</Form.Label>
                                         <Col sm="9">

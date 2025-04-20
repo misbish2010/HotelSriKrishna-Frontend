@@ -37,6 +37,7 @@ function CheckInForm({isAdmin}) {
         payment_info: {
             paymentAmount: '',
             paymentMode: '',
+            paymentDate: '',
             finalPricePerNight: ''
         },
     };
@@ -94,6 +95,16 @@ function CheckInForm({isAdmin}) {
             },
         }));
     };
+
+        const handlePaymentDateChange = (date, field) => {
+            setFormData((prevData) => ({
+                ...prevData,
+                payment_info: {
+                    ...prevData.payment_info,
+                    [field]: date,
+                },
+            }));
+        };
 
     useEffect(() => {
     if (!formData.stay_info.checkInDateTime || !formData.stay_info.probableCheckOutDateTime) {
@@ -376,7 +387,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
         try {
             // Call Create Booking API
             const bookingResponse = await createBooking(updatedFormData);
-
+            console.log(updatedFormData)
             // If booking is successful, call Send Message API
             if (bookingResponse.success) {
                 alert('Booking successful, and confirmation message sent to the guest.');
@@ -756,7 +767,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                             <Form.Control
                                 type="number"
                                 name="finalPricePerNight"
-                                value={formData.payment_info.finalPricePerNight} // Accessing nested field
+                                value={formData.finalPricePerNight} // Accessing nested field
                                 onChange={(e) => handleChange(e, 'payment_info')} // Handling changes for payment_info
                                 min="0" // Restrict negative input
                                 required
@@ -793,6 +804,32 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                             </Form.Control>
                         </Col>
                     </Form.Group>
+                    <Form.Group as={Row} controlId="formPaymentDate">
+                        <Form.Label column sm="3">Payment Date</Form.Label>
+                        <Col sm="9">
+                            <DatePicker
+                                selected={
+                                    isAdmin
+                                        ? formData.payment_info.paymentDate
+                                            ? new Date(formData.payment_info.paymentDate)
+                                            : new Date()
+                                        : new Date() // Non-admin gets auto-populated value
+                                }
+
+                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="dd/MM/yyyy hh:mm a"
+                                className="form-control"
+                                placeholderText="Select date & time"
+                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+                                maxDate={new Date()} // No future date allowed
+                                disabled={!isAdmin} // Non-admin cannot change
+                            />
+                        </Col>
+                    </Form.Group>
+
 
                 </Card.Body>
             </Card>

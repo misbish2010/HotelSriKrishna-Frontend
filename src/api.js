@@ -148,11 +148,12 @@ export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkI
 };
 
 //Api to Cancel or Checkout booking
-export const checkoutOrCancelBooking = async (bookingId, stayDuration, bookingStatus) => {
+export const checkoutOrCancelBooking = async (bookingId,checkOutDateTime, stayDuration, bookingStatus) => {
     try {
         console.log(bookingId)
         const response = await apiClient.post('/update_booking', {
             bookingId,
+            checkOutDateTime,
             stayDuration,
             bookingStatus
         });
