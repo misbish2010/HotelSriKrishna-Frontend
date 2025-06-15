@@ -165,7 +165,7 @@ export const checkoutOrCancelBooking = async (bookingId,checkOutDateTime, stayDu
 
 
 //Api to pay or refund
-export const addOrRefundPayment = async (bookingId, transactionType, {paymentAmount, paymentMode, paymentNote}) => {
+export const addOrRefundPayment = async (bookingId, transactionType, {paymentAmount, paymentMode, paymentNote,paymentDate}) => {
     try {
         console.log(bookingId)
         const response = await apiClient.post('/update_payment', {
@@ -173,7 +173,8 @@ export const addOrRefundPayment = async (bookingId, transactionType, {paymentAmo
             transactionType,
             paymentAmount,
             paymentMode,
-            paymentNote
+            paymentNote,
+            paymentDate
         });
         return response.data; // Return data for success handling
     } catch (error) {
