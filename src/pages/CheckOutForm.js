@@ -102,6 +102,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
     const [filteredRooms, setFilteredRooms] = useState([]);
     const [priceBreakup, setPriceBreakup] = useState('');
     const [checkOutDateTime,setCheckOutDateTime] = useState('');
+    const [initialAssignedRooms, setInitialAssignedRooms] = useState([]);
+
     const roomTypeOccupancyMap = {
         Studio: ['Single', 'Double'],
         Luxury: ['Single', 'Double'],
@@ -168,6 +170,8 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
                             finalPricePerNight: initialData.price_per_night || '', // Default to empty string if not provided
                             // Add other necessary fields from the response here
                         });
+                        setInitialAssignedRooms(roomsData);  // this preserves original room info
+
             const totalPayments = initialData.payment_info.reduce((sum, payment) => sum + payment.amount, 0);
             setPaidAmount(totalPayments.toFixed(2));
 
@@ -264,6 +268,24 @@ const CheckoutForm = ({ bookingId, bookingStatus, isAdmin }) => {
               checkInDateTime,
               probableCheckOutDateTime
             );
+// 🔧 Use original assigned room from initialAssignedRooms if missing
+if (isChangeRoom && initialAssignedRooms.length > 0) {
+  initialAssignedRooms.forEach((assignedRoom) => {
+    const exists = rooms.some((r) => r.room_number === assignedRoom.roomNumber);
+    if (!exists && assignedRoom.roomNumber) {
+      rooms.unshift({
+        room_id: assignedRoom.roomId || assignedRoom.room_id,
+        room_number: assignedRoom.roomNumber,
+        room_type: assignedRoom.roomType,
+        is_ac: assignedRoom.isAcRoom,
+        occupancy: assignedRoom.occupancy,
+        room_price: 0,
+        extra_bed_price: 0,
+      });
+    }
+  });
+}
+
             setAvailableRooms(rooms);
           } catch (error) {
             console.error("Error loading available rooms:", error);
