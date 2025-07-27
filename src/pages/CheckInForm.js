@@ -374,6 +374,31 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                   updatedFormData.payment_info.paymentAmount > 0
                     ? `💰 Paid Amount: ₹${paymentAmount.toFixed(2)}\n`
                     : "";
+                const roomSummaryMap = {};
+
+                updatedFormData.rooms.forEach((room) => {
+                  const roomType = room.roomType || "Unknown";
+                  const occupancy = room.occupancy || "Unknown";
+                  const acStatus = room.isAcRoom ? "AC" : "Non-AC";
+
+                  // Avoid repeating 'Triple Triple'
+                  const typeOccupancy =
+                    roomType.toLowerCase() === occupancy.toLowerCase()
+                      ? roomType
+                      : `${roomType} ${occupancy}`;
+
+                  const key = `${typeOccupancy} ${acStatus}`;
+
+                  if (roomSummaryMap[key]) {
+                    roomSummaryMap[key]++;
+                  } else {
+                    roomSummaryMap[key] = 1;
+                  }
+                });
+
+                const roomSummaryLine = Object.entries(roomSummaryMap)
+                  .map(([key, count]) => `${count} ${key} room${count > 1 ? "s" : ""}`)
+                  .join(" and ");
 
                 const messageData = {
                   phoneNumber: formData.personal_info.phoneNumber,
@@ -382,6 +407,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                 Your booking at *Hotel Sri Krishna, Koraput* is confirmed!
 
                 🆔 Booking ID: ${bookingResponse.booking_id}
+                🛏️ Rooms: ${roomSummaryLine}
                 📅 Check-in: ${formatDate(updatedFormData.stay_info.checkInDateTime)}
                 📅 Check-out: ${formatDate(updatedFormData.stay_info.probableCheckOutDateTime)}
                 ${paidAmountLine}💰 Total Amount: ₹${totalAmount.toFixed(2)}
