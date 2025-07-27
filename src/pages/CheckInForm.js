@@ -6,9 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format, parse } from "date-fns";
 import { createBooking, sendMessage, fetchAvailableRooms, fetchUserDetails} from '../api';
 
-
 function CheckInForm({isAdmin}) {
-
 
     const defaultFormData = {
         personal_info: {
@@ -108,15 +106,12 @@ function CheckInForm({isAdmin}) {
 
     useEffect(() => {
     if (!formData.stay_info.checkInDateTime || !formData.stay_info.probableCheckOutDateTime) {
-                console.log( "$$$$$$$$$$$$$$$$$$$$$$")
                     return;
                 }
-    console.log( "^^^^^^^^^^^^^^^^^^^^^")
         const calculateDurationOfStay = () => {
             const { checkInDateTime, probableCheckOutDateTime } = formData.stay_info;
             console.log(checkInDateTime)
             if (!checkInDateTime || !probableCheckOutDateTime) {
-            console.log( "^^^^^^^^-------^^^^^^^^^^^^^")
                 console.warn('Invalid date values:', { checkInDateTime, probableCheckOutDateTime });
                 return;
             }
@@ -136,7 +131,6 @@ function CheckInForm({isAdmin}) {
             if (checkOut > checkIn) {
                 const timeDifference = checkOut - checkIn; // Difference in milliseconds
                 const duration = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)); // Convert to days and round up
-
                 // Ensure duration is within valid bounds
                 const validDuration = Math.min(Math.max(duration, 1), 6);
                 setFormData((prevData) => ({
@@ -319,31 +313,14 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
         }));
     };
 
-//    useEffect(() => {
-//        const loadAvailableRooms = async () => {
-//          if (!formData.stay_info.durationOfStay) return;  // Check if durationOfStay is set
-//          try {
-//            const rooms = await fetchAvailableRooms(formData.stay_info.durationOfStay, formData.stay_info.checkInDateTime);
-//            setAvailableRooms(rooms);  // Update state with the available rooms
-//          } catch (error) {
-//            console.error("Error loading available rooms:", error);
-//          }
-//        };
-//
-//        loadAvailableRooms();  // Call the function inside useEffect
-//
-//    }, [formData.stay_info.checkInDateTime, formData.stay_info.durationOfStay]);  // Dependency array for re-running the effect
-
     const handlePhoneBlur = async () => {
         if (!formData.personal_info.phoneNumber.trim()) {
           return; // Do nothing if phone number is empty
         }
-
         try {
           const data = await fetchUserDetails(formData.personal_info.phoneNumber.trim());
           if (data.error) {
                 console.error("Error:", data.error);
-                // Optionally, display an error message to the user
                 return; // Stop further execution
               }
           // Populate the form fields if user data is found
@@ -383,7 +360,6 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
             bookingStatus: "Checked-In", // Add bookingStatus
         };
 
-
         try {
             // Call Create Booking API
             const bookingResponse = await createBooking(updatedFormData);
@@ -391,13 +367,35 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
             // If booking is successful, call Send Message API
             if (bookingResponse.success) {
                 alert('Booking successful, and confirmation message sent to the guest.');
+                const paymentAmount = Number(updatedFormData.payment_info.paymentAmount);
+                const finalPricePerNight = Number(updatedFormData.payment_info.finalPricePerNight);
+                const totalAmount = finalPricePerNight * updatedFormData.stay_info.durationOfStay
+                const paidAmountLine =
+                  updatedFormData.payment_info.paymentAmount > 0
+                    ? `💰 Paid Amount: ₹${paymentAmount.toFixed(2)}\n`
+                    : "";
+
                 const messageData = {
-                    phoneNumber: formData.personal_info.phoneNumber,
-                    message: `Dear ${formData.personal_info.name}, your booking at Hotel Sri Krishna has been confirmed! Booking ID: ${bookingResponse.bookingId}. Thank you!`,
+                  phoneNumber: formData.personal_info.phoneNumber,
+                  message: `Dear ${formData.personal_info.name},
+
+                Your booking at *Hotel Sri Krishna, Koraput* is confirmed!
+
+                🆔 Booking ID: ${bookingResponse.booking_id}
+                📅 Check-in: ${formatDate(updatedFormData.stay_info.checkInDateTime)}
+                📅 Check-out: ${formatDate(updatedFormData.stay_info.probableCheckOutDateTime)}
+                ${paidAmountLine}💰 Total Amount: ₹${totalAmount.toFixed(2)}
+
+                Please reach us at 06852-250372/88955-75244 for any assistance.
+
+                Thank you for choosing us!
+
+                - Hotel Sri Krishna`,
                 };
-//                const messageResponse = await sendMessage(messageData);
-//                console.log('Message Response:', messageResponse);
-//
+
+                const messageResponse = await sendMessage(messageData);
+                console.log('Message Response:', messageResponse);
+
 //                if (messageResponse.success) {
 //                    alert('Booking successful, and confirmation message sent to the guest.');
 //                } else {
@@ -406,6 +404,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                 // Reset form data to default values
                 setFormData(defaultFormData);
                 setBookingStatus(0);
+
                 setAvailableRooms([]);
                 setFilteredRooms([]);
                 setTotalPrice(0);
@@ -531,7 +530,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
             dateFormat="dd/MM/yyyy hh:mm a"
             className="form-control"
             placeholderText="Select date & time"
-
+            disabled={!formData.stay_info.checkInDateTime}
             // Checkout date cannot be the same as check-in if 2-hour gap crosses midnight
             minDate={
                 formData.stay_info.checkInDateTime
@@ -767,7 +766,7 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                             <Form.Control
                                 type="number"
                                 name="finalPricePerNight"
-                                value={formData.finalPricePerNight} // Accessing nested field
+                                value={formData.payment_info.finalPricePerNight} // Accessing nested field
                                 onChange={(e) => handleChange(e, 'payment_info')} // Handling changes for payment_info
                                 min="0" // Restrict negative input
                                 required
@@ -804,31 +803,35 @@ ${extraPersonText ? extraPersonText + '\n' : ""}  **Total for this room: ₹${ro
                             </Form.Control>
                         </Col>
                     </Form.Group>
-                    <Form.Group as={Row} controlId="formPaymentDate">
-                        <Form.Label column sm="3">Payment Date</Form.Label>
-                        <Col sm="9">
-                            <DatePicker
-                                selected={
-                                    isAdmin
-                                        ? formData.payment_info.paymentDate
-                                            ? new Date(formData.payment_info.paymentDate)
-                                            : new Date()
-                                        : new Date() // Non-admin gets auto-populated value
-                                }
+<Form.Group as={Row} controlId="formPaymentDate">
+    <Form.Label column sm="3">Payment Date</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={
+                isAdmin
+                    ? formData.payment_info.paymentDate
+                        ? new Date(formData.payment_info.paymentDate)
+                        : null // Leave blank until selected
+                    : new Date() // Non-admin gets auto-populated value
+            }
+            onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+            minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+            maxDate={new Date()} // No future date allowed
+            disabled={!isAdmin} // Non-admin cannot change
+        />
 
-                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
-                                showTimeSelect
-                                timeFormat="HH:mm"
-                                timeIntervals={15}
-                                dateFormat="dd/MM/yyyy hh:mm a"
-                                className="form-control"
-                                placeholderText="Select date & time"
-                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
-                                maxDate={new Date()} // No future date allowed
-                                disabled={!isAdmin} // Non-admin cannot change
-                            />
-                        </Col>
-                    </Form.Group>
+        {isAdmin && !formData.payment_info.paymentDate && (
+            <small className="text-muted">Please select a payment date</small>
+        )}
+    </Col>
+</Form.Group>
+
 
 
                 </Card.Body>

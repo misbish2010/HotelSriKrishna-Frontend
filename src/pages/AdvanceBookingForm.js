@@ -345,18 +345,36 @@ const handleRoomChange = (e, index) => {
             // If booking is successful, call Send Message API
             if (bookingResponse.success) {
                 alert('Booking successful, and confirmation message sent to the guest.');
+                const paymentAmount = Number(updatedFormData.payment_info.paymentAmount);
+                const finalPricePerNight = Number(updatedFormData.payment_info.finalPricePerNight);
+                const totalAmount = finalPricePerNight * updatedFormData.stay_info.durationOfStay
+                const paidAmountLine =
+                  updatedFormData.payment_info.paymentAmount > 0
+                    ? `💰 Paid Amount: ₹${paymentAmount.toFixed(2)}\n`
+                    : "";
+
                 const messageData = {
-                    phoneNumber: formData.personal_info.phoneNumber,
-                    message: `Dear ${formData.personal_info.name}, your booking at Hotel Sri Krishna has been confirmed! Booking ID: ${bookingResponse.bookingId}. Thank you!`,
+                  phoneNumber: formData.personal_info.phoneNumber,
+                  message: `Dear ${formData.personal_info.name},
+
+                Your booking at *Hotel Sri Krishna, Koraput* is confirmed!
+
+                🆔 Booking ID: ${bookingResponse.booking_id}
+                📅 Check-in: ${formatDate(updatedFormData.stay_info.checkInDateTime)}
+                📅 Check-out: ${formatDate(updatedFormData.stay_info.probableCheckOutDateTime)}
+                ${paidAmountLine}💰 Total Amount: ₹${totalAmount.toFixed(2)}
+
+                Please reach us at 06852-250372/88955-75244 for any assistance.
+
+                Thank you for choosing us!
+
+                - Hotel Sri Krishna`,
                 };
-//                const messageResponse = await sendMessage(messageData);
-//                console.log('Message Response:', messageResponse);
-//
-//                if (messageResponse.success) {
-//                    alert('Booking successful, and confirmation message sent to the guest.');
-//                } else {
-//                    alert('Booking successful, but failed to send confirmation message.');
-//                }
+
+                const messageResponse = await sendMessage(messageData);
+                console.log('Message Response:', messageResponse);
+
+
                 setFormData(defaultFormData);
                 setBookingStatus(0);
                 setAvailableRooms([]);
@@ -478,6 +496,7 @@ const handleRoomChange = (e, index) => {
             dateFormat="dd/MM/yyyy hh:mm a"
             className="form-control"
             placeholderText="Select date & time"
+            disabled={!formData.stay_info.checkInDateTime}
 
             // Checkout date cannot be the same as check-in if 2-hour gap crosses midnight
             minDate={
@@ -706,7 +725,7 @@ const handleRoomChange = (e, index) => {
                             <Form.Control
                                 type="number"
                                 name="finalPricePerNight"
-                                value={formData.finalPricePerNight} // Accessing nested field
+                                value={formData.payment_info.finalPricePerNight} // Accessing nested field
                                 onChange={(e) => handleChange(e, 'payment_info')} // Handling changes for payment_info
                                 min="0" // Restrict negative input
                                 required
@@ -743,30 +762,33 @@ const handleRoomChange = (e, index) => {
                         </Col>
                     </Form.Group>
 <Form.Group as={Row} controlId="formPaymentDate">
-                        <Form.Label column sm="3">Payment Date</Form.Label>
-                        <Col sm="9">
-                            <DatePicker
-                                selected={
-                                    isAdmin
-                                        ? formData.payment_info.paymentDate
-                                            ? new Date(formData.payment_info.paymentDate)
-                                            : new Date()
-                                        : new Date() // Non-admin gets auto-populated value
-                                }
+    <Form.Label column sm="3">Payment Date</Form.Label>
+    <Col sm="9">
+        <DatePicker
+            selected={
+                isAdmin
+                    ? formData.payment_info.paymentDate
+                        ? new Date(formData.payment_info.paymentDate)
+                        : null // Leave blank until selected
+                    : new Date() // Non-admin gets auto-populated value
+            }
+            onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+            minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
+            maxDate={new Date()} // No future date allowed
+            disabled={!isAdmin} // Non-admin cannot change
+        />
 
-                                onChange={(date) => isAdmin && handlePaymentDateChange(date, 'paymentDate')} // Only admin can change
-                                showTimeSelect
-                                timeFormat="HH:mm"
-                                timeIntervals={15}
-                                dateFormat="dd/MM/yyyy hh:mm a"
-                                className="form-control"
-                                placeholderText="Select date & time"
-                                minDate={new Date(new Date().setDate(new Date().getDate() - 30))} // 30 days prior
-                                maxDate={new Date()} // No future date allowed
-                                disabled={!isAdmin} // Non-admin cannot change
-                            />
-                        </Col>
-                    </Form.Group>
+        {isAdmin && !formData.payment_info.paymentDate && (
+            <small className="text-muted">Please select a payment date</small>
+        )}
+    </Col>
+</Form.Group>
                 </Card.Body>
             </Card>
 

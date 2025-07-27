@@ -56,6 +56,10 @@ hr {
         visibility: hidden;
     }
 
+    .no-print {
+        display: none !important;
+    }
+	
     .gst-bill, .gst-bill * {
         visibility: visible;
     }
@@ -123,13 +127,26 @@ hr {
   border-radius: 8px; /* Rounded corners */
   margin: 0 auto; /* Center the box */
 }
+.signature-img {
+  width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto 5px;
+}
+.stamp-img {
+  width: 80px;
+  height: auto;
+  opacity: 0.9;
+  position: absolute;
+  top: 100px;
+  right: 120px;
+}
 
 .signature-label {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 8px;
+  font-weight: bold;
+  margin-top: 10px;
 }
+
 
 .signature-container {
   display: flex; /* Makes the boxes align horizontally */

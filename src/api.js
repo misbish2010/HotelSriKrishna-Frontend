@@ -39,15 +39,19 @@ export const fetchBookingsInDateRange = async (dateRange) => {
   }
 };
 
-export const fetchGSTDetails = async (bookingId, guestGSTNumber) => {
+export const fetchGSTDetails = async (bookingId, guestGSTNumber, companyName) => {
   try {
     const response = await apiClient.get("/retrieve-gst-bill-number", {
-      params: { bookingId,guestGSTNumber },
+      params: {
+        bookingId,
+        guestGSTNumber,
+        companyName
+      },
     });
-    return response.data; // Assuming API directly returns the GST Bill Number
+    return response.data; // Returns gst_bill_no, guest_gst_no, guest_company_name, gst_bill_date
   } catch (error) {
     console.error("Error fetching GST Bill Number:", error);
-    throw error; // Rethrow the error to handle it in the calling component
+    throw error;
   }
 };
 
@@ -216,7 +220,9 @@ export const addUser = async (signupData) => {
 
 // API to send a message
 export const sendMessage = async (messageData) => {
-    const response = await apiClient.post('/send-message', messageData);
+    const response = await apiClient.post('/send-message', messageData, {
+        timeout: 120000, // timeout in milliseconds (15 seconds)
+    });
     return response.data;
 };
 

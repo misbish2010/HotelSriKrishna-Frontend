@@ -1309,6 +1309,8 @@ if (isChangeRoom && initialAssignedRooms.length > 0) {
                                         name="isCheckout"
                                         checked={isCheckout}
                                         onChange={handleCheckoutChange}
+										disabled={!checkOutDateTime} // ✅ disable if date not selected
+                                        label={!checkOutDateTime ? "Select date & time first" : undefined} // Optional tooltip-like label
                                     />
                                 </Col>
                             </Form.Group>
@@ -1360,6 +1362,8 @@ if (isChangeRoom && initialAssignedRooms.length > 0) {
                                             name="isCancel"
                                             checked={isCancel}
                                             onChange={handleCancelChange}
+											disabled={!checkOutDateTime} // ✅ disable if date not selected
+                                            label={!checkOutDateTime ? "Select date & time first" : undefined} // Optional tooltip-like label
                                         />
                                     </Col>
                                 </Form.Group>

@@ -18,6 +18,7 @@ function GstBill() {
             address: "",
             email: "",
             gstNumber: "",
+            companyName: ""
         },
         stay_info: {
             checkInDateTime: "",
@@ -129,17 +130,26 @@ function GstBill() {
 
     const handleConfirmGst = async () => {
         try {
-            const { gstNumber } = formData.personal_info;
+            const { gstNumber, companyName } = formData.personal_info;
             const { bookingId } = formData.stay_info;
-            const data = await fetchGSTDetails(bookingId, gstNumber);
-            const gstBillNo = data.gstDetails?.gst_bill_no || "";
-            const gstNumberUpdated = data.gstDetails?.guest_gst_no || "";
-            console.log(gstBillNo)
-            console.log(gstNumberUpdated)
+
+            if (!gstNumber || !companyName) {
+                alert("Please enter both Company Name and GSTIN");
+                return;
+            }
+
+            const data = await fetchGSTDetails(bookingId, gstNumber, companyName);
+            const gstBillNo = data.gstDetails?.[0]?.gst_bill_no || "";
+            const gstNumberUpdated = data.gstDetails?.[0]?.guest_gst_no || gstNumber;
+
             setFormData((prevData) => ({
                 ...prevData,
                 stay_info: { ...prevData.stay_info, gstBillNo },
-                personal_info: { ...prevData.personal_info, gstNumber: gstNumberUpdated },
+                personal_info: {
+                    ...prevData.personal_info,
+                    gstNumber: gstNumberUpdated,
+                    companyName: companyName,
+                },
             }));
             setEditingGst(false);
         } catch (err) {
@@ -147,6 +157,7 @@ function GstBill() {
             alert("Failed to fetch GST details. Please try again.");
         }
     };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -225,41 +236,72 @@ function GstBill() {
                     <h3>Guest Details</h3>
                     <div className="guest-info">
                         <p><strong>Guest Name:</strong> {formData.personal_info.name}</p>
-                        <p><strong>Phone Number:</strong> {formData.personal_info.phoneNumber}</p>
-                        {formData.personal_info.email && (
-                            <p><strong>Email:</strong> {formData.personal_info.email}</p>
-                        )}
-                        <p><strong>Aadhar:</strong> {formData.personal_info.identity}</p>
                         <p><strong>Address:</strong> {formData.personal_info.address}</p>
+                        <p><strong>Phone Number:</strong> {formData.personal_info.phoneNumber}</p>
+                        <p><strong>Aadhar:</strong> {formData.personal_info.identity}</p>
+<Form.Group as={Row} controlId="billingCompanyName">
+    <Form.Label column sm="4"><strong>Billing To (Company Name):</strong></Form.Label>
+    <Col sm="8">
+        {formData.stay_info.gstBillNo && !editingGst ? (
+            <p>{formData.personal_info.companyName}</p>
+        ) : (
+            <Form.Control
+                type="text"
+                name="companyName"
+                value={formData.personal_info.companyName || ''}
+                onChange={handleInputChange}
+                placeholder="Enter Company Name"
+            />
+        )}
+    </Col>
+</Form.Group>
 
+<Form.Group as={Row} controlId="guestGstNo">
+    <Form.Label column sm="4"><strong>GSTIN:</strong></Form.Label>
+    <Col sm="8">
+        {formData.stay_info.gstBillNo && !editingGst ? (
+            <div className="d-flex justify-content-between align-items-center">
+                <p className="mb-0">{formData.personal_info.gstNumber}</p>
+                <Button
+                    variant="link"
+                    size="sm"
+                    onClick={handleEditGst}
+                    className="no-print"
+                    style={{ padding: 0, textDecoration: 'underline' }}
+                >
+                    Edit
+                </Button>
+            </div>
+        ) : (
+            <div className="d-flex gap-2 flex-column flex-sm-row">
+                <Form.Control
+                    type="text"
+                    name="gstNumber"
+                    value={formData.personal_info.gstNumber || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter GST Number"
+                />
+                <Button
+                    className="confirm-button"
+                    variant="primary"
+                    type="button"
+                    onClick={handleConfirmGst}
+                    disabled={
+                        !formData.personal_info.gstNumber ||
+                        !formData.personal_info.companyName
+                    }
+                >
+                    Confirm
+                </Button>
+            </div>
+        )}
+    </Col>
+</Form.Group>
 
-
-                <Form.Group as={Row} controlId="guestGstNo">
-                <Form.Label column sm="4"><strong>GSTIN:</strong></Form.Label>
-                <Col sm="8">
-                    {formData.stay_info.gstBillNo ? (
-                    <div>
-                        <p>{formData.personal_info.gstNumber}</p>
-                    </div>
-                    ) : (
-                    <div>
-                    <Form.Control
-                        type="text"
-                        name="gstNumber"
-                        value={formData.personal_info.gstNumber || ''}
-                        onChange={handleInputChange}
-                        placeholder="Enter GST Number"
-                    />
-                    <button className="confirm-button" type="button" onClick={handleConfirmGst}>Confirm</button>
-                    </div>
-                    )}
-                </Col>
-            </Form.Group>
-
-
-
-                                        </div>
+                      </div>
                 </div>
+
+
 
                 {/* Stay Details Card */}
                 <div className="stay-card">
@@ -324,7 +366,18 @@ function GstBill() {
 
                     <div className="signature-container">
                       {/* Manager Signature */}
+                       {/* Manager Signature */}
                       <div className="signature-box">
+                        <img
+                          src={`${process.env.PUBLIC_URL}/static/images/signature.jpg`}
+                          alt="Manager Signature"
+                          className="signature-img"
+                        />
+                        <img
+                          src={`${process.env.PUBLIC_URL}/static/images/hotel-stamp.png`}
+                          alt="Hotel Sri Krishna Stamp"
+                          className="stamp-img"
+                        />
                         <p className="signature-label">Manager Signature</p>
                       </div>
 
@@ -336,7 +389,7 @@ function GstBill() {
 
 
             <div className="print-button">
-                <Button onClick={handlePrint}>Print Bill</Button>
+                <Button  onClick={handlePrint}>Print Bill</Button>
             </div>
         </div>
             )}
