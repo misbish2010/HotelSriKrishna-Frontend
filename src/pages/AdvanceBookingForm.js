@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createBooking, sendMessage, fetchAvailableRooms, fetchUserDetails} from '../api';
 import { format, parse } from "date-fns";
+import WhatsAppMessageButton from './WhatsAppMessageButton';
 
 function AdvanceBookingForm({isAdmin}) {
     const defaultFormData = {
@@ -45,6 +46,9 @@ function AdvanceBookingForm({isAdmin}) {
     const [filteredRooms, setFilteredRooms] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [priceBreakup, setPriceBreakup] = useState('');
+    const [bookingConfirmed, setBookingConfirmed] = useState(false);
+    const [savedUpdatedFormData, setSavedUpdatedFormData] = useState(null);
+    const [savedBookingResponse, setSavedBookingResponse] = useState(null);
 
     const roomTypeOccupancyMap = {
         Studio: ['Single', 'Double'],
@@ -340,67 +344,17 @@ const handleRoomChange = (e, index) => {
         try {
             // Call Create Booking API
             const bookingResponse = await createBooking(updatedFormData);
-            console.log('Booking Response:', bookingResponse);
-
+            console.log(updatedFormData)
             // If booking is successful, call Send Message API
             if (bookingResponse.success) {
                 alert('Booking successful, and confirmation message sent to the guest.');
-                const paymentAmount = Number(updatedFormData.payment_info.paymentAmount);
-                const finalPricePerNight = Number(updatedFormData.payment_info.finalPricePerNight);
-                const totalAmount = finalPricePerNight * updatedFormData.stay_info.durationOfStay
-                const paidAmountLine =
-                  updatedFormData.payment_info.paymentAmount > 0
-                    ? `💰 Paid Amount: ₹${paymentAmount.toFixed(2)}\n`
-                    : "";
-                const roomSummaryMap = {};
-
-                updatedFormData.rooms.forEach((room) => {
-                  const roomType = room.roomType || "Unknown";
-                  const occupancy = room.occupancy || "Unknown";
-                  const acStatus = room.isAcRoom ? "AC" : "Non-AC";
-
-                  // Avoid repeating 'Triple Triple'
-                  const typeOccupancy =
-                    roomType.toLowerCase() === occupancy.toLowerCase()
-                      ? roomType
-                      : `${roomType} ${occupancy}`;
-
-                  const key = `${typeOccupancy} ${acStatus}`;
-
-                  if (roomSummaryMap[key]) {
-                    roomSummaryMap[key]++;
-                  } else {
-                    roomSummaryMap[key] = 1;
-                  }
-                });
-
-                const roomSummaryLine = Object.entries(roomSummaryMap)
-                  .map(([key, count]) => `${count} ${key} room${count > 1 ? "s" : ""}`)
-                  .join(" and ");
-
-                const messageData = {
-                  phoneNumber: formData.personal_info.phoneNumber,
-                  message: `Dear ${formData.personal_info.name},
-
-                Your booking at *Hotel Sri Krishna, Koraput* is confirmed!
-
-                🆔 Booking ID: ${bookingResponse.booking_id}
-                🛏️ Rooms: ${roomSummaryLine}
-                📅 Check-in: ${formatDate(updatedFormData.stay_info.checkInDateTime)}
-                📅 Check-out: ${formatDate(updatedFormData.stay_info.probableCheckOutDateTime)}
-                ${paidAmountLine}💰 Total Amount: ₹${totalAmount.toFixed(2)}
-
-                Please reach us at 06852-250372/88955-75244 for any assistance.
-
-                Thank you for choosing us!
-
-                - Hotel Sri Krishna`,
-                };
-
-                const messageResponse = await sendMessage(messageData);
-                console.log('Message Response:', messageResponse);
-
-
+                //const messageResponse = await sendMessage(messageData);
+                //console.log('Message Response:', messageResponse);
+                setBookingConfirmed(true);
+                // Save them to state so you can access later
+                  setSavedUpdatedFormData(updatedFormData);
+                  setSavedBookingResponse(bookingResponse);
+                // Reset form data to default values
                 setFormData(defaultFormData);
                 setBookingStatus(0);
                 setAvailableRooms([]);
@@ -823,6 +777,14 @@ const handleRoomChange = (e, index) => {
             <Button variant="primary" type="submit" className="mx-auto d-block">Submit</Button>
 
         </Form>
+                {/* ✅ Show WhatsApp button AFTER booking */}
+                     {bookingConfirmed && savedUpdatedFormData && savedBookingResponse && (
+                       <WhatsAppMessageButton
+                         formData={formData}
+                         updatedFormData={savedUpdatedFormData}
+                         bookingResponse={savedBookingResponse}
+                       />
+                     )}
                     </>
     );
 }
