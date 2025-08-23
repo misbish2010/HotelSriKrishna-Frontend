@@ -1,4 +1,10 @@
+// App.js
 import React, { useState } from "react";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CheckInWizard from "./components/checkin/CheckInWizard";
+import BookingActionWizard from './components/booking/BookingActionWizard';
+import BookingSearchPage from './components/booking/BookingSearchPage';
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,41 +16,30 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
 import Footer from "./Footer";
-import Dashboard from "./pages/Dashboard";
-import CheckOutForm from "./pages/CheckOutForm";
-import CheckInForm from "./pages/CheckInForm";
-import DailyExpenseForm from "./pages/DailyExpenseForm";
-import GstBill from "./pages/GstBill";
-import GstBillCombined from "./pages/GstBillCombined";
-import RoomGrid from "./pages/Rooms";
-import AdvanceBookingForm from "./pages/AdvanceBookingForm";
 import BookingDashboard from "./pages/BookingDashboard";
+import PaymentTable from "./pages/PaymentTable";
+import RoomGrid from "./pages/Rooms";
+import GSTInvoice from "./pages/GSTInvoice";
+import BulkGSTInvoice from "./pages/BulkGSTInvoice";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import SignOut from "./pages/SignOut";
-import PaymentTable from "./pages/PaymentTable";
 
 function App() {
+  //const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedBookingDetails, setSelectedBookingDetails] = useState(null);
   const [activeComponent, setActiveComponent] = useState(null);
-  const [selectedBookingId, setSelectedBookingId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Track sidebar state
-
-  const handleSidebarClick = (component, bookingId = null, bookingStatus = "") => {
-    const statusMapping = {
-      "Checked-In": "ACTIVE",
-      "Checked-Out": "PAST",
-      "Confirmed": "FUTURE",
-    };
-    const mappedStatus = statusMapping[bookingStatus] || "ACTIVE";
-    setActiveComponent(component);
-    setSelectedBookingId(bookingId || null);
-    setSelectedStatus(mappedStatus);
-  };
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+
+
+    const handleSidebarClick = (component, bookingDetails = null) => {
+      setActiveComponent(component);
+      setSelectedBookingDetails(bookingDetails);
+    };
 
   const handleLogin = (username, isAdmin) => {
     setIsLoggedIn(true);
@@ -61,46 +56,103 @@ function App() {
   return (
     <Router>
       <div className="app">
-        {/* Header Section */}
+        <ToastContainer position="top-center" />
+
         <Header isLoggedIn={isLoggedIn} userName={userName} />
 
-        {/* Sidebar - Responsive */}
         {isLoggedIn && (
           <Sidebar
             isAdmin={isAdmin}
             onClick={handleSidebarClick}
-            onCollapse={setIsSidebarCollapsed} // Pass collapse state handler
+            onCollapse={setIsSidebarCollapsed}
           />
         )}
 
-        {/* Main Content */}
         <div className={`main-content ${isSidebarCollapsed ? "collapsed" : ""}`}>
           <Routes>
-            <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />} />
+            <Route
+              path="/login"
+              element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />}
+            />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signout" element={<SignOut onLogout={handleSignOut} />} />
           </Routes>
 
-          {/* Render Components Based on Sidebar Click */}
-          {activeComponent === "rooms" && <RoomGrid />}
-          {activeComponent === "checkin" && <CheckInForm isAdmin={isAdmin} />}
-          {activeComponent === "daily_expense" && <DailyExpenseForm />}
-          {activeComponent === "gst_billing" && <GstBill />}
-          {activeComponent === "advance_booking" && <AdvanceBookingForm isAdmin={isAdmin} />}
-          {activeComponent === "collection" && <PaymentTable />}
-          {activeComponent === "gst_report" && <GstBillCombined />}
-          {activeComponent === "dashboard" && (
-            <BookingDashboard onViewBooking={(id, status) => handleSidebarClick("checkout", id, status)} />
+          {activeComponent === "checkin" && (
+            <CheckInWizard mode="checkin" isAdmin={isAdmin} />
           )}
-          {activeComponent === "checkout" && (
-            <CheckOutForm bookingId={selectedBookingId} bookingStatus={selectedStatus} isAdmin={isAdmin} />
-          )}
-        </div>
 
-        {/* Footer Section */}
-        {/*<footer className="app-footer">
-          <Footer />
-        </footer>*/}
+          {activeComponent === "advance_booking" && (
+            <CheckInWizard mode="advance" isAdmin={true} />
+          )}
+
+
+          {activeComponent === "bookingSearch" && (
+            <BookingSearchPage
+              isAdmin={isAdmin}
+              onBookingFound={(details) => handleSidebarClick("checkout", details)}
+            />
+          )}
+
+
+
+          {activeComponent === "checkout" && selectedBookingDetails && (
+            <BookingActionWizard
+              bookingDetails={selectedBookingDetails}
+              isAdmin={isAdmin}
+              onDone={() => { /* refresh parent */ }}
+              onViewInvoice={(details) => {
+                setSelectedBookingDetails(details);
+                setActiveComponent("invoiceFromWizard");
+              }}
+            />
+          )}
+
+
+{activeComponent === "dashboard" && (
+  <BookingDashboard
+    onViewBooking={(bookingObj) => {
+      setSelectedBookingDetails(bookingObj);
+
+      if (bookingObj.openInvoice) {
+        // 🧾 clicked → GST invoice
+        setActiveComponent("invoice");
+      } else {
+        // 👁 clicked → Booking wizard
+        setActiveComponent("checkout");
+      }
+    }}
+  />
+)}
+
+
+
+          {activeComponent === "rooms" && <RoomGrid />}
+          {activeComponent === "collection" && <PaymentTable />}
+
+
+
+          {activeComponent === "invoice" && selectedBookingDetails && (
+            <GSTInvoice
+              bookingId={selectedBookingDetails.booking_id}
+              bookingDetails={selectedBookingDetails}
+              onClose={() => setActiveComponent("dashboard")}
+            />
+          )}
+
+          {activeComponent === "invoiceFromWizard" && selectedBookingDetails && (
+            <GSTInvoice
+              bookingId={selectedBookingDetails.booking_id}
+              bookingDetails={selectedBookingDetails}
+              onClose={() => setActiveComponent("checkout")}   // 👈 go back to wizard
+            />
+          )}
+
+            {activeComponent === "invoice_report" && (
+              <BulkGSTInvoice onClose={() => setActiveComponent("dashboard")} />
+            )}
+
+        </div>
       </div>
     </Router>
   );

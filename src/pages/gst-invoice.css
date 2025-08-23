@@ -1,0 +1,170 @@
+/* src/pages/gst-invoice.css */
+
+/* General Invoice Card */
+.invoice-card {
+  max-width: 900px;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+}
+
+/* Header */
+.invoice-header {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hotel-logo-img {
+  height: 50px;
+  width: auto;
+}
+.stamp-img {
+  width: 80px;
+  height: auto;
+  opacity: 0.9;
+  position: absolute;
+  top: 100px;
+  right: 120px;
+}
+
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 40px;
+}
+
+.signature-box {
+  width: 40%;
+  text-align: center;
+}
+
+.sign-line {
+  border-top: 1px dashed #555;
+  margin: 40px 0 8px 0;
+  height: 1px;
+}
+
+.stamp {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  background: transparent; /* ensure stamp bg blends */
+}
+
+/* Section Headings */
+.invoice-card h6 {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Info Rows (side by side always) */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
+}
+
+.info-box {
+  flex: 1 1 50%;
+  max-width: 50%;
+  background: #fff;
+}
+
+/* Tables */
+.invoice-card table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.invoice-card table th,
+.invoice-card table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.invoice-card table th {
+  background: #f2f2f2;
+  font-weight: 600;
+}
+
+/* Totals Box */
+.totals-box {
+  background: #fdfdfd;
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+.totals-box div {
+  margin: 4px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Signature Section */
+.invoice-card .signature {
+  margin-top: 30px;
+  font-size: 14px;
+}
+
+.invoice-card .signature div {
+  border-top: 1px dashed #999;
+  padding-top: 6px;
+  text-align: right;
+}
+/* ✅ Keep Billing To & Stay Details side by side on print */
+
+.stamp {
+  mix-blend-mode: multiply;
+}
+/* Print Optimisation */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-friendly,
+  .print-friendly * {
+    visibility: visible;
+  }
+  .print-friendly {
+      position: relative; /* don't use absolute for print */
+      top: auto;
+      left: auto;
+      width: 100%;
+      margin-top: 10mm; /* ensure top border is not cut */
+      border: 1px solid #000;
+      border-top: 2px solid #000; /* stronger top border */
+      padding: 10px; /* keeps content inside nicely */
+      box-sizing: border-box;
+    }
+
+  button {
+    display: none !important;
+  }
+
+  /* ✅ Keep Billing To & Stay Details side by side */
+.info-row {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px !important;
+  }
+  .info-box {
+    flex: 1 1 50% !important;
+    max-width: 50% !important;
+    page-break-inside: avoid;
+  }
+
+}

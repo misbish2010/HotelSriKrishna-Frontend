@@ -62,41 +62,44 @@ function Sidebar({ isAdmin, onClick }) {
         className={`sidebar ${isCollapsed ? "collapsed" : "expanded"}`}
       >
         <Nav className="flex-column">
-          <Nav.Link onClick={() => onClick("checkin")} href="#checkin" className="sidebar-link">
-            CHECK-IN
-          </Nav.Link>
-          <Nav.Link onClick={() => onClick("checkout")} href="#checkout" className="sidebar-link">
-            MANAGE BOOKING
-          </Nav.Link>
-          <Nav.Link onClick={() => onClick("advance_booking")} href="#advancebooking" className="sidebar-link">
-            ADVANCE BOOKING
-          </Nav.Link>
-          <Nav.Link onClick={() => onClick("rooms")} href="#rooms" className="sidebar-link">
-            ROOMS
-          </Nav.Link>
-          <Nav.Link onClick={() => onClick("dashboard")} href="#dashboard" className="sidebar-link">
-            BOOKING DASHBOARD
-          </Nav.Link>
 
-          {isAdmin && (
-            <Nav.Link onClick={() => onClick("collection")} href="#collection" className="sidebar-link">
-              PAYMENT DASHBOARD
-            </Nav.Link>
-          )}
+                  <Nav.Link onClick={() => onClick("advance_booking")} href="#advancebooking" className="sidebar-link">
+                    ADVANCE BOOKING
+                  </Nav.Link>
 
-          <Nav.Link onClick={() => onClick("gst_billing")} href="#gstbilling" className="sidebar-link">
-            BILLING
-          </Nav.Link>
-          <Nav.Link onClick={() => onClick("daily_expense")} href="#dailyexpense" className="sidebar-link">
-            EXPENSE
-          </Nav.Link>
+                  <Nav.Link onClick={() => onClick("checkin")} href="#checkin" className="sidebar-link">
+                    CHECK-IN
+                  </Nav.Link>
 
-          {isAdmin && (
-            <Nav.Link onClick={() => onClick("gst_report")} href="#gstreport" className="sidebar-link">
-              GST Monthly Bills
-            </Nav.Link>
-          )}
-        </Nav>
+                  <Nav.Link
+                    onClick={() => onClick("bookingSearch")}
+                    href="#bookingSearch"
+                    className="sidebar-link"
+                  >
+                    MANAGE BOOKING
+                  </Nav.Link>
+
+        		  <Nav.Link onClick={() => onClick("dashboard")} href="#dashboard" className="sidebar-link">
+                    BOOKING DASHBOARD
+                  </Nav.Link>
+
+                   <Nav.Link onClick={() => onClick("rooms")} href="#rooms" className="sidebar-link">
+                    ROOMS
+                   </Nav.Link>
+
+                 {isAdmin && (
+                    <Nav.Link onClick={() => onClick("collection")} href="#collection" className="sidebar-link">
+                      PAYMENT DASHBOARD
+                    </Nav.Link>
+                  )}
+
+
+                 <Nav.Link onClick={() => onClick("invoice_report")} href="#invoice_report" className="sidebar-link">
+                    GST Reports
+                  </Nav.Link>
+
+
+                </Nav>
       </div>
     </>
   );

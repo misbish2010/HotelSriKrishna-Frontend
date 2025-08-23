@@ -1,10 +1,10 @@
 import "./RoomTable.css";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fetchPaymentDetails } from "../api";
 import { format } from "date-fns";
+import { FaMoneyBillWave, FaMobileAlt, FaUndo, FaClock, FaChartLine, FaReceipt } from "react-icons/fa";
 
 const PaymentTable = () => {
   const [paymentTableData, setPaymentTableData] = useState([]);
@@ -13,6 +13,7 @@ const PaymentTable = () => {
   const [filteredPaymentData, setFilteredPaymentData] = useState([]);
   const [selectedFromDate, setSelectedFromDate] = useState(new Date());
   const [selectedToDate, setSelectedToDate] = useState(new Date());
+  const [validationError, setValidationError] = useState("");
   const [totalCashCollected, setTotalCashCollected] = useState(0);
   const [totalUPICollected, setTotalUPICollected] = useState(0);
   const [totalCashRefunded, setTotalCashRefunded] = useState(0);
@@ -20,270 +21,220 @@ const PaymentTable = () => {
   const [totalCollection, setTotalCollection] = useState(0);
   const [totalExpenditure, setTotalExpenditure] = useState(0);
   const [totalPending, setTotalPending] = useState(0);
-  const [paymentModeFilter, setPaymentModeFilter] = useState({
-    CASH: true,
-    UPI: true,
-  });
-  const [activeTab, setActiveTab] = useState("paid"); // Tabs: 'paid' or 'pending'
+  const [paymentModeFilter, setPaymentModeFilter] = useState({ CASH: true, UPI: true });
+  const [activeTab, setActiveTab] = useState("paid");
 
-  const formatDate = (date) => format(date, "dd/MM/yyyy hh:mm a");
+  const formatDate = (date) => format(date, "dd MMM yyyy, hh:mm a");
+
+  const quickRanges = {
+    today: () => {
+      const now = new Date();
+      setSelectedFromDate(now);
+      setSelectedToDate(now);
+    },
+    last7: () => {
+      const to = new Date();
+      const from = new Date();
+      from.setDate(from.getDate() - 6);
+      setSelectedFromDate(from);
+      setSelectedToDate(to);
+    },
+    month: () => {
+      const now = new Date();
+      const from = new Date(now.getFullYear(), now.getMonth(), 1);
+      setSelectedFromDate(from);
+      setSelectedToDate(now);
+    }
+  };
 
   const handleFromDateChange = (date) => {
     if (date > selectedToDate) {
-      alert("From Date cannot be greater than To Date.");
+      setValidationError("From Date cannot be after To Date");
       return;
     }
+    setValidationError("");
     setSelectedFromDate(date);
   };
 
   const handleToDateChange = (date) => {
     if (date < selectedFromDate) {
-      alert("To Date cannot be less than From Date.");
+      setValidationError("To Date cannot be before From Date");
       return;
     }
+    setValidationError("");
     setSelectedToDate(date);
   };
 
   const handlePaymentModeChange = (mode) => {
-    setPaymentModeFilter((prev) => ({
-      ...prev,
-      [mode]: !prev[mode],
-    }));
+    setPaymentModeFilter((prev) => ({ ...prev, [mode]: !prev[mode] }));
   };
 
   const fetchAndProcessPayments = async () => {
     try {
       const data = await fetchPaymentDetails(selectedFromDate, selectedToDate);
-      const paymentDetails = data.payment_details;
-      const pendingPaymentDetails = data.pending_payment_details;
-      const expenseDetails = data.expense_details
-      console.log(data)
-      let cashCollected = 0;
-      let upiCollected = 0;
-      let cashRefunded = 0;
-      let upiRefunded = 0;
-      let pendingAmount = 0;
-      let expenseAmount = 0;
+      const { payment_details, pending_payment_details, expense_details } = data;
 
-      paymentDetails.forEach((payment) => {
+      let cashCollected = 0, upiCollected = 0, cashRefunded = 0, upiRefunded = 0, pendingAmount = 0, expenseAmount = 0;
+
+      payment_details.forEach((payment) => {
         if (payment.payment_mode === "CASH") {
-          if (payment.amount > 0) {
-            cashCollected += payment.amount;
-          } else {
-            cashRefunded += Math.abs(payment.amount);
-          }
+          payment.amount > 0 ? cashCollected += payment.amount : cashRefunded += Math.abs(payment.amount);
         } else if (payment.payment_mode === "UPI") {
-          if (payment.amount > 0) {
-            upiCollected += payment.amount;
-          } else {
-            upiRefunded += Math.abs(payment.amount);
-          }
+          payment.amount > 0 ? upiCollected += payment.amount : upiRefunded += Math.abs(payment.amount);
         }
       });
 
-      pendingPaymentDetails.forEach((payment) => {
-        pendingAmount += payment.amount;
-      });
-
-      expenseDetails.forEach((expense) => {
-        expenseAmount += expense.amount;
-      });
+      pending_payment_details.forEach((p) => pendingAmount += p.amount);
+      expense_details.forEach((e) => expenseAmount += e.amount);
 
       setTotalCashCollected(cashCollected);
       setTotalUPICollected(upiCollected);
       setTotalCashRefunded(cashRefunded);
       setTotalUPIRefunded(upiRefunded);
-      setTotalCollection(
-        cashCollected + upiCollected - cashRefunded - upiRefunded
-      );
-      setTotalExpenditure(expenseAmount)
-      setExpenseTableData(expenseDetails)
-      setPaymentTableData(paymentDetails);
-      setPendingPaymentTableData(pendingPaymentDetails);
+      setTotalCollection(cashCollected + upiCollected - cashRefunded - upiRefunded);
+      setTotalExpenditure(expenseAmount);
+      setExpenseTableData(expense_details);
+      setPaymentTableData(payment_details);
+      setPendingPaymentTableData(pending_payment_details);
       setTotalPending(pendingAmount);
     } catch (error) {
       console.error("Error processing payment data:", error);
     }
   };
 
+  useEffect(() => { fetchAndProcessPayments(); }, [selectedFromDate, selectedToDate]);
   useEffect(() => {
-    fetchAndProcessPayments();
-  }, [selectedFromDate, selectedToDate]);
-
-  useEffect(() => {
-    const filteredData = paymentTableData.filter(
-      (payment) =>
-        (paymentModeFilter.CASH && payment.payment_mode === "CASH") ||
-        (paymentModeFilter.UPI && payment.payment_mode === "UPI")
-    );
-    setFilteredPaymentData(filteredData);
+    setFilteredPaymentData(paymentTableData.filter(
+      (p) => (paymentModeFilter.CASH && p.payment_mode === "CASH") || (paymentModeFilter.UPI && p.payment_mode === "UPI")
+    ));
   }, [paymentTableData, paymentModeFilter]);
 
+  const StatCard = ({ icon, label, value, color }) => (
+    <div style={{
+      flex: 1,
+      backgroundColor: color,
+      color: "#fff",
+      padding: "10px",
+      borderRadius: "8px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px"
+    }}>
+      {icon}
+      <div>
+        <div style={{ fontSize: "14px" }}>{label}</div>
+        <div style={{ fontWeight: "bold", fontSize: "16px" }}>₹{value.toFixed(2)}</div>
+      </div>
+    </div>
+  );
+
   const renderTable = (data, type) => (
-    <table className="table table-bordered">
-      <thead>
-        <tr>
-          <th>#</th>
-          {type != "expense" && <th>Room Number</th>}
-          {type != "expense" && <th>Booking ID</th>}
-          {type != "expense" && <th>Customer Name</th>}
-          {type != "expense" && <th>Contact Number</th>}
-          {type === "paid" && <th>Payment Mode</th>}
-          {type === "paid" && <th>Amount Credited</th>}
-          {type === "paid" && <th>Amount Refunded</th>}
-          {type === "paid" && <th>Payment Date</th>}
-          {type === "pending" && <th>Amount Pending</th>}
-          {type === "expense" && <th>Description</th>}
-          {type === "expense" && <th>Amount</th>}
-          {type === "expense" && <th>Mode</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {data.length > 0 ? (
-          data.map((payment, index) => (
+    <div style={{ overflowX: "auto" }}>
+      <table className="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            {type !== "expense" && <th>Room</th>}
+            {type !== "expense" && <th>Booking ID</th>}
+            {type !== "expense" && <th>Customer</th>}
+            {type !== "expense" && <th>Contact</th>}
+            {type === "paid" && <th>Mode</th>}
+            {type === "paid" && <th style={{ textAlign: "right" }}>Credited</th>}
+            {type === "paid" && <th style={{ textAlign: "right" }}>Refunded</th>}
+            {type === "paid" && <th>Date</th>}
+            {type === "pending" && <th style={{ textAlign: "right" }}>Pending</th>}
+            {type === "pending" && <th>Action</th>}
+            {type === "expense" && <th>Description</th>}
+            {type === "expense" && <th style={{ textAlign: "right" }}>Amount</th>}
+            {type === "expense" && <th>Mode</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {data.length > 0 ? data.map((payment, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              {type != "expense" && <td>
-                {Array.isArray(payment.room_numbers)
-                  ? payment.room_numbers.join(", ")
-                  : payment.room_numbers}
-              </td> }
-              {type != "expense" && <td>{payment.booking_id}</td>}
-              {type != "expense" && <td>{payment.customer_name}</td>}
-              {type != "expense" && <td>{payment.contact_number}</td>}
-
+              {type !== "expense" && <td>{Array.isArray(payment.room_numbers) ? payment.room_numbers.join(", ") : payment.room_numbers}</td>}
+              {type !== "expense" && <td>{payment.booking_id}</td>}
+              {type !== "expense" && <td>{payment.customer_name}</td>}
+              {type !== "expense" && <td>{payment.contact_number}</td>}
               {type === "paid" && <td>{payment.payment_mode}</td>}
-              {type === "paid" && (
-                <td>
-                  {payment.amount > 0
-                    ? `₹${payment.amount.toFixed(2)}`
-                    : "-"}
-                </td>
-              )}
-              {type === "paid" && (
-                <td>
-                  {payment.amount < 0
-                    ? `₹${Math.abs(payment.amount).toFixed(2)}`
-                    : "-"}
-                </td>
-              )}
+              {type === "paid" && <td style={{ textAlign: "right" }}>{payment.amount > 0 ? `₹${payment.amount.toFixed(2)}` : "-"}</td>}
+              {type === "paid" && <td style={{ textAlign: "right" }}>{payment.amount < 0 ? `₹${Math.abs(payment.amount).toFixed(2)}` : "-"}</td>}
               {type === "paid" && <td>{formatDate(payment.payment_date)}</td>}
+              {type === "pending" && <td style={{ textAlign: "right" }}>₹{payment.amount.toFixed(2)}</td>}
               {type === "pending" && (
-                <td>₹{payment.amount.toFixed(2)}</td>
+                <td>
+                  <button onClick={() => alert(`Reminder sent to ${payment.customer_name}`)} className="btn btn-sm btn-warning">
+                    Send Reminder
+                  </button>
+                </td>
               )}
-
               {type === "expense" && <td>{payment.description}</td>}
-              {type === "expense" && <td>{payment.amount}</td>}
+              {type === "expense" && <td style={{ textAlign: "right" }}>{payment.amount}</td>}
               {type === "expense" && <td>{payment.mode}</td>}
             </tr>
-          ))
-        ) : (
-          <tr>
-            <td
-              colSpan={type === "paid" ? 9 : 6}
-              style={{ textAlign: "center" }}
-            >
-              No {type} payment available.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+          )) : (
+            <tr>
+              <td colSpan="10" style={{ textAlign: "center" }}>No {type} records available.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Payment Details</h2>
-      {/* Date and Payment Mode Filters */}
-      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <label htmlFor="fromDate">From Date:</label>
-          <DatePicker
-            selected={selectedFromDate}
-            onChange={handleFromDateChange}
-            dateFormat="dd/MM/yyyy"
-            id="fromDate"
-          />
+      <h2>Payment Dashboard</h2>
+
+      {/* Filters */}
+      <div style={{
+        display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center",
+        background: "#f9f9f9", padding: "10px", borderRadius: "8px", marginBottom: "15px"
+      }}>
+        <div>
+          <label>From: </label>
+          <DatePicker selected={selectedFromDate} onChange={handleFromDateChange} dateFormat="dd/MM/yyyy" />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <label htmlFor="toDate">To Date:</label>
-          <DatePicker
-            selected={selectedToDate}
-            onChange={handleToDateChange}
-            dateFormat="dd/MM/yyyy"
-            id="toDate"
-          />
+        <div>
+          <label>To: </label>
+          <DatePicker selected={selectedToDate} onChange={handleToDateChange} dateFormat="dd/MM/yyyy" />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <label htmlFor="paymentMode">Payment Mode:</label>
-          <div>
-            <input
-              type="checkbox"
-              id="cash"
-              checked={paymentModeFilter.CASH}
-              onChange={() => handlePaymentModeChange("CASH")}
-            />
-            <label htmlFor="cash">Cash</label>
-          </div>
-          <div>
-            <input
-              type="checkbox"
-              id="upi"
-              checked={paymentModeFilter.UPI}
-              onChange={() => handlePaymentModeChange("UPI")}
-            />
-            <label htmlFor="upi">UPI</label>
-          </div>
+        <div>
+          <label>Payment Mode:</label>
+          <input type="checkbox" checked={paymentModeFilter.CASH} onChange={() => handlePaymentModeChange("CASH")} /> Cash
+          <input type="checkbox" checked={paymentModeFilter.UPI} onChange={() => handlePaymentModeChange("UPI")} /> UPI
+        </div>
+        <div>
+          <button onClick={quickRanges.today} className="btn btn-sm btn-light">Today</button>
+          <button onClick={quickRanges.last7} className="btn btn-sm btn-light">Last 7 Days</button>
+          <button onClick={quickRanges.month} className="btn btn-sm btn-light">This Month</button>
         </div>
       </div>
-      {/* Summary Section */}
-      <div style={{ marginBottom: "20px", backgroundColor: "#f7f7f7", padding: "10px", borderRadius: "5px" }}>
-        <h4>Summary</h4>
-        <p>Total Cash Collected: ₹{totalCashCollected.toFixed(2)}</p>
-        <p>Total UPI Collected: ₹{totalUPICollected.toFixed(2)}</p>
-        <p>Total Cash Refunded: ₹{totalCashRefunded.toFixed(2)}</p>
-        <p>Total UPI Refunded: ₹{totalUPIRefunded.toFixed(2)}</p>
-        <p>
-          <strong>Total Collection: ₹{totalCollection.toFixed(2)}</strong>
-        </p>
-        <p>
-          <strong>Total Pending: ₹{totalPending.toFixed(2)}</strong>
-        </p>
-        <p>
-          <strong>Total Expenditure: ₹{totalExpenditure.toFixed(2)}</strong>
-        </p>
+      {validationError && <div style={{ color: "red", marginBottom: "10px" }}>{validationError}</div>}
+
+      {/* Summary Cards */}
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
+        <StatCard icon={<FaMoneyBillWave />} label="Cash Collected" value={totalCashCollected} color="#28a745" />
+        <StatCard icon={<FaMobileAlt />} label="UPI Collected" value={totalUPICollected} color="#17a2b8" />
+        <StatCard icon={<FaUndo />} label="Cash Refunded" value={totalCashRefunded} color="#ffc107" />
+        <StatCard icon={<FaUndo />} label="UPI Refunded" value={totalUPIRefunded} color="#fd7e14" />
+        <StatCard icon={<FaChartLine />} label="Net Collection" value={totalCollection} color="#007bff" />
+        <StatCard icon={<FaClock />} label="Pending" value={totalPending} color="#6f42c1" />
+        <StatCard icon={<FaReceipt />} label="Expenditure" value={totalExpenditure} color="#dc3545" />
       </div>
+
       {/* Tabs */}
-      <div className="tabs">
-        <button
-          className={activeTab === "paid" ? "active" : ""}
-          onClick={() => setActiveTab("paid")}
-        >
-          Paid Payments
-        </button>
-        <button
-          className={activeTab === "pending" ? "active" : ""}
-          onClick={() => setActiveTab("pending")}
-        >
-          Pending Payments
-        </button>
-        <button
-          className={activeTab === "expense" ? "active" : ""}
-          onClick={() => setActiveTab("expense")}
-        >
-          Expenditure
-        </button>
+      <div className="tabs" style={{ marginBottom: "15px" }}>
+        <button className={activeTab === "paid" ? "active" : ""} onClick={() => setActiveTab("paid")}>💰 Paid</button>
+        <button className={activeTab === "pending" ? "active" : ""} onClick={() => setActiveTab("pending")}>🕒 Pending</button>
+        <button className={activeTab === "expense" ? "active" : ""} onClick={() => setActiveTab("expense")}>📉 Expenditure</button>
       </div>
-      {/* Active Tab Content */}
-      <div style={{ marginTop: "20px" }}>
-        {activeTab === "paid" ? renderTable(filteredPaymentData, "paid") : null}
-        {activeTab === "pending"
-          ? renderTable(pendingPaymentTableData, "pending")
-          : null}
-        {activeTab === "expense"
-          ? renderTable(expenseTableData, "expense")
-          : null}
-      </div>
+
+      {/* Table */}
+      {activeTab === "paid" && renderTable(filteredPaymentData, "paid")}
+      {activeTab === "pending" && renderTable(pendingPaymentTableData, "pending")}
+      {activeTab === "expense" && renderTable(expenseTableData, "expense")}
     </div>
   );
 };

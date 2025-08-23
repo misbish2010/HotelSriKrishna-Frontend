@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = "http://3.111.153.106:5000/api";
-
+//const API_BASE_URL = "http://localhost:5000/api";
 // Create an Axios instance with default configurations
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -11,58 +11,47 @@ const apiClient = axios.create({
     },
 });
 
-// Define API methods
 
-export const fetchAvailableRooms = async (durationOfStay, checkInDateTime, probableCheckOutDateTime) => {
-  try {
-    const response = await apiClient.get("/available-rooms", {
-      params: {
-        durationOfStay,
-        checkInDateTime,
-        probableCheckOutDateTime
-      },
+// API to Login
+export const doLogin = async (loginData) => {
+    const response = await apiClient.post('/login', loginData);
+    return response.data;
+};
+
+// API to Logout
+export const doLogout = async () => {
+    const response = await apiClient.post('/logout');
+    console.log(response)
+    return response;
+};
+
+// API to Add User
+export const addUser = async (signupData) => {
+    const response = await apiClient.post('/add_user', signupData);
+    return response.data;
+};
+
+// API to send a message
+export const sendMessage = async (messageData) => {
+    const response = await apiClient.post('/send-message', messageData, {
+        timeout: 120000, // timeout in milliseconds (15 seconds)
     });
-    return response.data.available_rooms; // Return the available rooms
-  } catch (error) {
-    console.error("Error fetching available rooms:", error);
-    throw error; // Rethrow to handle it in the calling component
-  }
-};
-
-export const fetchBookingsInDateRange = async (dateRange) => {
-  try {
-    const response = await apiClient.post('/bookings-by-date-range', dateRange);
-    return response.data; // Return the available rooms
-  } catch (error) {
-    console.error("Error fetching available rooms:", error);
-    throw error; // Rethrow to handle it in the calling component
-  }
-};
-
-export const fetchGSTDetails = async (bookingId, guestGSTNumber, companyName) => {
-  try {
-    const response = await apiClient.get("/retrieve-gst-bill-number", {
-      params: {
-        bookingId,
-        guestGSTNumber,
-        companyName
-      },
-    });
-    return response.data; // Returns gst_bill_no, guest_gst_no, guest_company_name, gst_bill_date
-  } catch (error) {
-    console.error("Error fetching GST Bill Number:", error);
-    throw error;
-  }
+    return response.data;
 };
 
 
+// API to create a booking
+export const createBooking = async (bookingData) => {
+    const response = await apiClient.post('/create-booking', bookingData);
+    return response.data;
+};
 
+//API to fetch User Detail if existing
 export const fetchUserDetails = async (phoneNumber) => {
   console.log(phoneNumber)
   if (!phoneNumber || phoneNumber.length === 0) {
     throw new Error('Invalid phone number'); // Handle invalid input gracefully
   }
-
   try {
     const response = await apiClient.get("/existing_customers", {
       params: {
@@ -76,15 +65,113 @@ export const fetchUserDetails = async (phoneNumber) => {
   }
 };
 
-export const fetchBookings = async () => {
+
+// Define API to Fetch Available Rooms
+export const fetchAvailableRooms = async (
+  durationOfStay,
+  checkInDateTime,
+  probableCheckOutDateTime,
+  excludeBookingId = null
+) => {
+  try {
+    const params = {
+      durationOfStay,
+      checkInDateTime,
+      probableCheckOutDateTime,
+    };
+
+    if (excludeBookingId) {
+      params.excludeBookingId = excludeBookingId;
+    }
+
+    const response = await apiClient.get("/available-rooms", { params });
+    return response.data.available_rooms;
+  } catch (error) {
+    console.error("Error fetching available rooms:", error);
+    throw error;
+  }
+};
+
+
+//Search Booking
+export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkInDate, bookingStatus }) => {
     try {
-        const response = await apiClient.get("/bookings");
+        const response = await apiClient.get(`${API_BASE_URL}/search_booking`, {
+            params: {
+                bookingId,
+                phoneNumber,
+                roomNumber,
+                checkInDate,
+                bookingStatus
+            },
+        });
         return response.data;
     } catch (error) {
-        console.error("Error fetching bookings:", error);
+        console.error("Error fetching booking details:", error);
         throw error;
     }
 };
+
+
+// API to update a booking
+export const updateBooking = async (bookingData) => {
+    console.log(bookingData)
+    const response = await apiClient.post('/update-booking', bookingData);
+    return response.data;
+};
+
+
+// ✅ Cancel a booking
+//export async function cancelBooking(bookingId) {
+//  try {
+//    const res = await apiClient.post(`/bookings/${bookingId}/cancel`, {
+//        });
+//    return res.data;
+//  } catch (err) {
+//    console.error("Error cancelling booking:", err);
+//    return { success: false, message: "Network error" };
+//  }
+//}
+
+//// ✅ Checkout a booking
+//export async function checkoutBooking(bookingId) {
+//  try {
+//    const res = await apiClient.post(`/bookings/${bookingId}/checkout`, {
+//    });
+//    return res.data;
+//  } catch (err) {
+//    console.error("Error checking out booking:", err);
+//    return { success: false, message: "Network error" };
+//  }
+//}
+//
+//// ✅ Mark as Checked-In
+//export async function checkInBooking(bookingId, checkInDateTime) {
+//  try {
+//    const res = await apiClient.post(`/bookings/${bookingId}/checkin`, {
+//        });
+//    return res.data;
+//  } catch (err) {
+//    console.error("Error checking in booking:", err);
+//    return { success: false, message: "Network error" };
+//  }
+//}
+
+export const fetchBookingDashboard = async (fromDate, toDate) => {
+    try {
+        const response = await apiClient.get("/room/dashboard", {
+          params: {
+                startDate: fromDate,
+                endDate: toDate
+          },
+        });
+        return response.data; // Return the API response
+    } catch (error) {
+        console.error("Error fetching room data:", error);
+        throw error; // Rethrow to handle errors in calling code
+    }
+};
+
 
 // Fetch room status based on selected date and window period
 export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
@@ -95,21 +182,6 @@ export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
           params: {
                 checkInDateTime: selectedDate,
                 booking_window: windowPeriod,
-          },
-        });
-        return response.data; // Return the API response
-    } catch (error) {
-        console.error("Error fetching room data:", error);
-        throw error; // Rethrow to handle errors in calling code
-    }
-};
-
-export const fetchBookingDashboard = async (fromDate, toDate) => {
-    try {
-        const response = await apiClient.get("/room/dashboard", {
-          params: {
-                startDate: fromDate,
-                endDate: toDate
           },
         });
         return response.data; // Return the API response
@@ -132,21 +204,92 @@ export const fetchPaymentDetails = async (startDate, endDate) => {
     throw error; // Re-throw error to handle in calling component
   }
 };
-//Search Booking
-export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkInDate, bookingStatus }) => {
+
+// search by booking id (re-usable)
+export const fetchBookingById = async ({ bookingId }) => {
+      try {
+          const response = await apiClient.get(`${API_BASE_URL}/search_booking?bookingId=${encodeURIComponent(bookingId)}`, {
+              params: {
+                  bookingId
+              },
+          });
+          return response.data;
+      } catch (error) {
+          console.error("Error fetching booking details:", error);
+          throw error;
+      }
+}
+
+export const fetchGSTInvoice = async (bookingId) => {
+  try {
+    const response = await apiClient.get(`/bookings/${bookingId}/gst-invoice`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching GST invoice:", error);
+  }
+};
+
+// update only GST mapping fields (works even after checkout)
+export async function updateGSTInfo(bookingId, gstInfo) {
     try {
-        const response = await axios.get(`${API_BASE_URL}/search_booking`, {
-            params: {
+        const res = await apiClient.post(`/update-booking`, {
                 bookingId,
-                phoneNumber,
-                roomNumber,
-                checkInDate,
-                bookingStatus
-            },
-        });
+                gstInfo
+            });
+        return res.data;
+      } catch (err) {
+        console.error("Error cancelling booking:", err);
+        return { success: false, message: "Network error" };
+      }
+}
+
+export const fetchBookingsByDateRange = async (payload) => {
+    const response = await apiClient.post('/bookings-by-date-range', payload);
+    return response.data;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const fetchGSTDetails = async (bookingId, guestGSTNumber, companyName) => {
+  try {
+    const response = await apiClient.get("/retrieve-gst-bill-number", {
+      params: {
+        bookingId,
+        guestGSTNumber,
+        companyName
+      },
+    });
+    return response.data; // Returns gst_bill_no, guest_gst_no, guest_company_name, gst_bill_date
+  } catch (error) {
+    console.error("Error fetching GST Bill Number:", error);
+    throw error;
+  }
+};
+
+
+export const fetchBookings = async () => {
+    try {
+        const response = await apiClient.get("/bookings");
         return response.data;
     } catch (error) {
-        console.error("Error fetching booking details:", error);
+        console.error("Error fetching bookings:", error);
         throw error;
     }
 };
@@ -187,44 +330,8 @@ export const addOrRefundPayment = async (bookingId, transactionType, {paymentAmo
 };
 
 
-// API to create a booking
-export const createBooking = async (bookingData) => {
-    const response = await apiClient.post('/create-booking', bookingData);
-    return response.data;
-};
 
-// API to update a booking
-export const updateBooking = async (bookingData) => {
-    const response = await apiClient.post('/update-booking', bookingData);
-    return response.data;
-};
 
-// API to Login
-export const doLogin = async (loginData) => {
-    const response = await apiClient.post('/login', loginData);
-    return response.data;
-};
+// src/api.js
 
-// API to Logout
-export const doLogout = async () => {
-    const response = await apiClient.post('/logout');
-    console.log(response)
-    return response;
-};
-
-// API to Add User
-export const addUser = async (signupData) => {
-    const response = await apiClient.post('/add_user', signupData);
-    return response.data;
-};
-
-// API to send a message
-export const sendMessage = async (messageData) => {
-    const response = await apiClient.post('/send-message', messageData, {
-        timeout: 120000, // timeout in milliseconds (15 seconds)
-    });
-    return response.data;
-};
-
-// Add more methods as needed
 export default apiClient;
