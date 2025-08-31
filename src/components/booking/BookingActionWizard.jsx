@@ -248,7 +248,10 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
                         .filter(Boolean)
                         .join("-"),
                     },
-        stay_info: { checkInDateTime: formData.stayInfo.checkIn, probableCheckOutDateTime: formData.stayInfo.checkOut, durationOfStay: formData.stayInfo.duration, bookingMode: formData.stayInfo.bookingMode },
+        stay_info: { 
+		checkInDateTime: formatStayDateForApi(formData.stayInfo.checkIn),
+        probableCheckOutDateTime: formatStayDateForApi(formData.stayInfo.checkOut),
+		durationOfStay: formData.stayInfo.duration, bookingMode: formData.stayInfo.bookingMode },
         rooms: formData.rooms.map((r) => ({ room_id: r.roomId, room_number: r.roomNumber, room_type: r.roomType, is_ac: r.isAcRoom, extra_persons: r.extraPersons, occupancy: r.occupancy, final_price_per_night: r.agreedPrice ?? r.pricePerNight })),
         payment_info: formData.payments.map((p) => ({
           amount: p.amount,

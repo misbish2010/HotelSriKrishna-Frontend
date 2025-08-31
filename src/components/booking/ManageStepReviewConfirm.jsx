@@ -112,7 +112,8 @@ const ManageStepReviewConfirm = ({
             <Button
               size="sm"
               variant="link"
-              onClick={() => onRequestEdit("stayInfo")}
+              //onClick={() => onRequestEdit("stayInfo")}
+              disabled
             >
               Edit
             </Button>
@@ -168,7 +169,8 @@ const ManageStepReviewConfirm = ({
             <Button
               size="sm"
               variant="link"
-              onClick={() => onRequestEdit("rooms")}
+              //onClick={() => onRequestEdit("rooms")}
+              disabled
             >
               Edit
             </Button>

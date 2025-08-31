@@ -46,7 +46,7 @@ const BookingDashboard = ({ onViewBooking }) => {
       const transformedBookings = (data.bookings || []).map((b) => {
 
         const paidAmount = (b.payment_info || [])
-          .filter((p) => p.status === 'paid')
+          .filter((p) => p.status === 'completed')
           .reduce((sum, p) => sum + (p.amount || 0), 0);
         const totalPrice = b.total_price || 0;
 

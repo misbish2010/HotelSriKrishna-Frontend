@@ -174,7 +174,7 @@ const StepRooms = ({
       ))}
 
       <Button variant="secondary" onClick={onAddRoom}>
-        Add Another Room
+        Add Room
       </Button>
     </>
   );
