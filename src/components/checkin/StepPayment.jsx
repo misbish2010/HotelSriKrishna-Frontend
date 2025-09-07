@@ -65,20 +65,29 @@ const StepPayment = ({ paymentInfo = {}, onChange, gstRate = 12, rooms = [], sta
   const totalAgreedCharges = roomPrices.reduce((sum, r) => sum + (parseFloat(r.agreedPrice || 0) * nights), 0);
 
   // Build a small payload object representing what we send to parent.
-  const buildPaymentPayload = () => ({
-    // keep prior paymentInfo fields and override only our relevant ones
-    // this mirrors what parent expects for the `payment` section
-    ...paymentInfo,
+const buildPaymentPayload = () => ({
+  pricing_info: {
     roomAgreedPrices: roomPrices.map(r => ({
       roomId: r.roomId,
       agreedPrice: parseFloat(r.agreedPrice || 0),
       extraCharges: parseFloat(r.extraCharges || 0)
     })),
     totalPrice: parseFloat(totalAgreedCharges || 0),
-    paymentAmount: parseFloat(paymentAmount || 0),
-    paymentDate,
-    paymentMode
-  });
+    gstRate
+  },
+  payment_info:
+    paymentAmount || paymentMode || paymentDate
+      ? [
+          {
+            amount: parseFloat(paymentAmount || 0),
+            date: paymentDate,
+            mode: paymentMode,
+            notes: "",
+            status: "completed"
+          }
+        ]
+      : []
+});
 
   // Only call onChange when the constructed payload actually differs from last sent payload.
   useEffect(() => {

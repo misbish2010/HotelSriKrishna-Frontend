@@ -67,22 +67,29 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
             rooms.every(r => r.roomType && r.occupancy && r.roomNumber)
           );
 
-        case 3:
-          const hasFinalPrice =
-            payment?.finalPricePerNight != null ||
-            (payment?.roomAgreedPrices && payment.roomAgreedPrices.length > 0);
+            case 3: {
+              const pricing = payment?.pricing_info;
+              const payments = payment?.payment_info || [];
 
-          const hasPaymentAmount =
-            payment?.paymentAmount != null && payment.paymentAmount !== "";
-          console.log(payment.paymentDate)
-          const hasPaymentDate = payment?.paymentDate != null && payment.paymentDate !== "";
+              const hasFinalPrice =
+                (pricing?.roomAgreedPrices && pricing.roomAgreedPrices.length > 0) ||
+                pricing?.totalPrice > 0;
 
-          // Validation: if there's a payment amount, payment date must be entered
-          if (hasPaymentAmount && !hasPaymentDate) {
-            return false;
-          }
+              const latestPayment = payments.length > 0 ? payments[payments.length - 1] : null;
 
-          return hasFinalPrice && hasPaymentAmount;
+              const hasPaymentAmount =
+                latestPayment?.amount != null && latestPayment.amount !== "";
+              const hasPaymentDate =
+                latestPayment?.date != null && latestPayment.date !== "";
+
+              // Validation: if there's a payment amount, payment date must be entered
+              if (hasPaymentAmount && !hasPaymentDate) {
+                return false;
+              }
+
+              return hasFinalPrice && hasPaymentAmount;
+            }
+
 
 
         default:
@@ -171,29 +178,32 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
       const bookingStatus = mode === "advance" ? "Confirmed" : "Checked-In";
       const payload = {
         personal_info: {
-              ...formData.guestInfo,
-              identity: [formData.guestInfo.idType, formData.guestInfo.idNumber]
-                .filter(Boolean)
-                .join("-"),
-            },
+          ...formData.guestInfo,
+          identity: [formData.guestInfo.idType, formData.guestInfo.idNumber]
+            .filter(Boolean)
+            .join("-"),
+        },
         stay_info: {
-            ...formData.stayInfo,
-            checkInDateTime: formData.stayInfo.checkIn,
-            probableCheckOutDateTime: formData.stayInfo.checkOut,
-            durationOfStay: formData.stayInfo.duration
-          },
+          ...formData.stayInfo,
+          checkInDateTime: formData.stayInfo.checkIn,
+          probableCheckOutDateTime: formData.stayInfo.checkOut,
+          durationOfStay: formData.stayInfo.duration,
+        },
         rooms: formData.rooms.map((room, index) => ({
           ...room,
-          finalPricePerNight: formData.payment.roomAgreedPrices?.[index]?.agreedPrice || null
+          finalPricePerNight:
+            formData.payment?.pricing_info?.roomAgreedPrices?.[index]?.agreedPrice ||
+            null,
         })),
-        payment_info: {
-          ...formData.payment,
-          paymentDate: formData.payment.paymentDate,
-          paymentMode: formData.payment.paymentMode,
-          extraPersonCharges: formData.payment.extraPersonCharges
-        },
-        bookingStatus: bookingStatus
+
+        // ✅ Split pricing_info vs payment_info
+        pricing_info: formData.payment?.pricing_info || {},
+
+        payment_info: formData.payment?.payment_info || [],
+
+        bookingStatus: bookingStatus,
       };
+
       try {
         const res = await createBooking(payload);
         if (res?.success) {

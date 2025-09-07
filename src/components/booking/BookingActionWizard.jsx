@@ -63,11 +63,14 @@ const getStatusRules = (status) => {
 
 
 const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }) => {
-    console.log(bookingDetails)
+
   const [formData, setFormData] = useState(defaultFormData);
   const [currentStep, setCurrentStep] = useState(0);
   const [loadingMap, setLoadingMap] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+
+  const [availableRooms, setAvailableRooms] = useState([]);
 
   // These start true (locked). Review step will request unlock for specific section.
   const [disableGuestEditing, setDisableGuestEditing] = useState(true);
@@ -78,6 +81,12 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showGSTInvoice, setShowGSTInvoice] = useState(false);
+  const isEditing =
+    !disableGuestEditing ||
+    !disableStayEditing ||
+    !disableRoomEditing ||
+    !disablePaymentEditing;
+
   useEffect(() => {
     if (!bookingDetails) return;
     setLoadingMap(true);
@@ -167,7 +176,6 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
     });
   };
 
-
   const rules = getStatusRules(formData.bookingStatus);
 
   const validateStep = () => {
@@ -218,7 +226,46 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
 
 
 
-  const handleNext = () => { if (!validateStep()) { toast.error("Please fill required fields"); return; } setCurrentStep((s) => Math.min(s + 1, steps.length - 1)); };
+//  const handleNext = () => { if (!validateStep()) { toast.error("Please fill required fields"); return; } setCurrentStep((s) => Math.min(s + 1, steps.length - 1)); };
+  const handleNext = async () => {
+      console.log(steps[currentStep])
+      console.log(disableStayEditing)
+    if (!validateStep()) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
+    if (steps[currentStep] === "Stay Info" && !disableStayEditing) {
+        console.log("HERE")
+      const { checkIn, checkOut } = formData.stayInfo;
+
+      if (!checkIn || !checkOut) {
+        toast.error("Please select both check-in and check-out dates");
+        return;
+      }
+
+      try {
+
+        console.log("-------")
+const res = await fetchAvailableRooms(
+  1, // durationOfStay
+  new Date(checkIn).toISOString(),
+  new Date(checkOut).toISOString(),
+);
+
+
+          setAvailableRooms(res || []);
+          setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+      } catch (err) {
+        console.error(err);
+        toast.error("Error fetching available rooms");
+      }
+    } else {
+      // proceed normally if not stayInfo or not in edit mode
+      setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+    }
+  };
+
   const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   // Room helpers (editable only when allowed)
@@ -228,7 +275,32 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
     updateFormData("rooms", [...formData.rooms, newRoom]);
   };
   const handleRemoveRoom = (idx) => { if (!rules.canEditRooms) return; updateFormData("rooms", formData.rooms.filter((_, i) => i !== idx)); };
-  const handleUpdateRoom = (idx, partial) => { if (!rules.canEditRooms) return; const copy = [...formData.rooms]; copy[idx] = { ...copy[idx], ...partial }; updateFormData("rooms", copy); };
+  //const handleUpdateRoom = (idx, partial) => { if (!rules.canEditRooms) return; const copy = [...formData.rooms]; copy[idx] = { ...copy[idx], ...partial }; updateFormData("rooms", copy); };
+const handleUpdateRoom = (idx, partial) => {
+  if (!rules.canEditRooms) return;
+  const copy = [...formData.rooms];
+
+  if (partial.roomNumber) {
+    const selected = availableRooms.find(r => r.room_number === partial.roomNumber);
+    if (!selected) {
+      toast.error(`Room ${partial.roomNumber} is not available for these dates`);
+      return;
+    }
+    copy[idx] = {
+      ...copy[idx],
+      roomNumber: selected.room_number,
+      roomType: selected.room_type,
+      isAcRoom: selected.is_ac,
+      pricePerNight: selected.room_price,
+      agreedPrice: selected.room_price,
+      ...partial
+    };
+  } else {
+    copy[idx] = { ...copy[idx], ...partial };
+  }
+
+  updateFormData("rooms", copy);
+};
 
   // Payment helpers (editable only when allowed)
   const handleAddPayment = () => { if (!rules.canEditPayment) return; updateFormData("payments", [...formData.payments, { amount: 0, date: new Date().toISOString(), mode: "", notes: "", status: "" }]); };
@@ -248,11 +320,23 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
                         .filter(Boolean)
                         .join("-"),
                     },
-        stay_info: { 
-		checkInDateTime: formatStayDateForApi(formData.stayInfo.checkIn),
-        probableCheckOutDateTime: formatStayDateForApi(formData.stayInfo.checkOut),
-		durationOfStay: formData.stayInfo.duration, bookingMode: formData.stayInfo.bookingMode },
+        stay_info: {
+            checkInDateTime: formatStayDateForApi(formData.stayInfo.checkIn),
+            probableCheckOutDateTime: formatStayDateForApi(formData.stayInfo.checkOut),
+            durationOfStay: formData.stayInfo.duration, bookingMode: formData.stayInfo.bookingMode },
         rooms: formData.rooms.map((r) => ({ room_id: r.roomId, room_number: r.roomNumber, room_type: r.roomType, is_ac: r.isAcRoom, extra_persons: r.extraPersons, occupancy: r.occupancy, final_price_per_night: r.agreedPrice ?? r.pricePerNight })),
+        pricing_info: {
+            roomAgreedPrices: formData.rooms.map((r) => ({
+              roomId: r.roomId,
+              agreedPrice: r.agreedPrice ?? r.pricePerNight ?? 0,
+              extraCharges: r.extraCharges ?? 0,
+            })),
+            totalPrice: formData.rooms.reduce(
+              (sum, r) => sum + (Number(r.agreedPrice ?? r.pricePerNight ?? 0) * (formData.stayInfo?.duration || 1)),
+              0
+            ),
+            gstRate: 12,
+          },
         payment_info: formData.payments.map((p) => ({
           amount: p.amount,
           date: p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ always "YYYY-MM-DD"
@@ -270,9 +354,12 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
 
   // Review requests: Review step will call onRequestEdit(section) to enable and jump
   const handleRequestEdit = (section) => {
-    // section: 'guestInfo' | 'stayInfo' | 'rooms' | 'payments'
     if (section === "guestInfo") setDisableGuestEditing(false);
-    if (section === "stayInfo") setDisableStayEditing(false);
+    if (section === "stayInfo") {
+      setDisableStayEditing(false);
+      setDisableRoomEditing(false);
+      setDisablePaymentEditing(false);
+    }
     if (section === "rooms") setDisableRoomEditing(false);
     if (section === "payments") setDisablePaymentEditing(false);
     // jump to that step
@@ -292,7 +379,18 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
                 bookingStatus={bookingDetails?.booking_status || ""}
               />
       case 2:
-        return <ManageStepRooms rooms={formData.rooms} onRoomChange={(r) => updateFormData("rooms", r)} disableRoomEditing={disableRoomEditing} onAddRoom={handleAddRoom} onRemoveRoom={handleRemoveRoom} onUpdateRoom={handleUpdateRoom} />;
+        return (
+          <ManageStepRooms
+            rooms={formData.rooms}
+            availableRooms={availableRooms}   // 👈 new
+            onRoomChange={(r) => updateFormData("rooms", r)}
+            disableRoomEditing={disableRoomEditing}
+            onAddRoom={handleAddRoom}
+            onRemoveRoom={handleRemoveRoom}
+            onUpdateRoom={handleUpdateRoom}
+          />
+        );
+
       case 3:
         return <ManageStepPayment paymentInfo={formData.payments} onChange={(p) => updateFormData("payments", p)} rooms={formData.rooms} stayInfo={formData.stayInfo} disablePaymentEditing={disablePaymentEditing} onAddPayment={handleAddPayment} onRemovePayment={handleRemovePayment} onPaymentChange={handlePaymentChange} />;
       case 4:
@@ -319,9 +417,9 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
              </Button>
            }
 
-        {actions.includes("update") && <Button variant="primary" onClick={handleUpdateBooking} disabled={submitting}>Update Booking</Button>}
-        {actions.includes("checkin") && (<Button variant="primary" onClick={() => {setShowCheckInModal(true);}} disabled={submitting} >Check In Booking</Button> )}
-        {actions.includes("cancel") && (<Button variant="danger" onClick={() => {setShowCancelModal(true);}} disabled={submitting}>Cancel Booking</Button>)}
+        {actions.includes("update") && <Button variant="primary" onClick={handleUpdateBooking} disabled={submitting || !isEditing}>Update Booking</Button>}
+        {actions.includes("checkin") && (<Button variant="primary" onClick={() => {setShowCheckInModal(true);}} disabled={submitting || isEditing} >Check In Booking</Button> )}
+        {actions.includes("cancel") && (<Button variant="danger" onClick={() => {setShowCancelModal(true);}} disabled={submitting || isEditing}>Cancel Booking</Button>)}
         {actions.includes("checkout") && (<Button variant="danger" onClick={() => {setShowCheckoutModal(true);}} disabled={submitting}>Checkout Booking</Button> )}
         <Button variant="secondary" onClick={() => onDone && onDone()} disabled={submitting}>Close</Button>
       </div>

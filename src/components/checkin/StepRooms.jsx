@@ -40,6 +40,7 @@ const StepRooms = ({
         updatedRoom.roomId = matchedRoom.room_id;
         updatedRoom.price = matchedRoom.room_price;
         updatedRoom.extraBedPrice = matchedRoom.extra_bed_price;
+        updatedRoom.isAcRoom = matchedRoom.is_ac;
       }
     }
 

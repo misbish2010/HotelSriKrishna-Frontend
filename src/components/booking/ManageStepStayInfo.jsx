@@ -1,6 +1,9 @@
 // ManageStepStayInfo.jsx
 import React from "react";
 import { Form, Row, Col } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 
 const ManageStepStayInfo = ({
   stayInfo = {},
@@ -43,33 +46,37 @@ const ManageStepStayInfo = ({
 
   return (
     <>
-      <Form.Group>
-        <Form.Label>Check-In Date & Time</Form.Label>
-        <Form.Control
-          type="datetime-local"
-          value={
-            stayInfo.checkIn
-              ? new Date(stayInfo.checkIn).toISOString().slice(0, 16) // "YYYY-MM-DDTHH:mm"
-              : ""
-          }
-          onChange={(e) => handleCheckInChange(e.target.value)}
-          disabled={disableStayEditing || isCheckedIn}
-        />
+     <Form.Group as={Row} className="mb-3">
+        <Form.Label column sm={3}>Check-In</Form.Label>
+        <Col sm={9}>
+          <DatePicker
+            selected={stayInfo.checkIn ? new Date(stayInfo.checkIn) : null}
+            onChange={(date) => handleCheckInChange(date)}
+            showTimeSelect
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+            disabled={disableStayEditing || isCheckedIn}
+          />
+        </Col>
       </Form.Group>
 
-      <Form.Group>
-        <Form.Label>Check-Out Date & Time</Form.Label>
-        <Form.Control
-          type="datetime-local"
-          value={
-            stayInfo.checkOut
-              ? new Date(stayInfo.checkOut).toISOString().slice(0, 16)
-              : ""
-          }
-          onChange={(e) => handleCheckOutChange(e.target.value)}
-          disabled={disableStayEditing}
-        />
+      <Form.Group as={Row} className="mb-3">
+        <Form.Label column sm={3}>Check-Out</Form.Label>
+        <Col sm={9}>
+          <DatePicker
+            selected={stayInfo.checkOut ? new Date(stayInfo.checkOut) : null}
+            onChange={(date) => handleCheckOutChange(date)}
+            showTimeSelect
+            dateFormat="dd/MM/yyyy hh:mm a"
+            className="form-control"
+            placeholderText="Select date & time"
+            disabled={disableStayEditing || isCheckedIn}
+          />
+        </Col>
       </Form.Group>
+
+
 
 
       <Form.Group>

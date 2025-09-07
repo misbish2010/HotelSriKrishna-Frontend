@@ -10,7 +10,7 @@ const ManageStepReviewConfirm = ({
 }) => {
   const { guestInfo = {}, stayInfo = {}, rooms = [], payments = [] } = formData;
   const nights = stayInfo?.duration || 1;
-  console.log(stayInfo)
+
   // Determine editability based on booking status
   const status = (bookingStatus || "").toLowerCase();
   const isFinal =
@@ -112,8 +112,8 @@ const ManageStepReviewConfirm = ({
             <Button
               size="sm"
               variant="link"
-              //onClick={() => onRequestEdit("stayInfo")}
-              disabled
+              onClick={() => onRequestEdit("stayInfo")}
+              //disabled
             >
               Edit
             </Button>
