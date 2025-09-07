@@ -71,7 +71,7 @@ const ManageStepStayInfo = ({
             dateFormat="dd/MM/yyyy hh:mm a"
             className="form-control"
             placeholderText="Select date & time"
-            disabled={disableStayEditing || isCheckedIn}
+            disabled={disableStayEditing}
           />
         </Col>
       </Form.Group>
