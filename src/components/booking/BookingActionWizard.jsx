@@ -26,7 +26,7 @@ const steps = ["Guest Info", "Stay Info", "Rooms", "Payment", "Review"];
 
 const defaultFormData = {
   guestInfo: { name: "", phone: "", idType: "", idNumber: "", address: "", email: "" },
-  stayInfo: { checkIn: null, checkOut: null, duration: 1, adults: 2, children: 0, bookingMode: "" },
+  stayInfo: { checkIn: null, checkOut: null, duration: 1, bookingMode: "" },
   rooms: [],
   payments: [],
   bookingStatus: null,
@@ -228,15 +228,13 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
 
 //  const handleNext = () => { if (!validateStep()) { toast.error("Please fill required fields"); return; } setCurrentStep((s) => Math.min(s + 1, steps.length - 1)); };
   const handleNext = async () => {
-      console.log(steps[currentStep])
-      console.log(disableStayEditing)
+
     if (!validateStep()) {
       toast.error("Please fill required fields");
       return;
     }
 
     if (steps[currentStep] === "Stay Info" && !disableStayEditing) {
-        console.log("HERE")
       const { checkIn, checkOut } = formData.stayInfo;
 
       if (!checkIn || !checkOut) {
@@ -246,7 +244,6 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
 
       try {
 
-        console.log("-------")
 const res = await fetchAvailableRooms(
   1, // durationOfStay
   new Date(checkIn).toISOString(),
@@ -311,7 +308,6 @@ const handleUpdateRoom = (idx, partial) => {
   const handleUpdateBooking = async () => {
     setSubmitting(true);
     try {
-        console.log(formData)
       const payload = {
         bookingId: formData.bookingId,
         personal_info: {
@@ -342,7 +338,7 @@ const handleUpdateRoom = (idx, partial) => {
           date: p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ always "YYYY-MM-DD"
           mode: p.mode,
           notes: p.notes,
-          status: p.status
+          status: "paid"
         })),
       };
       const res = await updateBooking(payload);
@@ -513,6 +509,9 @@ const handleUpdateRoom = (idx, partial) => {
               occupancy: r.occupancy,
               final_price_per_night: r.agreedPrice ?? r.pricePerNight,
             })),
+          pricing_info: {
+            totalPrice: 0.0,
+          },
             payment_info: updatedPayments,
             bookingStatus: "Cancelled"
           };
@@ -536,8 +535,7 @@ const handleUpdateRoom = (idx, partial) => {
       show={showCheckoutModal}
       onHide={() => setShowCheckoutModal(false)}
       formData={formData}
-      onConfirm={async (extraRefund, extraPayment, extraDiscount, paymentMode, notes, checkoutDate, duration) => {
-          console.log(checkoutDate)
+      onConfirm={async (totalPayable, extraRefund, extraPayment, extraDiscount, paymentMode, notes, checkoutDate, duration) => {
         setShowCheckoutModal(false);
 
         // ✅ normalize existing payments
@@ -598,6 +596,9 @@ const handleUpdateRoom = (idx, partial) => {
               final_price_per_night: r.agreedPrice ?? r.pricePerNight,
             })),
             payment_info: updatedPayments,
+          pricing_info: {
+            totalPrice: totalPayable,
+          },
             bookingStatus: "Checked-Out"
           };
 
@@ -666,7 +667,6 @@ const handleUpdateRoom = (idx, partial) => {
           console.log("📤 Sending payload:", payload);
 
           const res = await updateBooking(payload);
-          console.log(res)
           if (!res?.success) {
             toast.error(res?.message || "Failed to checkin");
             return;

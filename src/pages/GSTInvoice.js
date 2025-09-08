@@ -20,13 +20,18 @@ const HOTEL = {
 
 const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-const formatDT = (d) => (d ? new Date(d).toLocaleDateString("en-IN") : "-");
+const formatDT = (d) =>
+  d
+    ? new Date(d).toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "-";
 const rupee = (n) => `₹${(n || 0).toLocaleString("en-IN")}`;
 const ddmmyyyy = (d) =>
   d ? new Date(d).toLocaleDateString("en-GB") : "-";
 
 export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = "single" }) {
-  console.log(bookingDetails)
   const [booking, setBooking] = useState(bookingDetails || null);
   const [gstForm, setGstForm] = useState({
     gst_bill_no: "",
@@ -90,9 +95,13 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
     const grand = subTotal + tax;
 
 
-    const paid = (booking.payment_info || [])
-       .filter((p) => p.status === 'paid')
-       .reduce((sum, p) => sum + (p.amount || 0), 0);
+//    const paid = (booking.payment_info || [])
+//       .filter((p) => p.status === 'paid')
+//       .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+const paid = (booking.payment_info || [])
+  .filter((p) => ["paid", "completed"].includes((p.status || "").toLowerCase()))
+  .reduce((sum, p) => sum + (p.amount || 0), 0);
 
     const net_price = paid / (1 + HOTEL.taxRatePct / 100); // base before GST
     const gst_price = paid - net_price
@@ -103,27 +112,27 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
     return { roomRows, subTotal, tax, grand, paid, balance, gst_price, net_price  };
   })();
 
+const handleSaveGST = async () => {
+  try {
+    const data = await fetchGSTInvoice(bookingId);
 
-  const handleSaveGST = async () => {
-    try {
-        const data = await fetchGSTInvoice(bookingId);
-        const { gst_bill_no, gst_bill_date } = data;
+    const { gst_bill_no, gst_bill_date } = data;
 
-        // 3. Update gstForm state with invoice info
-        setGstForm((s) => ({
-          ...s,
-          gst_bill_no: gst_bill_no,
-          gst_bill_date: gst_bill_date,
-        }));
+    // Build updated object directly
+    const updatedGST = {
+      ...gstForm,
+      gst_bill_no,
+      gst_bill_date,
+    };
 
-      await updateGSTInfo(bookingId, gstForm);
-      alert("GST details updated!");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to update GST info");
-    }
-  };
-
+    setGstForm(updatedGST); // update state for UI
+    await updateGSTInfo(bookingId, updatedGST); // send correct payload
+    alert("GST details updated!");
+  } catch (e) {
+    console.error(e);
+    alert("Failed to update GST info");
+  }
+};
   return (
     <Card className="invoice-card print-friendly">
       <Card.Header className="invoice-header d-flex justify-content-between align-items-center">
@@ -272,10 +281,12 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
           <Col md={5}>
             <div className="totals-box p-3 border rounded">
               <div className="d-flex justify-content-between">
-                <span>Sub Total</span> <span>{rupee(calc.net_price)}</span>
+                <span>Sub Total</span>
+                <span>{rupee(calc.net_price.toFixed(2))}</span>
               </div>
               <div className="d-flex justify-content-between">
-                <span>Tax ({HOTEL.taxRatePct}%)</span> <span>{rupee(calc.gst_price)}</span>
+                <span>Tax ({HOTEL.taxRatePct}%)</span>
+                <span>{rupee(calc.gst_price.toFixed(2))}</span>
               </div>
               <div className="d-flex justify-content-between fw-bold border-top pt-2">
                 <span>Total</span> <span>{rupee(calc.paid)}</span>

@@ -41,13 +41,13 @@ const BookingDashboard = ({ onViewBooking }) => {
   const fetchRoomData = async () => {
     try {
       const data = await fetchBookingDashboard(selectedFromDate, selectedToDate);
-      console.log(data)
       // Directly use backend bookings
       const transformedBookings = (data.bookings || []).map((b) => {
 
         const paidAmount = (b.payment_info || [])
-          .filter((p) => p.status === 'completed')
+          .filter((p) => ["completed", "paid", "refund"].includes((p.status || "").toLowerCase()))
           .reduce((sum, p) => sum + (p.amount || 0), 0);
+
         const totalPrice = b.total_price || 0;
 
         return {

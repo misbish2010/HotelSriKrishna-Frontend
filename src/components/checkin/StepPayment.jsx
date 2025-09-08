@@ -83,7 +83,7 @@ const buildPaymentPayload = () => ({
             date: paymentDate,
             mode: paymentMode,
             notes: "",
-            status: "completed"
+            status: "paid"
           }
         ]
       : []

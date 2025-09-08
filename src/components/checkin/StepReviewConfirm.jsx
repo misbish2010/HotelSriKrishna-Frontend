@@ -1,157 +1,137 @@
 import React from "react";
-import { Card, Row, Col, ListGroup } from "react-bootstrap";
+import { Row, Col, Card, Table } from "react-bootstrap";
 import { format } from "date-fns";
 
 const StepReviewConfirm = ({ formData }) => {
-  const { guestInfo, stayInfo, rooms, payment } = formData;
-  const nights = stayInfo?.duration || 1;
-  const gstRate = 12;
-
-  // Compute per-room totals from agreed prices in payment step
-  const roomDetails = rooms.map((room) => {
-    const base = Number(room.pricePerNight || room.price || 0);
-    const extra = Number(room.extraCharges != null
-      ? room.extraCharges
-      : (room.extraPersons || 0) * (room.extraBedPrice || 300)
-    );
-    const gstAmount = ((base + extra) * gstRate) / 100;
-    const totalWithGst = base + extra + gstAmount;
-
-    const agreed = Number(
-      room.agreedPrice != null
-        ? room.agreedPrice
-        : payment?.roomAgreedPrices?.find(r => r.roomId === room.roomId)?.agreedPrice
-    ) || totalWithGst;
-
-    return {
-      ...room,
-      base,
-      extra,
-      gstAmount,
-      totalWithGst,
-      agreed,
-      totalForStay: agreed * nights
-    };
-  });
-
-  const totalPayable = roomDetails.reduce((sum, r) => sum + r.totalForStay, 0);
-
-  // For "Final Price/Night" display
-  const uniqueAgreedPrices = Array.from(new Set(roomDetails.map(r => r.agreed)));
-  const finalPricePerNightDisplay =
-    uniqueAgreedPrices.length === 1
-      ? `₹${uniqueAgreedPrices[0]}`
-      : "varies (see above)";
+  const guest = formData.guestInfo || {};
+  const stay = formData.stayInfo || {};
+  const rooms = formData.rooms || [];
+  const payment = formData.payment || {};
 
   return (
-    <>
-      <h5 className="mb-3">Review and Confirm</h5>
+    <div>
+      <h4>Review & Confirm</h4>
 
+      {/* Guest Info */}
       <Card className="mb-3">
         <Card.Header>Guest Information</Card.Header>
         <Card.Body>
           <Row>
-            <Col sm={4}><strong>Name:</strong></Col>
-            <Col sm={8}>{guestInfo.name}</Col>
+            <Col sm={6}><strong>Name:</strong> {guest.name}</Col>
+            <Col sm={6}><strong>ID:</strong> {guest.idType} - {guest.idNumber}</Col>
           </Row>
           <Row>
-            <Col sm={4}><strong>Phone:</strong></Col>
-            <Col sm={8}>{guestInfo.phone}</Col>
+            <Col sm={6}><strong>Phone:</strong> {guest.phone}</Col>
+            <Col sm={6}><strong>Address:</strong> {guest.address}</Col>
           </Row>
           <Row>
-            <Col sm={4}><strong>ID:</strong></Col>
-            <Col sm={8}>{guestInfo.idType} - {guestInfo.idNumber}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Email:</strong></Col>
-            <Col sm={8}>{guestInfo.email}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Address:</strong></Col>
-            <Col sm={8}>{guestInfo.address}</Col>
+            <Col sm={6}><strong>Email:</strong> {guest.email}</Col>
           </Row>
         </Card.Body>
       </Card>
 
+      {/* Stay Info */}
       <Card className="mb-3">
         <Card.Header>Stay Information</Card.Header>
         <Card.Body>
           <Row>
-            <Col sm={4}><strong>Check-In:</strong></Col>
-            <Col sm={8}>
-              {stayInfo.checkIn
-                ? format(new Date(stayInfo.checkIn), "dd MMM yyyy hh:mm a")
-                : "N/A"}
+            <Col sm={6}>
+              <strong>Check-In:</strong>{" "}
+              {stay.checkIn ? format(new Date(stay.checkIn), "dd MMM yyyy hh:mm a") : "N/A"}
+            </Col>
+            <Col sm={6}>
+              <strong>Check-Out:</strong>{" "}
+              {stay.checkOut ? format(new Date(stay.checkOut), "dd MMM yyyy hh:mm a") : "N/A"}
             </Col>
           </Row>
           <Row>
-            <Col sm={4}><strong>Check-Out:</strong></Col>
-            <Col sm={8}>
-              {stayInfo.checkOut
-                ? format(new Date(stayInfo.checkOut), "dd MMM yyyy hh:mm a")
-                : ""}
-            </Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Adults:</strong></Col>
-            <Col sm={8}>{stayInfo.adults}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Children:</strong></Col>
-            <Col sm={8}>{stayInfo.children}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Booking Mode:</strong></Col>
-            <Col sm={8}>{stayInfo.bookingMode}</Col>
+            <Col sm={6}><strong>Duration:</strong> {stay.duration} nights</Col>
+            <Col sm={6}><strong>Mode:</strong> {stay.bookingMode}</Col>
           </Row>
         </Card.Body>
       </Card>
 
-      <Card className="mb-3">
-        <Card.Header>Room Details</Card.Header>
-        <ListGroup variant="flush">
-          {roomDetails.map((room, index) => (
-            <ListGroup.Item key={index}>
-              <strong>Room-{index + 1}</strong>: {room.roomNumber} | {room.roomType} | {room.occupancy} | {room.isAcRoom === "true" || room.isAcRoom === true ? "AC" : "Non-AC"}
-              <br />
-              Base: ₹{room.base} | Extra: ₹{room.extra} | GST: ₹{room.gstAmount.toFixed(2)} | Total/Night: ₹{room.totalWithGst.toFixed(2)} | Agreed/Night: ₹{room.agreed}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </Card>
+    {/* Rooms */}
+    <Card className="mb-3">
+      <Card.Header>Rooms</Card.Header>
+      <Card.Body>
+        <Table bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>Room #</th>
+              <th>Type</th>
+              <th>AC/Non-AC</th>
+              <th>Occupancy</th>
+              <th>Extra Persons</th>
+              <th>Agreed Price/Night</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rooms.map((room, idx) => {
+              const agreed = payment?.pricing_info?.roomAgreedPrices?.find(
+                (r) => r.roomId === room.roomId || r.roomId === room.id
+              );
+              return (
+                <tr key={idx}>
+                  <td>{room.roomNumber}</td>
+                  <td>{room.roomType}</td>
+                  <td>{room.isAcRoom === "true" ? "AC" : "Non-AC"}</td>
+                  <td>{room.occupancy}</td>
+                  <td>{room.extraPersons}</td>
+                  <td>
+                    ₹{agreed ? Number(agreed.agreedPrice).toFixed(2) : "0.00"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
 
+        <Row>
+          <Col className="text-end">
+            <strong>
+              Total (incl. GST): ₹
+              {payment?.pricing_info?.totalPrice?.toFixed(2) || "0.00"}
+            </strong>
+          </Col>
+        </Row>
+      </Card.Body>
+    </Card>
+
+
+      {/* Payment Info */}
       <Card className="mb-3">
-        <Card.Header>Payment Summary</Card.Header>
+        <Card.Header>Payments</Card.Header>
         <Card.Body>
-          <Row>
-            <Col sm={4}><strong>Final Price/Night:</strong></Col>
-            <Col sm={8}>{finalPricePerNightDisplay}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Paid Amount:</strong></Col>
-            <Col sm={8}>₹{payment.paymentAmount}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Payment Mode:</strong></Col>
-            <Col sm={8}>{payment.paymentMode}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}><strong>Payment Date:</strong></Col>
-            <Col sm={8}>
-              {payment.paymentDate
-                ? format(new Date(payment.paymentDate), "dd MMM yyyy hh:mm a")
-                : ""}
-            </Col>
-          </Row>
-          <Row className="mt-3">
-            <Col sm={4}><strong>Total Payable:</strong></Col>
-            <Col sm={8}>
-              <span className="text-success fw-bold">₹{totalPayable.toFixed(2)}</span>
-            </Col>
-          </Row>
+          <Table bordered hover size="sm">
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Mode</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payment?.payment_info?.length > 0 ? (
+                payment.payment_info.map((p, idx) => (
+                  <tr key={idx}>
+                    <td>₹{p.amount}</td>
+                    <td>{p.date}</td>
+                    <td>{p.mode}</td>
+                    <td>{p.status}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="text-center">No payment recorded</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
         </Card.Body>
       </Card>
-    </>
+    </div>
   );
 };
 

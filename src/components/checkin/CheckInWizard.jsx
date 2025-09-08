@@ -26,8 +26,6 @@ const defaultFormData = {
     checkIn: null,
     checkOut: null,
     duration: 1,
-    adults: 2,
-    children: 0,
     bookingMode: "WALKIN"
   },
   rooms: [],

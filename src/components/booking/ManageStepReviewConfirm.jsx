@@ -69,39 +69,19 @@ const ManageStepReviewConfirm = ({
           )}
         </Card.Header>
         <Card.Body>
-          <Row>
-            <Col sm={4}>
-              <strong>Name:</strong>
-            </Col>
-            <Col sm={8}>{guestInfo.name}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
-              <strong>Phone:</strong>
-            </Col>
-            <Col sm={8}>{guestInfo.phone}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
-              <strong>ID:</strong>
-            </Col>
-            <Col sm={8}>
-              {guestInfo.idType} - {guestInfo.idNumber}
-            </Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
-              <strong>Email:</strong>
-            </Col>
-            <Col sm={8}>{guestInfo.email}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
-              <strong>Address:</strong>
-            </Col>
-            <Col sm={8}>{guestInfo.address}</Col>
-          </Row>
-        </Card.Body>
+                  <Row>
+                    <Col sm={6}><strong>Name:</strong> {guestInfo.name}</Col>
+                    <Col sm={6}><strong>ID:</strong> {guestInfo.idType} - {guestInfo.idNumber}</Col>
+                  </Row>
+                  <Row>
+                    <Col sm={6}><strong>Phone:</strong> {guestInfo.phone}</Col>
+                    <Col sm={6}><strong>Address:</strong> {guestInfo.address}</Col>
+                  </Row>
+                  <Row>
+                    <Col sm={6}><strong>Email:</strong> {guestInfo.email}</Col>
+                  </Row>
+                </Card.Body>
+
       </Card>
 
       {/* Stay Info */}
@@ -142,18 +122,6 @@ const ManageStepReviewConfirm = ({
           </Row>
           <Row>
             <Col sm={4}>
-              <strong>Adults:</strong>
-            </Col>
-            <Col sm={8}>{stayInfo.adults}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
-              <strong>Children:</strong>
-            </Col>
-            <Col sm={8}>{stayInfo.children}</Col>
-          </Row>
-          <Row>
-            <Col sm={4}>
               <strong>Booking Mode:</strong>
             </Col>
             <Col sm={8}>{stayInfo.bookingMode}</Col>
@@ -169,26 +137,44 @@ const ManageStepReviewConfirm = ({
             <Button
               size="sm"
               variant="link"
-              //onClick={() => onRequestEdit("rooms")}
               disabled
             >
               Edit
             </Button>
           )}
         </Card.Header>
-        <ListGroup variant="flush">
-          {roomDetails.map((room, idx) => (
-            <ListGroup.Item key={idx}>
-              <strong>Room-{idx + 1}</strong>: {room.roomNumber} |{" "}
-              {room.roomType} | {room.occupancy} |{" "}
-              {room.isAcRoom ? "AC" : "Non-AC"}
-              <br />
-              Base: ₹{room.base} | Extra: ₹{room.extra} | Agreed/Night: ₹
-              {room.agreed} | Total for stay: ₹
-              {room.totalForStay.toFixed(2)}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
+        <Card.Body>
+          <div className="table-responsive">
+            <table className="table table-bordered table-sm">
+              <thead className="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Room No.</th>
+                  <th>Type</th>
+                  <th>Occupancy</th>
+                  <th>AC/Non-AC</th>
+                  <th>Extra Person</th>
+                  <th>Agreed/Night</th>
+                  <th>Total for Stay</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roomDetails.map((room, idx) => (
+                  <tr key={idx}>
+                    <td>{idx + 1}</td>
+                    <td>{room.roomNumber}</td>
+                    <td>{room.roomType}</td>
+                    <td>{room.occupancy}</td>
+                    <td>{room.isAcRoom ? "AC" : "Non-AC"}</td>
+                    <td>{room.extraPersons}</td>
+                    <td>₹{room.agreed}</td>
+                    <td>₹{room.totalForStay.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card.Body>
       </Card>
 
       {/* Payment Details */}
@@ -207,34 +193,32 @@ const ManageStepReviewConfirm = ({
         </Card.Header>
         <Card.Body>
           {payments.length > 0 ? (
-            payments.map((p, idx) => (
-              <div key={idx} className="mb-2">
-                <Row>
-                  <Col sm={4}>
-                    <strong>Amount:</strong>
-                  </Col>
-                  <Col sm={8}>₹{p.amount}</Col>
-                </Row>
-                <Row>
-                  <Col sm={4}>
-                    <strong>Date:</strong>
-                  </Col>
-                  <Col sm={8}>
-                    {p.date ? format(new Date(p.date), "dd MMM yyyy") : ""}
-                  </Col>
-                </Row>
-                <Row>
-                  <Col sm={4}>
-                    <strong>Mode:</strong>
-                  </Col>
-                  <Col sm={8}>{p.mode}</Col>
-                </Row>
-                <hr />
-              </div>
-            ))
+            <div className="table-responsive">
+              <table className="table table-bordered table-sm">
+                <thead className="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Mode</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((p, idx) => (
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+                      <td>₹{p.amount}</td>
+                      <td>{p.date ? format(new Date(p.date), "dd MMM yyyy") : ""}</td>
+                      <td>{p.mode}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p>No payments recorded</p>
           )}
+
           <Row className="mt-3">
             <Col sm={4}>
               <strong>Total Payable:</strong>
@@ -247,6 +231,9 @@ const ManageStepReviewConfirm = ({
           </Row>
         </Card.Body>
       </Card>
+
+
+
     </div>
   );
 };

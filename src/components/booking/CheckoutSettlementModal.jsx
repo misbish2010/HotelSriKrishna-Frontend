@@ -55,7 +55,7 @@ const CheckoutSettlementModal = ({ show, onHide, formData, onConfirm }) => {
       return;
     }
     // ✅ pass checkoutDate and duration back
-    onConfirm(extraRefund, extraPayment, extraDiscount, paymentMode, notes, checkoutDateTime, duration);
+    onConfirm(totalPayable, extraRefund, extraPayment, extraDiscount, paymentMode, notes, checkoutDateTime, duration);
   };
 
   return (
