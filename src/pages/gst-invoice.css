@@ -38,11 +38,11 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 40px;
+  margin-top: 0px;
 }
 
 .signature-box {
-  width: 40%;
+  width: 30%;
   text-align: center;
 }
 
@@ -53,10 +53,10 @@
 }
 
 .stamp {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
   background: transparent; /* ensure stamp bg blends */
 }
 
@@ -74,6 +74,8 @@
   justify-content: space-between;
   width: 100%;
   gap: 20px;
+   margin-left: 10px;   /* ✅ shifts Billing/Stay boxes right */
+    margin-right: 10px;  /* keeps balance */
 }
 
 .info-box {
@@ -86,7 +88,7 @@
 .invoice-card table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 0px;
 }
 
 .invoice-card table th,
@@ -105,18 +107,18 @@
 .totals-box {
   background: #fdfdfd;
   font-size: 15px;
-  margin-top: 10px;
+  margin-top: 0px;
 }
 
 .totals-box div {
-  margin: 4px 0;
+  margin: 0px 0;
   display: flex;
   justify-content: space-between;
 }
 
 /* Signature Section */
 .invoice-card .signature {
-  margin-top: 30px;
+  margin-top: 0px;
   font-size: 14px;
 }
 
@@ -131,40 +133,66 @@
   mix-blend-mode: multiply;
 }
 /* Print Optimisation */
+@page {
+  size: A4;
+  margin: 15mm 12mm 15mm 12mm; /* top right bottom left */
+}
+
 @media print {
+
+  html, body {
+      overflow: visible !important;
+      height: auto !important;
+    }
+
+
   body * {
     visibility: hidden;
   }
+
   .print-friendly,
   .print-friendly * {
     visibility: visible;
   }
-  .print-friendly {
-      position: relative; /* don't use absolute for print */
-      top: auto;
-      left: auto;
-      width: 100%;
-      margin-top: 10mm; /* ensure top border is not cut */
-      border: 1px solid #000;
-      border-top: 2px solid #000; /* stronger top border */
-      padding: 10px; /* keeps content inside nicely */
-      box-sizing: border-box;
+    .print-friendly {
+      overflow: visible !important;
+      height: auto !important;
+      max-height: none !important;
     }
+
+
+  .invoice-table,
+  .totals-box {
+    page-break-inside: avoid;
+  }
 
   button {
     display: none !important;
   }
+      .invoice-card {
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+          border: 1px solid #000;
+          box-sizing: border-box;
+          padding: 10mm;
+        }
 
-  /* ✅ Keep Billing To & Stay Details side by side */
-.info-row {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 20px !important;
-  }
-  .info-box {
-    flex: 1 1 50% !important;
-    max-width: 50% !important;
-    page-break-inside: avoid;
-  }
 
+    /* ✅ Keep Billing To & Stay Details side by side */
+  .info-row {
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+    }
+
+    .info-box {
+      flex: 1 1 50% !important;
+      max-width: 50% !important;
+      page-break-inside: avoid;
+    }
+
+}
+.modal-content {
+  overflow: visible !important;
 }

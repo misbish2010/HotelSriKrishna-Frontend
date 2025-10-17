@@ -7,7 +7,7 @@ import "./gst-invoice.css";
 
 const HOTEL = {
   name: "Hotel Sri Krishna",
-  address1: "Amli Kutir Road, Koraput",
+  address1: "Amla Kutir Road, Koraput",
   address2: "Land Mark: Behind Bus Stand",
   cityLine: "Odisha, 764020",
   email: "hotelsrikrishnakoraput@gmail.com",
@@ -67,6 +67,7 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
   const guest = booking.customer_info || {};
   const stay = booking.stay_info || {};
   const status = booking.booking_status || "";
+  console.log(booking)
 
   // booking.payments = array of { amount, status, mode }
 
@@ -79,7 +80,7 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
 
       return {
         key: idx,
-        label: `${r.room_number} – ${r.room_type}`,
+        label: `${r.room_number} – ${r.is_ac ? "AC " : ""}${r.occupancy} ${r.room_type}`,
         checkIn: stay.check_in_date,
         checkOut: stay.check_out_date || stay.probable_check_out_date,
         nights,
@@ -147,11 +148,6 @@ const handleSaveGST = async () => {
             </small>
             <div>
                 <small>
-                   {HOTEL.address2}
-               </small>
-            </div>
-            <div>
-                <small>
                    {HOTEL.email}
                </small>
             </div>
@@ -175,19 +171,19 @@ const handleSaveGST = async () => {
       <Card.Body>
         {/* Guest & Stay Info */}
         <div className="info-row">
-            <Row className="mb-3 w-100">
+            <Row className="mb-2 w-100">
               <Col md={6} className="p-2 border rounded info-box">
                 <h6 className="fw-bold">Billing To:</h6>
                 <div>Name: {guest.name || "-"}</div>
                 <div>Address: {guest.address || "-"}</div>
                 <div>Phone: {guest.phone || "-"}</div>
-                <div>Aadhar: {guest.identity || "-"}</div>
+                {/*<div>Aadhar: {guest.identity || "-"}</div>*/}
                 {/* Print-only fields */}
                 {gstForm.guest_company_name && (
-                  <div>Company: {gstForm.guest_company_name}</div>
+                  <div>Company Name: {gstForm.guest_company_name}</div>
                 )}
                 {gstForm.guest_gst_no && (
-                  <div>GSTIN: {gstForm.guest_gst_no}</div>
+                  <div>Guest GSTIN: {gstForm.guest_gst_no}</div>
                 )}
 
 
@@ -254,8 +250,6 @@ const handleSaveGST = async () => {
             <tr>
               <th>Room No.</th>
               <th>Room Type</th>
-              <th>Check in</th>
-              <th>Check out</th>
               <th>Days</th>
               <th>Rate</th>
               <th>Amount</th>
@@ -266,8 +260,6 @@ const handleSaveGST = async () => {
               <tr key={r.key}>
                 <td>{r.label.split(" – ")[0]}</td>
                 <td>{r.label.split(" – ")[1]}</td>
-                <td>{formatDT(r.checkIn)}</td>
-                <td>{formatDT(r.checkOut)}</td>
                 <td>{r.nights}</td>
                 <td>{rupee(r.pricePerDay)}</td>
                 <td>{rupee(r.amount)}</td>
@@ -331,8 +323,8 @@ const handleSaveGST = async () => {
           </div>
         </div>
 
-        <div className="text-center mt-4 fw-bold">
-          THANK YOU FOR YOUR VISIT, PLEASE VISIT US AGAIN!
+        <div className="text-center mt-2 fw-bold">
+          THANK YOU !!! PLEASE VISIT US AGAIN!!!
         </div>
       </Card.Body>
     </Card>
