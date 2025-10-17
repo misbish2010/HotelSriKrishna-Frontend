@@ -10,7 +10,7 @@ import { Form, Row, Col, Table } from "react-bootstrap";
  * - Avoids feedback loop: only calls onChange when payload actually changes
  */
 
-const StepPayment = ({ paymentInfo = {}, onChange, gstRate = 12, rooms = [], stayInfo = {} }) => {
+const StepPayment = ({ paymentInfo = {}, onChange, gstRate = 5, rooms = [], stayInfo = {} }) => {
   const nights = stayInfo?.duration || 1;
 
   const [roomPrices, setRoomPrices] = useState([]);

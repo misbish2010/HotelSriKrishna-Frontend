@@ -47,7 +47,7 @@ useEffect(() => {
         updatedRoom.roomId = matchedRoom.room_id;
         updatedRoom.pricePerNight = matchedRoom.room_price;
         updatedRoom.extraBedPrice = matchedRoom.extra_bed_price;
-        updatedRoom.agreedPrice = (matchedRoom.room_price * 1.12).toFixed(2); // ✅ include GST
+        updatedRoom.agreedPrice = (matchedRoom.room_price * 1.05).toFixed(2); // ✅ include GST
         updatedRoom.isAcRoom = matchedRoom.is_ac ? "true" : "false";
         updatedRoom.roomType = matchedRoom.room_type;
         updatedRoom.occupancy = matchedRoom.occupancy;
@@ -208,7 +208,7 @@ useEffect(() => {
                   name="agreedPrice"
                   value={
                     room.agreedPrice ??
-                    ((room.pricePerNight ?? 0) * 1.12).toFixed(2)
+                    ((room.pricePerNight ?? 0) * 1.05).toFixed(2)
                   }
                   onChange={(e) => handleChange(e, index)}
                   disabled={disableRoomEditing}

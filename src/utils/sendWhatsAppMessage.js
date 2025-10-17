@@ -32,7 +32,7 @@ import { format } from "date-fns";
 
       console.log(total)
       // Payment details
-      const paid = payment.paymentAmount || 0;
+      const paid = payment.amount || 0;
       const balance = total - paid;
 
 

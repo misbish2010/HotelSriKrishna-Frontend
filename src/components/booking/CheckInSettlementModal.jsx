@@ -48,10 +48,7 @@ const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
   const balance = totalPayable - newPaid;
 
   const handleConfirm = () => {
-    if (balance !== 0) {
-      return;
-    }
-    // ✅ pass checkoutDate and duration back
+    // ✅ pass checkinDate and duration back
     onConfirm(extraPayment, paymentMode, checkInDateTime);
   };
 
@@ -112,9 +109,8 @@ const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
         <Button
           variant="success"
           onClick={handleConfirm}
-          disabled={balance !== 0}
         >
-          Confirm Checkout
+          Confirm CheckIn
         </Button>
       </Modal.Footer>
     </Modal>

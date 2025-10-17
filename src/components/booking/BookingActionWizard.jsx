@@ -331,7 +331,7 @@ const handleUpdateRoom = (idx, partial) => {
               (sum, r) => sum + (Number(r.agreedPrice ?? r.pricePerNight ?? 0) * (formData.stayInfo?.duration || 1)),
               0
             ),
-            gstRate: 12,
+            gstRate: 5,
           },
         payment_info: formData.payments.map((p) => ({
           amount: p.amount,

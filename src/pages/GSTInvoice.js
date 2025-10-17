@@ -14,7 +14,7 @@ const HOTEL = {
   phones: "Phone No.: 06852 357172",
   gstin: "GSTIN: 21AHSPM7680F1Z1",
   logo: process.env.PUBLIC_URL + "/static/images/logo.png",
-  taxRatePct: 12, // screenshot shows 12%
+  taxRatePct: 5, // screenshot shows 5%
 };
 
 
