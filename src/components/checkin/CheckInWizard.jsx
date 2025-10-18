@@ -207,7 +207,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
         if (res?.success) {
           toast.success("Booking successful! ✅");
           // Trigger WhatsApp
-          sendWhatsAppMessage(payload, res);
+          // sendWhatsAppMessage(payload, res);
           setFormData(defaultFormData);
 
           setCurrentStep(0);
