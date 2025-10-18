@@ -7,11 +7,12 @@ import { format } from "date-fns";
  * @param {object} bookingResponse - Response object from createBooking API.
  */
     export function sendWhatsAppMessage(payload, bookingResponse) {
+      console.log(bookingResponse)
       console.log(payload)
       const guest = payload.personal_info;
       const stay = payload.stay_info;
       const rooms = payload.rooms || [];
-      const payment = payload.payment_info || {};
+      const payment = payload.payment_info?.[0] || {};
 
       // Calculate totals
       const nights = stay.durationOfStay || 1;
@@ -19,16 +20,20 @@ import { format } from "date-fns";
       let total = 0;
 
       rooms.forEach((room) => {
-        const type = room.room_type || "Room";
+        const type = room.roomType || "Room";
         const occupancy = room.occupancy || "";
-        const ac = room.is_ac ? "AC" : "Non-AC";
-        const key = `${type} ${occupancy} ${ac}`.trim();
+        const ac = room.isAcRoom ? "AC" : "Non-AC";
+        const key =
+            type.toLowerCase() === occupancy.toLowerCase()
+              ? `${type} ${ac}`
+              : `${type} ${occupancy} ${ac}`.trim();
         roomSummaryMap[key] = (roomSummaryMap[key] || 0) + 1;
 
         // compute price (fallback if backend doesn't send)
         const pricePerNight = room.finalPricePerNight || 0;
         total += pricePerNight * nights;
       });
+      console.log(roomSummaryMap)
 
       console.log(total)
       // Payment details
@@ -42,7 +47,7 @@ import { format } from "date-fns";
         .join(", ");
 
       const intro =
-        payload.mode === "advance"
+        payload.bookingStatus === "Confirmed"
           ? `Your booking at Hotel Sri Krishna is confirmed!`
           : `You are successfully checked in at Hotel Sri Krishna!`;
 
