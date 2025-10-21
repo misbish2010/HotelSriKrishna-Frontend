@@ -253,7 +253,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
                 {
                   roomType: "",
                   occupancy: "",
-                  isAcRoom: "",
+                  isAcRoom: undefined,
                   roomNumber: "",
                   extraPersons: 0,
                   roomId: "",

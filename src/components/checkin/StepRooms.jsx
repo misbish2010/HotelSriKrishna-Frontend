@@ -22,11 +22,11 @@ const StepRooms = ({
     // Reset dependent fields
     if (name === "roomType") {
       updatedRoom.occupancy = "";
-      updatedRoom.isAcRoom = "";
+      updatedRoom.isAcRoom = undefined ;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "occupancy") {
-      updatedRoom.isAcRoom = "";
+      updatedRoom.isAcRoom = undefined ;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "isAcRoom") {
@@ -49,15 +49,16 @@ const StepRooms = ({
     onRoomChange(updatedRooms);
   };
 
+
   const filteredRoomOptions = (index) => {
     const { roomType, occupancy, isAcRoom } = rooms[index];
-    if (!roomType || !occupancy || isAcRoom === "") return [];
+    if (!roomType || !occupancy || isAcRoom === undefined) return [];
 
     return availableRooms.filter(
       (room) =>
         room.room_type === roomType &&
         room.occupancy === occupancy &&
-        room.is_ac === (isAcRoom === "true")
+        room.is_ac === isAcRoom
     );
   };
 
@@ -70,7 +71,7 @@ const StepRooms = ({
           <Card.Header>
             Room-{index + 1}:{" "}
             {room.roomNumber
-              ? `${room.occupancy} ${room.roomType} #${room.roomNumber} (${room.isAcRoom === "true" ? "AC" : "Non-AC"})`
+              ? `${room.occupancy} ${room.roomType} #${room.roomNumber} (${room.isAcRoom ? "AC" : "Non-AC"})`
               : "(No Room Selected)"}
           </Card.Header>
           <Card.Body>

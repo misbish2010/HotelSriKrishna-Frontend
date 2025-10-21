@@ -29,11 +29,11 @@ useEffect(() => {
     // Reset dependent fields when a parent changes
     if (name === "roomType") {
       updatedRoom.occupancy = "";
-      updatedRoom.isAcRoom = "";
+      updatedRoom.isAcRoom = undefined;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "occupancy") {
-      updatedRoom.isAcRoom = "";
+      updatedRoom.isAcRoom = undefined;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "isAcRoom") {
@@ -48,7 +48,7 @@ useEffect(() => {
         updatedRoom.pricePerNight = matchedRoom.room_price;
         updatedRoom.extraBedPrice = matchedRoom.extra_bed_price;
         updatedRoom.agreedPrice = (matchedRoom.room_price * 1.05).toFixed(2); // ✅ include GST
-        updatedRoom.isAcRoom = matchedRoom.is_ac ? "true" : "false";
+        updatedRoom.isAcRoom = matchedRoom.is_ac ? true : false;
         updatedRoom.roomType = matchedRoom.room_type;
         updatedRoom.occupancy = matchedRoom.occupancy;
       }
@@ -64,13 +64,13 @@ useEffect(() => {
 
   const filteredRoomOptions = (index) => {
     const { roomType, occupancy, isAcRoom } = rooms[index];
-    if (!roomType || !occupancy || isAcRoom === "") return [];
+    if (!roomType || !occupancy || isAcRoom === undefined) return [];
 
     return availableRooms.filter(
       (room) =>
         room.room_type === roomType &&
         room.occupancy === occupancy &&
-        room.is_ac === (isAcRoom === "true")
+        room.is_ac === isAcRoom
     );
   };
 
@@ -83,7 +83,7 @@ useEffect(() => {
                             <strong>Previous Selection</strong>
                             {previousRooms.map((room, idx) => (
                               <div key={idx} className="mb-1">
-                                Room {room.roomNumber} ({room.roomType}, {room.isAcRoom === "true" ? "AC" : "Non-AC"}) –
+                                Room {room.roomNumber} ({room.roomType}, {room.isAcRoom ? "AC" : "Non-AC"}) –
                                 ₹{Number(room.pricePerNight).toFixed(2)}
                               </div>
                             ))}
@@ -92,7 +92,7 @@ useEffect(() => {
                             <strong>New Selection</strong>
                             {rooms.map((room, idx) => (
                               <div key={idx} className="mb-1">
-                                Room {room.roomNumber} ({room.roomType}, {room.isAcRoom === "true" ? "AC" : "Non-AC"}) –
+                                Room {room.roomNumber} ({room.roomType}, {room.isAcRoom ? "AC" : "Non-AC"}) –
                                 ₹{Number(room.agreedPrice).toFixed(2)}
                               </div>
                             ))}

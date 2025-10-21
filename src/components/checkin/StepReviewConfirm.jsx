@@ -3,6 +3,7 @@ import { Row, Col, Card, Table } from "react-bootstrap";
 import { format } from "date-fns";
 
 const StepReviewConfirm = ({ formData }) => {
+    console.log(formData)
   const guest = formData.guestInfo || {};
   const stay = formData.stayInfo || {};
   const rooms = formData.rooms || [];
@@ -75,7 +76,7 @@ const StepReviewConfirm = ({ formData }) => {
                 <tr key={idx}>
                   <td>{room.roomNumber}</td>
                   <td>{room.roomType}</td>
-                  <td>{room.isAcRoom === "true" ? "AC" : "Non-AC"}</td>
+                  <td>{room.isAcRoom ? "AC" : "Non-AC"}</td>
                   <td>{room.occupancy}</td>
                   <td>{room.extraPersons}</td>
                   <td>

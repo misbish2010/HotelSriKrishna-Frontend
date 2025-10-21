@@ -14,6 +14,7 @@ import CheckoutSettlementModal from "./CheckoutSettlementModal";
 import CheckInSettlementModal from "./CheckInSettlementModal";
 import CancelSettlementModal from "./CancelSettlementModal"
 import GSTInvoice from "../../pages/GSTInvoice";
+import { sendWhatsAppReceipt } from "../../utils/sendWhatsAppReceipt";
 import {
   updateBooking,
   cancelBooking,
@@ -55,10 +56,10 @@ const getStatusRules = (status) => {
     return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: false, actions: [] };
   }
   if (s.includes("checked in") || s.includes("checked-in")) {
-    return { canEditGuest: true, canEditStay: true, canEditRooms: false, canEditPayment: true, actions: ["update", "checkout"] };
+    return { canEditGuest: true, canEditStay: true, canEditRooms: false, canEditPayment: true, actions: ["money_receipt", "update", "checkout"] };
   }
   // confirmed / booked / default
-  return { canEditGuest: true, canEditStay: true, canEditRooms: true, canEditPayment: true, actions: ["update", "cancel", "checkin"] };
+  return { canEditGuest: true, canEditStay: true, canEditRooms: true, canEditPayment: true, actions: ["money_receipt", "update", "cancel", "checkin"] };
 };
 
 
@@ -102,7 +103,7 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
     const roomsFromBackend = (bookingDetails.room_details || []).map((r) => ({
       roomNumber: r.room_number ?? r.roomNumber ?? "",
       roomType: r.room_type ?? r.roomType ?? "",
-      isAcRoom: r.is_ac ?? r.isAcRoom ?? false,
+      isAcRoom: r.is_ac,
       extraPersons: r.extra_persons ?? r.extraPersons ?? 0,
       occupancy: r.occupancy ?? "",
       roomId: r.room_id ?? r.roomId ?? null,
@@ -268,7 +269,7 @@ const res = await fetchAvailableRooms(
   // Room helpers (editable only when allowed)
   const handleAddRoom = () => {
     if (!rules.canEditRooms) return;
-    const newRoom = { roomNumber: "", roomType: "", isAcRoom: false, extraPersons: 0, occupancy: "", roomId: null, pricePerNight: 0, extraBedPrice: 0, agreedPrice: 0 };
+    const newRoom = { roomNumber: "", roomType: "", isAcRoom: undefined, extraPersons: 0, occupancy: "", roomId: null, pricePerNight: 0, extraBedPrice: 0, agreedPrice: 0 };
     updateFormData("rooms", [...formData.rooms, newRoom]);
   };
   const handleRemoveRoom = (idx) => { if (!rules.canEditRooms) return; updateFormData("rooms", formData.rooms.filter((_, i) => i !== idx)); };
@@ -411,6 +412,17 @@ const handleUpdateRoom = (idx, partial) => {
              >
                🧾 GST Invoice
              </Button>
+           }
+
+          {actions.includes("money_receipt") &&
+           <Button
+              variant="warning"
+              onClick={() => {
+                 sendWhatsAppReceipt(bookingDetails);
+                  }}
+           >
+              🧾 Money Receipt
+           </Button>
            }
 
         {actions.includes("update") && <Button variant="primary" onClick={handleUpdateBooking} disabled={submitting || !isEditing}>Update Booking</Button>}
