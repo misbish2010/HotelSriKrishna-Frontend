@@ -274,7 +274,12 @@ function RoomGrid() {
             <option value={16}>16 Hours</option>
             <option value={24}>24 Hours</option>
             <option value={32}>32 Hours</option>
-            <option value={48}>48 Hours</option>
+            <option value={48}>2 Days</option>
+            <option value={72}>3 Days</option>
+            <option value={96}>4 Days</option>
+            <option value={120}>5 Days</option>
+            <option value={144}>6 Days</option>
+            <option value={168}>7 Days</option>
           </select>
         </div>
 
