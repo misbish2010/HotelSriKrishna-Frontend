@@ -57,21 +57,12 @@ export async function sendWhatsAppReceipt(bookingDetails) {
       MONEY RECEIPT
     </h1>
 
-    <div style="
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      margin-top: 8px;
-      padding: 0 8px;
-      box-sizing: border-box;
-      position: relative;
-    ">
+    <div style="display:flex; align-items:center; justify-content:flex-start; margin-top:8px; padding:0 8px; box-sizing:border-box; position:relative;">
       <div style="text-align:left;">
         <h2 style="margin:0; font-size:16px; color:#111;">HOTEL SRI KRISHNA</h2>
         <p style="margin:2px 0; font-size:12px; color:#444;">Koraput, Odisha – 764020</p>
         <p style="margin:0; font-size:12px; color:#444;">📞 06852-357172</p>
       </div>
-
       <img src="${logo}" alt="Hotel Logo"
         style="position:absolute; right:8px; top:0; width:70px; height:auto; border:2px solid #ddd; border-radius:6px; object-fit:contain;"/>
     </div>
@@ -132,60 +123,110 @@ export async function sendWhatsAppReceipt(bookingDetails) {
   document.body.removeChild(receiptHtml);
 
   const imgData = canvas.toDataURL("image/png");
-  const newWindow = window.open("", "_blank");
 
-  if (newWindow) {
-    const message = encodeURIComponent(
-      `Dear ${guest.name || "Guest"},\n\nThank you for staying with *Hotel Sri Krishna*! 🌿\nHere is your receipt for booking *#${bookingId}*.\n\nPlease review and confirm your payment details.\n\nWarm regards,\nHotel Sri Krishna, Koraput.`
-    );
+  // WhatsApp message
+  const message = encodeURIComponent(
+    `Dear ${guest.name || "Guest"},\n\nThank you for staying with *Hotel Sri Krishna*! 🌿\nHere is your receipt for booking *#${bookingId}*.\n\nPlease review and confirm your payment details.\n\nWarm regards,\nHotel Sri Krishna, Koraput.`
+  );
+  const whatsappLink = phone ? `https://wa.me/91${phone}?text=${message}` : null;
 
-    const whatsappLink = phone
-      ? `https://wa.me/91${phone}?text=${message}`
-      : null;
+  // Detect mobile device
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    newWindow.document.write(`
-          <html>
-            <head>
-              <title>Hotel Sri Krishna Receipt</title>
-              <style>
-                .whatsapp-btn {
-                  display:inline-flex;
-                  align-items:center;
-                  gap:8px;
-                  background-color:#25D366;
-                  color:white;
-                  padding:10px 16px;
-                  border-radius:6px;
-                  text-decoration:none;
-                  font-size:14px;
-                  font-weight:500;
-                  transition:background-color 0.2s;
-                }
-                .whatsapp-btn:hover {
-                  background-color:#1DA851;
-                }
-                .whatsapp-icon {
-                  width:18px;
-                  height:18px;
-                  filter:brightness(0) invert(1);
-                }
-              </style>
-            </head>
-            <body style="text-align:center; font-family:Arial; background:#f5f5f5; padding:20px;">
-              <img src="${imgData}" style="max-width:100%; border:1px solid #aaa; border-radius:8px;"/>
-              <p style="font-size:14px;">Right-click to <b>Copy Image</b> and send on WhatsApp ✅</p>
-              ${
-                whatsappLink
-                  ? `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">
-                       <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="whatsapp-icon"/>
-                       Send Greeting via WhatsApp
-                     </a>`
-                  : `<p style="color:red;">Guest phone number not available 📵</p>`
-              }
-            </body>
-          </html>
-        `);
+  if (isMobile) {
+    // 📱 Mobile version: Show inline preview
+    const container = document.createElement("div");
+    container.style.cssText = `
+      text-align:center;
+      padding:20px;
+      background:#fff;
+      font-family:Arial;
+    `;
+    container.innerHTML = `
+      <h3 style="color:#15803d;">Your Receipt Preview</h3>
+      <img src="${imgData}" alt="Receipt" style="width:90%;border:1px solid #ccc;border-radius:8px;"/>
+      <p style="margin-top:16px;">
+        ${
+          whatsappLink
+            ? `<a href="${whatsappLink}" target="_blank" style="
+                display:inline-block;
+                background-color:#25D366;
+                color:#fff;
+                padding:10px 18px;
+                border-radius:6px;
+                text-decoration:none;
+                font-weight:bold;">
+                📲 Send via WhatsApp
+              </a>`
+            : `<p style="color:red;">Guest phone number not available 📵</p>`
+        }
+      </p>
+      <button id="backHomeBtn" style="
+            background-color:#1e3a8a;
+            color:#fff;
+            padding:10px 16px;
+            border:none;
+            border-radius:6px;
+            margin-top:18px;
+            font-size:14px;
+            font-weight:600;
+          ">
+            ⬅️ Back to Home
+          </button>
+      <p style="color:#555;font-size:14px;">(You can long-press the image to copy or share manually)</p>
+    `;
+    document.body.innerHTML = "";
+    document.body.appendChild(container);
+    // 🔙 Back button handler
+      document.getElementById("backHomeBtn").addEventListener("click", () => {
+        window.location.href = "/"; // or your home/dashboard route
+      });
   } else {
-    alert("Please allow pop-ups for this site to preview the receipt.");
+    // 💻 Desktop version: popup preview
+    const newWindow = window.open("", "_blank");
+    if (!newWindow) {
+      alert("Please allow pop-ups for this site to preview the receipt.");
+      return;
+    }
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Hotel Sri Krishna Receipt</title>
+          <style>
+            .whatsapp-btn {
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+              background-color:#25D366;
+              color:white;
+              padding:10px 16px;
+              border-radius:6px;
+              text-decoration:none;
+              font-size:14px;
+              font-weight:500;
+              transition:background-color 0.2s;
+            }
+            .whatsapp-btn:hover { background-color:#1DA851; }
+            .whatsapp-icon {
+              width:18px;
+              height:18px;
+              filter:brightness(0) invert(1);
+            }
+          </style>
+        </head>
+        <body style="text-align:center; font-family:Arial; background:#f5f5f5; padding:20px;">
+          <img src="${imgData}" style="max-width:100%; border:1px solid #aaa; border-radius:8px;"/>
+          <p style="font-size:14px;">Right-click to <b>Copy Image</b> and send on WhatsApp ✅</p>
+          ${
+            whatsappLink
+              ? `<a href="${whatsappLink}" target="_blank" class="whatsapp-btn">
+                   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" class="whatsapp-icon"/>
+                   Send Greeting via WhatsApp
+                 </a>`
+              : `<p style="color:red;">Guest phone number not available 📵</p>`
+          }
+        </body>
+      </html>
+    `);
   }
 }
