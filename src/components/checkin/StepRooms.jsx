@@ -22,11 +22,11 @@ const StepRooms = ({
     // Reset dependent fields
     if (name === "roomType") {
       updatedRoom.occupancy = "";
-      updatedRoom.isAcRoom = undefined ;
+      updatedRoom.isAcRoom = "" ;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "occupancy") {
-      updatedRoom.isAcRoom = undefined ;
+      updatedRoom.isAcRoom = "" ;
       updatedRoom.roomNumber = "";
       updatedRoom.roomId = "";
     } else if (name === "isAcRoom") {
@@ -52,13 +52,13 @@ const StepRooms = ({
 
   const filteredRoomOptions = (index) => {
     const { roomType, occupancy, isAcRoom } = rooms[index];
-    if (!roomType || !occupancy || isAcRoom === undefined) return [];
+    if (!roomType || !occupancy || isAcRoom === "") return [];
 
     return availableRooms.filter(
       (room) =>
         room.room_type === roomType &&
         room.occupancy === occupancy &&
-        room.is_ac === isAcRoom
+        room.is_ac === (isAcRoom === "true")
     );
   };
 

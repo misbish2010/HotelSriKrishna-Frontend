@@ -3,7 +3,6 @@ import { Row, Col, Card, Table } from "react-bootstrap";
 import { format } from "date-fns";
 
 const StepReviewConfirm = ({ formData }) => {
-    console.log(formData)
   const guest = formData.guestInfo || {};
   const stay = formData.stayInfo || {};
   const rooms = formData.rooms || [];

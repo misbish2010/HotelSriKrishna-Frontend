@@ -280,7 +280,7 @@ const res = await fetchAvailableRooms(
   // Room helpers (editable only when allowed)
   const handleAddRoom = () => {
     if (!rules.canEditRooms) return;
-    const newRoom = { roomNumber: "", roomType: "", isAcRoom: undefined, extraPersons: 0, occupancy: "", roomId: null, pricePerNight: 0, extraBedPrice: 0, agreedPrice: 0 };
+    const newRoom = { roomNumber: "", roomType: "", isAcRoom: false, extraPersons: 0, occupancy: "", roomId: null, pricePerNight: 0, extraBedPrice: 0, agreedPrice: 0 };
     updateFormData("rooms", [...formData.rooms, newRoom]);
   };
   const handleRemoveRoom = (idx) => { if (!rules.canEditRooms) return; updateFormData("rooms", formData.rooms.filter((_, i) => i !== idx)); };

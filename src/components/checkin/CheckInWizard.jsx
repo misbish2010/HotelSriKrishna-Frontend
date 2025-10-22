@@ -145,6 +145,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
     const fetchRooms = async () => {
       if (formData.stayInfo.checkIn && formData.stayInfo.checkOut) {
         const data = await fetchAvailableRooms(formData.stayInfo.duration, formData.stayInfo.checkIn, formData.stayInfo.checkOut);
+        console.log(data)
         setAvailableRooms(data || []);
       } else {
         setAvailableRooms([]);
@@ -253,7 +254,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
                 {
                   roomType: "",
                   occupancy: "",
-                  isAcRoom: undefined,
+                  isAcRoom: "",
                   roomNumber: "",
                   extraPersons: 0,
                   roomId: "",
