@@ -15,6 +15,7 @@ import CheckInSettlementModal from "./CheckInSettlementModal";
 import CancelSettlementModal from "./CancelSettlementModal"
 import GSTInvoice from "../../pages/GSTInvoice";
 import { sendWhatsAppReceipt } from "../../utils/sendWhatsAppReceipt";
+import ReceiptPreviewModal from "../ReceiptPreviewModal";
 import {
   updateBooking,
   cancelBooking,
@@ -87,6 +88,16 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
     !disableStayEditing ||
     !disableRoomEditing ||
     !disablePaymentEditing;
+
+
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptData, setReceiptData] = useState({ imgData: "", whatsappLink: "" });
+
+  const handleGenerateReceipt = async () => {
+    const result = await sendWhatsAppReceipt(bookingDetails);
+    setReceiptData(result);
+    setShowReceiptModal(true);
+  };
 
   useEffect(() => {
     if (!bookingDetails) return;
@@ -414,16 +425,23 @@ const handleUpdateRoom = (idx, partial) => {
              </Button>
            }
 
-          {actions.includes("money_receipt") &&
+         {actions.includes("money_receipt") && (
            <Button
-              variant="warning"
-              onClick={() => {
-                 sendWhatsAppReceipt(bookingDetails);
-                  }}
+             variant="warning"
+             onClick={async () => {
+               const result = await sendWhatsAppReceipt(bookingDetails);
+               if (result?.imgData) {
+                 setReceiptData(result);
+                 setShowReceiptModal(true);
+               } else {
+                 alert("Failed to generate receipt image");
+               }
+             }}
            >
-              🧾 Money Receipt
+             🧾 Money Receipt
            </Button>
-           }
+         )}
+
 
         {actions.includes("update") && <Button variant="primary" onClick={handleUpdateBooking} disabled={submitting || !isEditing}>Update Booking</Button>}
         {actions.includes("checkin") && (<Button variant="primary" onClick={() => {setShowCheckInModal(true);}} disabled={submitting || isEditing} >Check In Booking</Button> )}
@@ -691,6 +709,13 @@ const handleUpdateRoom = (idx, partial) => {
         }
       }}
     />
+
+     <ReceiptPreviewModal
+          show={showReceiptModal}
+          onHide={() => setShowReceiptModal(false)}
+          imgData={receiptData.imgData}
+          whatsappLink={receiptData.whatsappLink}
+        />
 
 
       {showGSTInvoice && (
