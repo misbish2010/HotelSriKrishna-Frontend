@@ -21,7 +21,8 @@ import {
   cancelBooking,
   checkoutBooking,
   checkInBooking,
-  fetchAvailableRooms
+  fetchAvailableRooms,
+  fetchAllRooms
 } from "../../api"; // implement as discussed
 
 const steps = ["Guest Info", "Stay Info", "Rooms", "Payment", "Review"];
@@ -63,6 +64,40 @@ const getStatusRules = (status) => {
   return { canEditGuest: true, canEditStay: true, canEditRooms: true, canEditPayment: true, actions: ["money_receipt", "update", "cancel", "checkin"] };
 };
 
+const mergeAvailableRooms = (availableRooms, allRooms, selectedRooms) => {
+  const list = [...(availableRooms || [])];
+
+  selectedRooms.forEach((selected) => {
+    // Find all variants of this room_number in allRooms
+    const variants = (allRooms || []).filter(
+      (r) => r.room_number === selected.roomNumber
+    );
+
+    variants.forEach((variant) => {
+      if (!list.some((x) => x.room_id === variant.room_id)) {
+        list.push(variant);
+      }
+    });
+
+    // Fallback: if no variants found, push selected itself
+    if (
+      variants.length === 0 &&
+      !list.some((x) => x.room_id === selected.roomId)
+    ) {
+      list.push({
+        room_number: selected.roomNumber,
+        room_id: selected.roomId,
+        room_type: selected.roomType,
+        occupancy: selected.occupancy,
+        is_ac: selected.isAcRoom,
+        room_price: selected.pricePerNight,
+        extra_bed_price: selected.extraBedPrice,
+      });
+    }
+  });
+
+  return list;
+};
 
 const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }) => {
 
@@ -73,6 +108,9 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
 
 
   const [availableRooms, setAvailableRooms] = useState([]);
+  const [allRooms, setAllRooms] = useState([]);
+  const [mergedAvailableRooms, setMergedAvailableRooms] = useState([]);
+
 
   // These start true (locked). Review step will request unlock for specific section.
   const [disableGuestEditing, setDisableGuestEditing] = useState(true);
@@ -217,19 +255,27 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
         case 3: // Payment
           if (disablePaymentEditing) return true; // ✅ Skip validation if read-only
 
-          // Must have at least one payment entry
-          if (!Array.isArray(formData.payments) || formData.payments.length === 0) {
-            return false;
+          // If payment array is empty → allowed (some bookings can have no payments yet)
+          if (!Array.isArray(formData.payment) || formData.payment.length === 0) {
+            console.log("✅ No payment entries (allowed)");
+            return true;
           }
 
-          // Ensure every payment has required fields
-          return formData.payments.every(
-            (p) =>
+          // Otherwise, validate each payment entry
+          const allValid = formData.payment.every((p, i) => {
+            const isValid =
               p.amount != null &&
-              p.amount > 0 &&
+              p.amount >= 0 && // ✅ allow 0
               p.mode &&
-              p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ "YYYY-MM-DD"
-          );
+              p.date &&
+              !isNaN(new Date(p.date).getTime()); // valid date
+
+            if (!isValid) console.log("❌ Invalid payment entry at index", i, p);
+            return isValid;
+          });
+
+          return allValid;
+
 
       default:
         return true;
@@ -237,43 +283,52 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
   };
 
 
+const handleNext = async () => {
+  if (!validateStep()) {
+    toast.error("Please fill required fields");
+    return;
+  }
 
-//  const handleNext = () => { if (!validateStep()) { toast.error("Please fill required fields"); return; } setCurrentStep((s) => Math.min(s + 1, steps.length - 1)); };
-  const handleNext = async () => {
+  if (steps[currentStep] === "Stay Info" && !disableStayEditing) {
+    const { checkIn, checkOut } = formData.stayInfo;
 
-    if (!validateStep()) {
-      toast.error("Please fill required fields");
+    if (!checkIn || !checkOut) {
+      toast.error("Please select both check-in and check-out dates");
       return;
     }
 
-    if (steps[currentStep] === "Stay Info" && !disableStayEditing) {
-      const { checkIn, checkOut } = formData.stayInfo;
+    try {
+      // Fetch full room list and currently available rooms
+      const all_rooms = await fetchAllRooms();
+      const available_rooms = await fetchAvailableRooms(
+        1, // durationOfStay
+        new Date(checkIn).toISOString(),
+        new Date(checkOut).toISOString()
+      );
 
-      if (!checkIn || !checkOut) {
-        toast.error("Please select both check-in and check-out dates");
-        return;
-      }
+      // ✅ Merge availableRooms + variants of selected rooms
+      const merged_rooms = mergeAvailableRooms(
+        available_rooms || [],
+        all_rooms || [],
+        formData.rooms || []
+      );
 
-      try {
+      // Save in state
+      setAllRooms(all_rooms || []);
+      setAvailableRooms(available_rooms || []);
+      setMergedAvailableRooms(merged_rooms); // 👈 add this state variable
 
-const res = await fetchAvailableRooms(
-  1, // durationOfStay
-  new Date(checkIn).toISOString(),
-  new Date(checkOut).toISOString(),
-);
-
-
-          setAvailableRooms(res || []);
-          setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-      } catch (err) {
-        console.error(err);
-        toast.error("Error fetching available rooms");
-      }
-    } else {
-      // proceed normally if not stayInfo or not in edit mode
+      // Move to next step
       setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching available rooms");
     }
-  };
+  } else {
+    // proceed normally
+    setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+  }
+};
 
   const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
@@ -285,31 +340,31 @@ const res = await fetchAvailableRooms(
   };
   const handleRemoveRoom = (idx) => { if (!rules.canEditRooms) return; updateFormData("rooms", formData.rooms.filter((_, i) => i !== idx)); };
   //const handleUpdateRoom = (idx, partial) => { if (!rules.canEditRooms) return; const copy = [...formData.rooms]; copy[idx] = { ...copy[idx], ...partial }; updateFormData("rooms", copy); };
-const handleUpdateRoom = (idx, partial) => {
-  if (!rules.canEditRooms) return;
-  const copy = [...formData.rooms];
+    const handleUpdateRoom = (idx, partial) => {
+      if (!rules.canEditRooms) return;
+      const copy = [...formData.rooms];
 
-  if (partial.roomNumber) {
-    const selected = availableRooms.find(r => r.room_number === partial.roomNumber);
-    if (!selected) {
-      toast.error(`Room ${partial.roomNumber} is not available for these dates`);
-      return;
-    }
-    copy[idx] = {
-      ...copy[idx],
-      roomNumber: selected.room_number,
-      roomType: selected.room_type,
-      isAcRoom: selected.is_ac,
-      pricePerNight: selected.room_price,
-      agreedPrice: selected.room_price,
-      ...partial
+      if (partial.roomNumber) {
+        const selected = mergedAvailableRooms.find(r => r.room_number === partial.roomNumber);
+        if (!selected) {
+          toast.error(`Room ${partial.roomNumber} is not available for these dates`);
+          return;
+        }
+        copy[idx] = {
+          ...copy[idx],
+          roomNumber: selected.room_number,
+          roomType: selected.room_type,
+          isAcRoom: selected.is_ac,
+          pricePerNight: selected.room_price,
+          agreedPrice: selected.room_price,
+          ...partial
+        };
+      } else {
+        copy[idx] = { ...copy[idx], ...partial };
+      }
+
+      updateFormData("rooms", copy);
     };
-  } else {
-    copy[idx] = { ...copy[idx], ...partial };
-  }
-
-  updateFormData("rooms", copy);
-};
 
   // Payment helpers (editable only when allowed)
   const handleAddPayment = () => { if (!rules.canEditPayment) return; updateFormData("payments", [...formData.payments, { amount: 0, date: new Date().toISOString(), mode: "", notes: "", status: "" }]); };
@@ -390,6 +445,7 @@ const handleUpdateRoom = (idx, partial) => {
         return (
           <ManageStepRooms
             rooms={formData.rooms}
+            mergedAvailableRooms={mergedAvailableRooms}
             availableRooms={availableRooms}   // 👈 new
             onRoomChange={(r) => updateFormData("rooms", r)}
             disableRoomEditing={disableRoomEditing}

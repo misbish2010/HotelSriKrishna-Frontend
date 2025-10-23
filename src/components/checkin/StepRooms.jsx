@@ -58,7 +58,7 @@ const StepRooms = ({
       (room) =>
         room.room_type === roomType &&
         room.occupancy === occupancy &&
-        room.is_ac === (isAcRoom === "true")
+        room.is_ac === (isAcRoom === "true" || isAcRoom === true)
     );
   };
 

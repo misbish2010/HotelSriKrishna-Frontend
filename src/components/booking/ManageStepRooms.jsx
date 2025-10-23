@@ -4,6 +4,7 @@ import { Card, Row, Col, Form, Button } from "react-bootstrap";
 
 const ManageStepRooms = ({
   rooms = [],
+  mergedAvailableRooms = [],
   availableRooms = [],
   onRoomChange = () => {},
   disableRoomEditing = true,
@@ -17,9 +18,12 @@ const ManageStepRooms = ({
     Triple: ["Triple"],
   };
   const [previousRooms, setPreviousRooms] = useState(rooms)
-useEffect(() => {
-  console.log("StepRooms received rooms:", rooms);
-}, [rooms]);
+
+//   useEffect(() => {
+//     console.log("ManageStepRooms received rooms:", rooms);
+//     console.log("availableRooms length:", availableRooms);
+//     console.log("Merged availableRooms length:", mergedAvailableRooms);
+//   }, [rooms, availableRooms, mergedAvailableRooms]);
   const handleChange = (e, index) => {
     if (disableRoomEditing) return;
 
@@ -66,11 +70,12 @@ useEffect(() => {
     const { roomType, occupancy, isAcRoom } = rooms[index];
     if (!roomType || !occupancy || isAcRoom === "") return [];
 
-    return availableRooms.filter(
+    return mergedAvailableRooms.filter(
       (room) =>
         room.room_type === roomType &&
         room.occupancy === occupancy &&
-        room.is_ac === (isAcRoom === "true")
+        //room.is_ac === isAcRoom
+        room.is_ac === (isAcRoom === "true" || isAcRoom === true)
     );
   };
 

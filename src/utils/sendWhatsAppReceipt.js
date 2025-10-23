@@ -90,6 +90,9 @@ export async function sendWhatsAppReceipt(bookingDetails) {
         <td style="padding:4px 6px; text-align:right;"><b>Check-Out:</b> ${stay.probable_check_out_date ? format(new Date(stay.probable_check_out_date), "dd MMM yyyy") : "-"}</td>
       </tr>
       <tr>
+        <td colspan="2" style="padding:4px 6px;"><b>Length of Stay:</b> ${nights} Night${nights > 1 ? 's' : ''}</td>
+      </tr>
+      <tr>
         <td colspan="2" style="padding:4px 6px;"><b>Room Type:</b> ${roomSummary || "-"}</td>
       </tr>
     </table>

@@ -93,6 +93,19 @@ export const fetchAvailableRooms = async (
 };
 
 
+// Define API to Fetch All Rooms
+export const fetchAllRooms = async (
+) => {
+  try {
+    const response = await apiClient.get("/all-rooms");
+    return response.data.all_rooms;
+  } catch (error) {
+    console.error("Error fetching all rooms:", error);
+    throw error;
+  }
+};
+
+
 //Search Booking
 export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkInDate, bookingStatus }) => {
     try {
