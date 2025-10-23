@@ -23,52 +23,57 @@ function RoomGrid() {
 
   const formatDate = (date) => format(date, "dd/MM/yyyy hh:mm a");
 
-  const transformToRoomRows = (booked_rooms, available_rooms) => {
-  console.log(booked_rooms)
-//    const bookedList = booked_rooms.map((room) => ({
-//      roomNumber: room.room_number,
-//      guestName: room.bookings.length > 0 ? room.bookings[0].customer_name : null,
-//      guestPhone: room.bookings.length > 0 ? room.bookings[0].customer_contact : null,
-//      status: room.bookings.length > 0 ? room.bookings[0].booking_status : "Unknown",
-//      checkInTime: room.bookings.length > 0 ? room.bookings[0].check_in_date : null,
-//      probableCheckOutTime: room.bookings.length > 0 ? room.bookings[0].probable_check_out_date : null,
-//      durationOfStay: room.bookings.length > 0 ? room.bookings[0].duration_of_stay : null,
-//    }));
+const transformToRoomRows = (booked_rooms, available_rooms) => {
+  console.log(booked_rooms);
 
-
-    const bookedList = booked_rooms.flatMap((room) =>
-        room.bookings.map((booking) => ({
-          roomNumber: room.room_number,
-          guestName: booking.customer_name,
-          guestPhone: booking.customer_contact,
-          status: booking.booking_status,
-          checkInTime: booking.check_in_date,
-          probableCheckOutTime: booking.probable_check_out_date,
-          durationOfStay: booking.duration_of_stay,
-        }))
-      );
-    console.log(bookedList)
-    const availableList = available_rooms.map((room) => ({
-      roomNumber: room.room_number,
-      status: 'Available',
-      checkInTime: null,
-      probableCheckOutTime: null,
-      durationOfStay: null,
-    }));
-
-    const combined = [...bookedList, ...availableList];
-    combined.sort((a, b) => a.roomNumber - b.roomNumber);
-
-    // Group into rows (same as before)
-    const grouped = [];
-    const perRow = 5;
-    if (combined.length > 0) {
-      grouped.push(combined.slice(0, 3));
-      for (let i = 3; i < combined.length; i += perRow)
-        grouped.push(combined.slice(i, i + perRow));
+  // ✅ FIX: include "Unknown" rooms that have no bookings
+  const bookedList = booked_rooms.flatMap((room) => {
+    if (room.bookings.length === 0) {
+      return [{
+        roomNumber: room.room_number,
+        guestName: null,
+        guestPhone: null,
+        status: "Unknown",
+        checkInTime: null,
+        probableCheckOutTime: null,
+        durationOfStay: null,
+      }];
     }
-    return grouped;
-  };
+
+    return room.bookings.map((booking) => ({
+      roomNumber: room.room_number,
+      guestName: booking.customer_name,
+      guestPhone: booking.customer_contact,
+      status: booking.booking_status,
+      checkInTime: booking.check_in_date,
+      probableCheckOutTime: booking.probable_check_out_date,
+      durationOfStay: booking.duration_of_stay,
+    }));
+  });
+
+  console.log(bookedList);
+
+  const availableList = available_rooms.map((room) => ({
+    roomNumber: room.room_number,
+    status: 'Available',
+    checkInTime: null,
+    probableCheckOutTime: null,
+    durationOfStay: null,
+  }));
+
+  const combined = [...bookedList, ...availableList];
+  combined.sort((a, b) => a.roomNumber - b.roomNumber);
+
+  // Group into rows (same as before)
+  const grouped = [];
+  const perRow = 5;
+  if (combined.length > 0) {
+    grouped.push(combined.slice(0, 3));
+    for (let i = 3; i < combined.length; i += perRow)
+      grouped.push(combined.slice(i, i + perRow));
+  }
+  return grouped;
+};
 
   const fetchRoomData = async () => {
     try {
@@ -85,14 +90,61 @@ function RoomGrid() {
     fetchRoomData();
   }, [selectedDate, windowPeriod]);
 
-  const getRoomStatusColor = (status) => {
-    switch (status) {
-      case "Available": return "success";
-      case "Confirmed": return "primary";
-      case "Checked-In": return "danger";
-      default: return "secondary";
+// 🟩 Time-aware + status-aware color logic
+function getRoomStatusColor(room) {
+  const currentTime = new Date();
+
+  // Handle explicit string status values (if present)
+  if (room.status) {
+    const status = room.status.toLowerCase();
+
+    if (status === "available") return "success";   // Green
+    if (status === "confirmed") return "primary";   // Blue
+    if (status === "unknown") return "dark";        // Grey/Black
+    if (status === "checked-in") {
+      // Checked-In handled below with probable logic
     }
-  };
+  }
+
+  // ✅ Probable checkout time logic (yellow)
+  const probableCheckOutTime = room.probableCheckOutTime
+    ? new Date(room.probableCheckOutTime)
+    : null;
+  if (
+    probableCheckOutTime &&
+    probableCheckOutTime > currentTime &&
+    probableCheckOutTime - currentTime <= 1 * 60 * 60 * 1000
+  ) {
+    // Within 1 hour before probable checkout
+    return "warning"; // Yellow (<Probable Check-Out)
+  }
+
+  // ✅ Final checkout time logic
+  let finalCheckOutTime = null;
+  if (room.checkInTime && room.durationOfStay) {
+    finalCheckOutTime = new Date(
+      new Date(room.checkInTime).getTime() + room.durationOfStay * 24 * 60 * 60 * 1000
+    );
+  }
+
+  if (
+    finalCheckOutTime &&
+    probableCheckOutTime &&
+    finalCheckOutTime > currentTime &&
+    currentTime > probableCheckOutTime
+  ) {
+    return "info"; // Light blue (>Probable Check-Out)
+  }
+
+  if (finalCheckOutTime && currentTime > finalCheckOutTime) {
+    return "secondary"; // Grey (~Check-Out)
+  }
+
+  // Default for active stays
+  return "danger"; // Red (Checked-In / Occupied)
+}
+
+
 
   // New: flatten all rooms into one list to detect duplicates
   const getAllRoomsFlat = () => roomRows.flat();
@@ -173,14 +225,14 @@ function RoomGrid() {
                             style={{
                               height: '50%',
                               width: '100%',
-                              backgroundColor: `var(--bs-${getRoomStatusColor(top.status)})`,
+                              backgroundColor: `var(--bs-${getRoomStatusColor(top)})`,
                             }}
                           />
                           <div
                             style={{
                               height: '50%',
                               width: '100%',
-                              backgroundColor: `var(--bs-${getRoomStatusColor(bottom.status)})`,
+                              backgroundColor: `var(--bs-${getRoomStatusColor(bottom)})`,
                             }}
                           />
                           <div
@@ -223,7 +275,7 @@ function RoomGrid() {
                       }
                     >
                       <Button
-                        variant={getRoomStatusColor(room.status)}
+                        variant={getRoomStatusColor(room)}
                         style={{
                           margin: '10px',
                           width: '80px',
