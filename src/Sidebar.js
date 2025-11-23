@@ -87,6 +87,10 @@ function Sidebar({ isAdmin, onClick }) {
                     ROOMS
                    </Nav.Link>
 
+                   <Nav.Link onClick={() => onClick("dailyChart")} href="#chart" className="sidebar-link">
+                    DAILY CHART
+                   </Nav.Link>
+
                  {isAdmin && (
                     <Nav.Link onClick={() => onClick("collection")} href="#collection" className="sidebar-link">
                       PAYMENT DASHBOARD

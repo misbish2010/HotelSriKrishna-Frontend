@@ -186,6 +186,27 @@ export const fetchBookingDashboard = async (fromDate, toDate) => {
 };
 
 
+export const fetchDailyChart = async (date) => {
+  try {
+    const response = await apiClient.get("/daily-chart", {
+      params: { date },
+      headers: { "Accept": "application/json" }
+    });
+
+    return response.data; // contains { date, rooms }
+  } catch (error) {
+    // axios error catch
+    const msg =
+      error.response?.data?.error ||
+      error.message ||
+      "Failed to fetch daily chart";
+
+    console.error("Daily chart error:", msg);
+    throw new Error(msg);
+  }
+};
+
+
 // Fetch room status based on selected date and window period
 export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
     try {

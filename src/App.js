@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CheckInWizard from "./components/checkin/CheckInWizard";
+import DailyChartPage from "./pages/DailyChartPage";
 import BookingActionWizard from './components/booking/BookingActionWizard';
 import BookingSearchPage from './components/booking/BookingSearchPage';
 import {
@@ -128,6 +129,7 @@ function App() {
 
 
           {activeComponent === "rooms" && <RoomGrid />}
+          {activeComponent === "dailyChart" && <DailyChartPage />}
           {activeComponent === "collection" && <PaymentTable />}
 
 
