@@ -21,7 +21,7 @@ import {
   cancelBooking,
   checkoutBooking,
   checkInBooking,
-  fetchAvailableRooms,
+  fetchModifyAvailableRooms,
   fetchAllRooms
 } from "../../api"; // implement as discussed
 
@@ -300,7 +300,7 @@ const handleNext = async () => {
     try {
       // Fetch full room list and currently available rooms
       const all_rooms = await fetchAllRooms();
-      const available_rooms = await fetchAvailableRooms(
+      const available_rooms = await fetchModifyAvailableRooms(
         1, // durationOfStay
         new Date(checkIn).toISOString(),
         new Date(checkOut).toISOString()

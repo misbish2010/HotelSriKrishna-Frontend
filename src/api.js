@@ -100,6 +100,32 @@ export const fetchAvailableRooms = async (
 };
 
 
+// Define API to Fetch Available Rooms
+export const fetchModifyAvailableRooms = async (
+  durationOfStay,
+  checkInDateTime,
+  probableCheckOutDateTime,
+  excludeBookingId = null
+) => {
+  try {
+    const params = {
+      durationOfStay,
+      checkInDateTime,
+      probableCheckOutDateTime,
+    };
+
+    if (excludeBookingId) {
+      params.excludeBookingId = excludeBookingId;
+    }
+
+    const response = await apiClient.get("/available-rooms-modify", { params });
+    return response.data.available_rooms;
+  } catch (error) {
+    console.error("Error fetching available rooms:", error);
+    throw error;
+  }
+};
+
 // Define API to Fetch All Rooms
 export const fetchAllRooms = async (
 ) => {

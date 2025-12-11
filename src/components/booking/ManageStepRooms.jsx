@@ -182,8 +182,14 @@ const ManageStepRooms = ({
                 >
                   <option value="">Select Room</option>
                   {filteredRoomOptions(index).map((r) => (
-                    <option key={r.room_id} value={r.room_number}>
-                      {r.room_number}
+                    <option
+                      key={r.room_id}
+                      value={r.room_number}
+                      style={{
+                        backgroundColor: r.is_reserved ? '#fff3cd' : 'white'
+                      }}
+                    >
+                      {r.room_number} {r.is_reserved ? '(Reserved)' : ''}
                     </option>
                   ))}
                 </Form.Select>
