@@ -1,5 +1,5 @@
 import './RoomTable.css';
-import { Button, Tooltip, OverlayTrigger, Badge } from 'react-bootstrap';
+import { Button, Tooltip, OverlayTrigger, Badge, Dropdown } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
@@ -7,9 +7,21 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format } from "date-fns";
 import { fetchBookingDashboard } from '../api';
 
+const STATUS_OPTIONS = [
+  "Available",
+  "Confirmed",
+  "Checked-In",
+  "Checked-Out",
+  "Cancelled"
+];
+
 const BookingDashboard = ({ onViewBooking }) => {
   const [bookingTableData, setBookingTableData] = useState([]);
   const [availableRooms, setAvailableRooms] = useState([]);
+
+  const [selectedStatuses, setSelectedStatuses] = useState([...STATUS_OPTIONS]);
+  const [paymentFilter, setPaymentFilter] = useState("ALL"); // ALL, PAID, BALANCE
+
   const [selectedFromDate, setSelectedFromDate] = useState(new Date());
   const [selectedToDate, setSelectedToDate] = useState(new Date());
 
@@ -38,23 +50,34 @@ const BookingDashboard = ({ onViewBooking }) => {
     setSelectedToDate(date);
   };
 
+  const toggleStatus = (status) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const selectAllStatuses = () => setSelectedStatuses([...STATUS_OPTIONS]);
+  const clearAllStatuses = () => setSelectedStatuses([]);
+
   const fetchRoomData = async () => {
     try {
       const data = await fetchBookingDashboard(selectedFromDate, selectedToDate);
-      // Directly use backend bookings
-      const transformedBookings = (data.bookings || []).map((b) => {
 
+      const transformedBookings = (data.bookings || []).map((b) => {
         const paidAmount = (b.payment_info || [])
           .filter((p) => ["completed", "paid", "refund"].includes((p.status || "").toLowerCase()))
           .reduce((sum, p) => sum + (p.amount || 0), 0);
 
         const totalPrice = b.total_price || 0;
+        const balance = Math.max(totalPrice - paidAmount, 0);
 
         return {
           ...b,
           paidAmount,
           totalPrice,
-          balance: Math.max(totalPrice - paidAmount, 0),
+          balance,
           rooms: (b.room_details || []).map((r, idx) => (
             <Badge key={idx} bg="info" className="me-1">
               {`${r.room_number} - ${r.is_ac ? "AC " : ""}${r.occupancy} ${r.room_type}`}
@@ -69,7 +92,7 @@ const BookingDashboard = ({ onViewBooking }) => {
       setBookingTableData(transformedBookings);
       setAvailableRooms(data.available_rooms || []);
     } catch (error) {
-      console.error("Error fetching room data:", error);
+      console.error("Error:", error);
     }
   };
 
@@ -77,10 +100,24 @@ const BookingDashboard = ({ onViewBooking }) => {
     fetchRoomData();
   }, [selectedFromDate, selectedToDate]);
 
+  const filteredTableData = bookingTableData.filter((row) => {
+    const statusMatch = selectedStatuses.includes(row.booking_status);
+
+    const paidMatch =
+      paymentFilter === "ALL" ||
+      (paymentFilter === "PAID" && row.balance <= 0) ||
+      (paymentFilter === "BALANCE" && row.balance > 0);
+
+    return statusMatch && paidMatch;
+  });
+
   return (
     <div className="room-grid-container p-4">
-      {/* Filters */}
-      <div className="controls-row mb-3 d-flex gap-3">
+
+      {/* Filters Row */}
+      <div className="controls-row mb-3 d-flex gap-3 flex-wrap align-items-center">
+
+        {/* Date Filters */}
         <div className="d-flex align-items-center gap-2">
           <label className="fw-bold">From:</label>
           <DatePicker
@@ -90,6 +127,7 @@ const BookingDashboard = ({ onViewBooking }) => {
             className="form-control"
           />
         </div>
+
         <div className="d-flex align-items-center gap-2">
           <label className="fw-bold">To:</label>
           <DatePicker
@@ -100,6 +138,62 @@ const BookingDashboard = ({ onViewBooking }) => {
             minDate={selectedFromDate}
           />
         </div>
+
+        {/* Status Filter */}
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary" size="sm">
+            Status Filter
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu style={{ padding: "10px", minWidth: "200px" }}>
+            <div className="d-flex justify-content-between mb-2">
+              <Button size="sm" variant="outline-primary" onClick={selectAllStatuses}>
+                Select All
+              </Button>
+              <Button size="sm" variant="outline-danger" onClick={clearAllStatuses}>
+                Clear
+              </Button>
+            </div>
+
+            {STATUS_OPTIONS.map((status) => (
+              <div key={status} className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={selectedStatuses.includes(status)}
+                  onChange={() => toggleStatus(status)}
+                />
+                <label className="form-check-label">{status}</label>
+              </div>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
+
+        {/* Payment Filter */}
+        <div className="btn-group" role="group" aria-label="Payment Filter">
+          <Button
+            size="sm"
+            variant={paymentFilter === "ALL" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentFilter("ALL")}
+          >
+            All
+          </Button>
+          <Button
+            size="sm"
+            variant={paymentFilter === "PAID" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentFilter("PAID")}
+          >
+            Paid
+          </Button>
+          <Button
+            size="sm"
+            variant={paymentFilter === "BALANCE" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentFilter("BALANCE")}
+          >
+            Balance
+          </Button>
+        </div>
+
       </div>
 
       {/* Table */}
@@ -109,7 +203,7 @@ const BookingDashboard = ({ onViewBooking }) => {
             <tr>
               <th>Booking ID</th>
               <th>Room(s)</th>
-              <th>Guest Name</th>
+              <th>Guest</th>
               <th>Check-in</th>
               <th>Probable Check-out</th>
               <th>Duration</th>
@@ -119,43 +213,41 @@ const BookingDashboard = ({ onViewBooking }) => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            {bookingTableData.map((row, idx) => (
+            {filteredTableData.map((row, idx) => (
               <tr key={idx}>
                 <td>{row.booking_id}</td>
                 <td>{row.rooms}</td>
-                <td>{row.customer_info?.name || "-"}</td>
+                <td>{row.customer_info?.name}</td>
                 <td>{row.checkInDate}</td>
                 <td>{row.probableCheckOutDate}</td>
                 <td>{row.durationOfStay}</td>
+
                 <td>
                   <span className={`badge ${
-                    row.booking_status === 'Available'
-                      ? 'bg-success'
-                      : row.booking_status === 'Confirmed'
-                      ? 'bg-primary text-dark'
-                      : row.booking_status === 'Checked-Out'
-                      ? 'bg-secondary text-dark'
-                      : 'bg-danger'
+                    row.booking_status === "Available" ? "bg-success" :
+                    row.booking_status === "Confirmed" ? "bg-primary" :
+                    row.booking_status === "Checked-Out" ? "bg-secondary" :
+                    "bg-danger"
                   }`}>
                     {row.booking_status}
                   </span>
                 </td>
+
                 <td>₹{row.paidAmount}</td>
                 <td>₹{row.balance}</td>
+
                 <td>
                   {row.booking_status !== "Available" && (
                     <>
-                      <OverlayTrigger overlay={<Tooltip>View / Manage Booking</Tooltip>}>
+                      <OverlayTrigger overlay={<Tooltip>View / Manage</Tooltip>}>
                         <Button
                           variant="info"
                           size="sm"
                           className="me-2"
                           onClick={() =>
-                            onViewBooking({
-                              ...row,
-                              openInvoice: false, // explicitly set
-                            })
+                            onViewBooking({ ...row, openInvoice: false })
                           }
                         >
                           👁
@@ -168,10 +260,7 @@ const BookingDashboard = ({ onViewBooking }) => {
                             variant="warning"
                             size="sm"
                             onClick={() =>
-                              onViewBooking({
-                                ...row,
-                                openInvoice: true,
-                              })
+                              onViewBooking({ ...row, openInvoice: true })
                             }
                           >
                             🧾
@@ -181,30 +270,31 @@ const BookingDashboard = ({ onViewBooking }) => {
                     </>
                   )}
                 </td>
-
-
               </tr>
             ))}
 
-            {/* Show available rooms as well */}
-            {availableRooms.map((room, idx) => (
-              <tr key={`avail-${idx}`} className="table-success">
-                <td>-</td>
-                <td>
-                  <Badge bg="success">{`${room.room_number} - ${room.room_type}`}</Badge>
-                </td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                  <span className="badge bg-success">Available</span>
-                </td>
-                <td>₹0</td>
-                <td>₹0</td>
-                <td>-</td>
-              </tr>
-            ))}
+            {/* Available Rooms */}
+            {selectedStatuses.includes("Available") &&
+              paymentFilter !== "BALANCE" &&
+              availableRooms.map((room, idx) => (
+                <tr key={`avail-${idx}`} className="table-success">
+                  <td>-</td>
+                  <td>
+                    <Badge bg="success">{`${room.room_number} - ${room.room_type}`}</Badge>
+                  </td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>
+                    <span className="badge bg-success">Available</span>
+                  </td>
+                  <td>₹0</td>
+                  <td>₹0</td>
+                  <td>-</td>
+                </tr>
+              )
+            )}
           </tbody>
         </table>
       </div>

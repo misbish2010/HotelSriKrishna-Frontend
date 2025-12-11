@@ -39,9 +39,16 @@ export const sendMessage = async (messageData) => {
     return response.data;
 };
 
+// Daily Expense - Add Entry
+export const addExpense = async (expenseData) => {
+  const response = await apiClient.post('/add_expense', expenseData);
+  return response.data;
+};
+
 
 // API to create a booking
 export const createBooking = async (bookingData) => {
+    console.log(bookingData)
     const response = await apiClient.post('/create-booking', bookingData);
     return response.data;
 };
@@ -104,7 +111,6 @@ export const fetchAllRooms = async (
     throw error;
   }
 };
-
 
 //Search Booking
 export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkInDate, bookingStatus }) => {
@@ -229,7 +235,7 @@ export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
 // Function to fetch payment details
 export const fetchPaymentDetails = async (startDate, endDate) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/get_payment`, {
+        const response = await axios.get(`${API_BASE_URL}/get_payment`, {
       params: { startDate, endDate },
     });
     return response.data ;

@@ -18,6 +18,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./Header";
 import Footer from "./Footer";
 import BookingDashboard from "./pages/BookingDashboard";
+import DailyExpenseForm from "./pages/DailyExpenseForm";
 import PaymentTable from "./pages/PaymentTable";
 import RoomGrid from "./pages/Rooms";
 import GSTInvoice from "./pages/GSTInvoice";
@@ -130,6 +131,7 @@ function App() {
 
           {activeComponent === "rooms" && <RoomGrid />}
           {activeComponent === "dailyChart" && <DailyChartPage />}
+          {activeComponent === "dailyExpense" && <DailyExpenseForm />}
           {activeComponent === "collection" && <PaymentTable />}
 
 

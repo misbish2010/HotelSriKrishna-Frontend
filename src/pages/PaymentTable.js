@@ -21,10 +21,20 @@ const PaymentTable = () => {
   const [totalCollection, setTotalCollection] = useState(0);
   const [totalExpenditure, setTotalExpenditure] = useState(0);
   const [totalPending, setTotalPending] = useState(0);
+
   const [paymentModeFilter, setPaymentModeFilter] = useState({ CASH: true, UPI: true });
+  const [bookingStatusFilter, setBookingStatusFilter] = useState({
+    "Confirmed": true,
+    "Checked-In": true,
+    "Checked-Out": true,
+    "Cancelled": true
+  });
+
   const [activeTab, setActiveTab] = useState("paid");
 
-  const formatDate = (date) => format(date, "dd MMM yyyy, hh:mm a");
+  //const formatDate = (date) => format(date, "dd MMM yyyy, hh:mm a");
+  const formatDate = (date) => format(date, "dd MMM yyyy");
+  const formatExpenseDate = (date) => format(new Date(date), "dd MMM yyyy");
 
   const quickRanges = {
     today: () => {
@@ -69,10 +79,15 @@ const PaymentTable = () => {
     setPaymentModeFilter((prev) => ({ ...prev, [mode]: !prev[mode] }));
   };
 
+  const handleBookingStatusChange = (status) => {
+    setBookingStatusFilter((prev) => ({ ...prev, [status]: !prev[status] }));
+  };
+
   const fetchAndProcessPayments = async () => {
     try {
       const data = await fetchPaymentDetails(selectedFromDate, selectedToDate);
       const { payment_details, pending_payment_details, expense_details } = data;
+      console.log(data)
 
       let cashCollected = 0, upiCollected = 0, cashRefunded = 0, upiRefunded = 0, pendingAmount = 0, expenseAmount = 0;
 
@@ -103,11 +118,15 @@ const PaymentTable = () => {
   };
 
   useEffect(() => { fetchAndProcessPayments(); }, [selectedFromDate, selectedToDate]);
+
+  // Filter based on payment mode and booking status
   useEffect(() => {
     setFilteredPaymentData(paymentTableData.filter(
-      (p) => (paymentModeFilter.CASH && p.payment_mode === "CASH") || (paymentModeFilter.UPI && p.payment_mode === "UPI")
+      (p) =>
+        ((paymentModeFilter.CASH && p.payment_mode === "CASH") || (paymentModeFilter.UPI && p.payment_mode === "UPI")) &&
+        bookingStatusFilter[p.booking_status]
     ));
-  }, [paymentTableData, paymentModeFilter]);
+  }, [paymentTableData, paymentModeFilter, bookingStatusFilter]);
 
   const StatCard = ({ icon, label, value, color }) => (
     <div style={{
@@ -136,6 +155,7 @@ const PaymentTable = () => {
             <th>#</th>
             {type !== "expense" && <th>Room</th>}
             {type !== "expense" && <th>Booking ID</th>}
+            {type !== "expense" && <th>Booking Status</th>}
             {type !== "expense" && <th>Customer</th>}
             {type !== "expense" && <th>Contact</th>}
             {type === "paid" && <th>Mode</th>}
@@ -147,6 +167,7 @@ const PaymentTable = () => {
             {type === "expense" && <th>Description</th>}
             {type === "expense" && <th style={{ textAlign: "right" }}>Amount</th>}
             {type === "expense" && <th>Mode</th>}
+            {type === "expense" && <th>Date</th>}
           </tr>
         </thead>
         <tbody>
@@ -155,6 +176,7 @@ const PaymentTable = () => {
               <td>{index + 1}</td>
               {type !== "expense" && <td>{Array.isArray(payment.room_numbers) ? payment.room_numbers.join(", ") : payment.room_numbers}</td>}
               {type !== "expense" && <td>{payment.booking_id}</td>}
+              {type !== "expense" && <td>{payment.booking_status}</td>}
               {type !== "expense" && <td>{payment.customer_name}</td>}
               {type !== "expense" && <td>{payment.contact_number}</td>}
               {type === "paid" && <td>{payment.payment_mode}</td>}
@@ -172,6 +194,7 @@ const PaymentTable = () => {
               {type === "expense" && <td>{payment.description}</td>}
               {type === "expense" && <td style={{ textAlign: "right" }}>{payment.amount}</td>}
               {type === "expense" && <td>{payment.mode}</td>}
+              {type === "expense" && <td>{formatExpenseDate(payment.date)}</td>}
             </tr>
           )) : (
             <tr>
@@ -200,11 +223,28 @@ const PaymentTable = () => {
           <label>To: </label>
           <DatePicker selected={selectedToDate} onChange={handleToDateChange} dateFormat="dd/MM/yyyy" />
         </div>
+
+        {/* Payment Mode Filter */}
         <div>
           <label>Payment Mode:</label>
           <input type="checkbox" checked={paymentModeFilter.CASH} onChange={() => handlePaymentModeChange("CASH")} /> Cash
           <input type="checkbox" checked={paymentModeFilter.UPI} onChange={() => handlePaymentModeChange("UPI")} /> UPI
         </div>
+
+        {/* Booking Status Filter */}
+        <div>
+          <label>Booking Status:</label>
+          {Object.keys(bookingStatusFilter).map((status) => (
+            <span key={status} style={{ marginRight: "5px" }}>
+              <input
+                type="checkbox"
+                checked={bookingStatusFilter[status]}
+                onChange={() => handleBookingStatusChange(status)}
+              /> {status}
+            </span>
+          ))}
+        </div>
+
         <div>
           <button onClick={quickRanges.today} className="btn btn-sm btn-light">Today</button>
           <button onClick={quickRanges.last7} className="btn btn-sm btn-light">Last 7 Days</button>

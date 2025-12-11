@@ -2,17 +2,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { fetchDailyChart } from "../api"; // adjust path if needed
 import StatusBadge from "./StatusBadge.jsx"
-
-// const STATUS_META = {
-//   available: { label: "Available", badgeClass: "bg-success" },
-//   checked_in: { label: "Checked-In", badgeClass: "bg-danger" },
-//   new_booking: { label: "New Booking", badgeClass: "bg-primary" },
-//   continue_checked_in: { label: "Continue (Checked-In)", badgeClass: "bg-warning text-dark" },
-//   continue_confirmed: { label: "Continue (Confirmed)", badgeClass: "bg-warning text-dark" },
-//   checkout_to_new_booking: { label: "Checkout → New Booking", badgeClass: "bg-danger" },
-//   checkout_available: { label: "Checkout → Available", badgeClass: "bg-secondary", inlineStyle: { background: "#fd7e14", color: "#000" } },
-//   unknown: { label: "Unknown", badgeClass: "bg-orange" }
-// };
+import moment from "moment";
 
 const showNamePhone = (name, phone) => {
   if (!name && !phone) return "—";
@@ -20,11 +10,7 @@ const showNamePhone = (name, phone) => {
   if (!phone) return name;
   return `${name} (${formatPhone(phone)})`;
 };
-// function StatusBadge({ status }) {
-//   const meta = STATUS_META[status] || STATUS_META.unknown;
-//   const cls = `badge ${meta.badgeClass}`;
-//   return <span className={cls} style={meta.inlineStyle || {}}>{meta.label}</span>;
-// }
+
 
 function formatPhone(p) {
   if (!p) return "—";
@@ -76,6 +62,7 @@ export default function DailyChartPage() {
     setError(null);
     try {
       const data = await fetchDailyChart(date);
+      console.log(data)
       setRooms(data.rooms || []);
     } catch (err) {
       setError(err.message || "Failed to fetch");
@@ -213,36 +200,57 @@ export default function DailyChartPage() {
               <tr key={r.room_number}>
                 <td><strong>{r.room_number}</strong></td>
                 <td><StatusBadge status={r.status} /></td>
+<td>
+  <div style={{ lineHeight: 1.2 }}>
+    {r.status === "checkout_to_new_booking" ? (
+      <>
+        <div className="d-flex justify-content-between">
+          <div>
+            {showNamePhone(r.current_guest_name, r.current_guest_phone)}
+          </div>
+          <div className="ms-3">
+            {showNamePhone(r.next_guest_name, r.next_guest_phone)}
+          </div>
+        </div>
+
+        <div className="d-flex justify-content-between small">
+          <div className="text-secondary">
+            {r.current_check_out_time && `CO - ${moment(r.current_check_out_time).format("hh:mm A")}`}
+          </div>
+          <div className="text-primary ms-3">
+            {r.next_check_in_time && `CI - ${moment(r.next_check_in_time).format("hh:mm A")}`}
+          </div>
+        </div>
+      </>
+    ) : (
+      <>
+        <div>
+          {showNamePhone(
+            r.guest_name || r.current_guest_name || r.next_guest_name,
+            r.phone || r.current_guest_phone || r.next_guest_phone
+          )}
+        </div>
+
+        {r.current_check_out_time && (
+          <div className="small text-secondary">
+            CO - {moment(r.current_check_out_time).format("hh:mm A")}
+          </div>
+        )}
+
+        {r.next_check_in_time && (
+          <div className="small text-primary">
+            CI - {moment(r.next_check_in_time).format("hh:mm A")}
+          </div>
+        )}
+      </>
+    )}
+  </div>
+</td>
                 <td>
-                  {r.status === "checkout_to_new_booking" ? (
-                    <div style={{ lineHeight: 1.2 }}>
-                      <div>
-                        <small className="text-muted">Current: </small>
-                        {showNamePhone(r.current_guest_name, r.current_guest_phone)}
-                      </div>
-                      <div>
-                        <small className="text-muted">Next: </small>
-                        {showNamePhone(r.next_guest_name, r.next_guest_phone)}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      {showNamePhone(
-                        r.guest_name || r.current_guest_name || r.next_guest_name,
-                        r.phone || r.current_guest_phone || r.next_guest_phone
-                      )}
-                    </div>
-                  )}
-                </td>
-
-
-{/*                */}
-{/*                 <td> */}
 {/*                   <div className="btn-group" role="group"> */}
 {/*                     <button className="btn btn-sm btn-outline-primary" onClick={() => alert(`View: ${r.room_number}`)}>View</button> */}
-{/*                     <button className="btn btn-sm btn-outline-secondary" onClick={() => alert(`Edit room ${r.room_number}`)}>Edit</button> */}
 {/*                   </div> */}
-{/*                 </td> */}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -260,36 +268,79 @@ export default function DailyChartPage() {
                     <div>
                       <div className="d-flex align-items-center gap-2">
                         <h5 className="mb-0">Room {r.room_number}</h5>
-                        <div><StatusBadge status={r.status} /></div>
+                        <StatusBadge status={r.status} />
                       </div>
-                      <div className="small text-muted mt-1">
+
+                      {/* Guest Info + Timing */}
+                      <div className="small mt-1">
                         {r.status === "checkout_to_new_booking" ? (
                           <>
-                            <div>Current: {r.current_guest_name || "—"}</div>
-                            <div>Next: {r.next_guest_name || "—"}</div>
+                            {/* Current Guest */}
+                            <div>
+                              <small className="text-muted">Current: </small>
+                              {showNamePhone(r.current_guest_name, r.current_guest_phone)}
+                              {r.current_check_out_time && (
+                                <div className="text-danger fw-bold">
+                                  CO: {moment(r.current_check_out_time).format("hh:mm A")}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Next Guest */}
+                            <div className="mt-1">
+                              <small className="text-muted">Next: </small>
+                              {showNamePhone(r.next_guest_name, r.next_guest_phone)}
+                              {r.next_check_in_time && (
+                                <div className="text-success fw-bold">
+                                  CI: {moment(r.next_check_in_time).format("hh:mm A")}
+                                </div>
+                              )}
+                            </div>
                           </>
                         ) : (
-                          <div>{r.guest_name || r.current_guest_name || r.next_guest_name || "—"}</div>
+                          <>
+                            {showNamePhone(
+                              r.guest_name || r.current_guest_name || r.next_guest_name,
+                              r.phone || r.current_guest_phone || r.next_guest_phone
+                            )}
+                            {r.current_check_out_time && (
+                              <div className="text-danger fw-bold mt-1">
+                                CO: {moment(r.current_check_out_time).format("hh:mm A")}
+                              </div>
+                            )}
+                            {r.next_check_in_time && (
+                              <div className="text-success fw-bold">
+                                CI: {moment(r.next_check_in_time).format("hh:mm A")}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
-                    <div className="text-end small">
-                      <div>{formatPhone(r.phone || r.current_guest_phone || r.next_guest_phone)}</div>
-                      <div className="mt-2">
-                        <button className="btn btn-sm btn-outline-primary me-1" onClick={() => alert(`View: ${r.room_number}`)}>View</button>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => alert(`Edit: ${r.room_number}`)}>Edit</button>
-                      </div>
-                    </div>
+
+                    {/* Actions aligned right */}
+{/*                     <div className="text-end small"> */}
+{/*                       <button */}
+{/*                         className="btn btn-sm btn-outline-primary" */}
+{/*                         onClick={() => alert(`View: ${r.room_number}`)} */}
+{/*                       > */}
+{/*                         View */}
+{/*                       </button> */}
+{/*                     </div> */}
                   </div>
                 </div>
               </div>
             </div>
           ))}
+
           {filteredRooms.length === 0 && (
-            <div className="col-12"><div className="text-center text-muted">No rooms found for selected date / filters.</div></div>
+            <div className="col-12">
+              <div className="text-center text-muted">No rooms found.</div>
+            </div>
           )}
         </div>
       </div>
+
 
       <style jsx="true">{`
         @media print {
@@ -302,10 +353,3 @@ export default function DailyChartPage() {
     </div>
   );
 }
-
-// // StatusBadge component used inside the file
-// function StatusBadge({ status }) {
-//   const meta = STATUS_META[status] || STATUS_META.unknown;
-//   const cls = `badge ${meta.badgeClass}`;
-//   return <span className={cls} style={meta.inlineStyle || {}}>{meta.label}</span>;
-// }
