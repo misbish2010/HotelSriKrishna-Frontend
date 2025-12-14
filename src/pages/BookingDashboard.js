@@ -21,6 +21,8 @@ const BookingDashboard = ({ onViewBooking }) => {
 
   const [selectedStatuses, setSelectedStatuses] = useState([...STATUS_OPTIONS]);
   const [paymentFilter, setPaymentFilter] = useState("ALL"); // ALL, PAID, BALANCE
+  const [paymentModeFilter, setPaymentModeFilter] = useState("ALL");   // ALL | CASH | UPI | BOTH
+
 
   const [selectedFromDate, setSelectedFromDate] = useState(new Date());
   const [selectedToDate, setSelectedToDate] = useState(new Date());
@@ -64,11 +66,23 @@ const BookingDashboard = ({ onViewBooking }) => {
   const fetchRoomData = async () => {
     try {
       const data = await fetchBookingDashboard(selectedFromDate, selectedToDate);
+      console.log(data)
 
       const transformedBookings = (data.bookings || []).map((b) => {
         const paidAmount = (b.payment_info || [])
           .filter((p) => ["completed", "paid", "refund"].includes((p.status || "").toLowerCase()))
           .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+        const paymentModes = new Set(
+          (b.payment_info || [])
+            .filter(p => ["completed", "paid"].includes((p.status || "").toLowerCase()))
+            .map(p => (p.mode || "").toLowerCase())
+        );
+
+        let paymentMode = "NONE";
+        if (paymentModes.has("cash") && paymentModes.has("upi")) paymentMode = "BOTH";
+        else if (paymentModes.has("cash")) paymentMode = "CASH";
+        else if (paymentModes.has("upi")) paymentMode = "UPI";
 
         const totalPrice = b.total_price || 0;
         const balance = Math.max(totalPrice - paidAmount, 0);
@@ -85,7 +99,8 @@ const BookingDashboard = ({ onViewBooking }) => {
           )),
           checkInDate: formatDate(b.stay_info?.check_in_date),
           probableCheckOutDate: formatDate(b.stay_info?.probable_check_out_date),
-          durationOfStay: b.stay_info?.duration || "-"
+          durationOfStay: b.stay_info?.duration || "-",
+          paymentMode
         };
       });
 
@@ -107,8 +122,11 @@ const BookingDashboard = ({ onViewBooking }) => {
       paymentFilter === "ALL" ||
       (paymentFilter === "PAID" && row.balance <= 0) ||
       (paymentFilter === "BALANCE" && row.balance > 0);
+    const paymentModeMatch =
+        paymentModeFilter === "ALL" ||
+        row.paymentMode === paymentModeFilter;
 
-    return statusMatch && paidMatch;
+    return statusMatch && paidMatch && paymentModeMatch;
   });
 
   return (
@@ -194,6 +212,38 @@ const BookingDashboard = ({ onViewBooking }) => {
           </Button>
         </div>
 
+        <div className="btn-group" role="group" aria-label="Payment Mode Filter">
+          <Button
+            size="sm"
+            variant={paymentModeFilter === "ALL" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentModeFilter("ALL")}
+          >
+            All Modes
+          </Button>
+          <Button
+            size="sm"
+            variant={paymentModeFilter === "CASH" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentModeFilter("CASH")}
+          >
+            Cash
+          </Button>
+          <Button
+            size="sm"
+            variant={paymentModeFilter === "UPI" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentModeFilter("UPI")}
+          >
+            UPI
+          </Button>
+          <Button
+            size="sm"
+            variant={paymentModeFilter === "BOTH" ? "primary" : "outline-primary"}
+            onClick={() => setPaymentModeFilter("BOTH")}
+          >
+            Both
+          </Button>
+        </div>
+
+
       </div>
 
       {/* Table */}
@@ -255,9 +305,13 @@ const BookingDashboard = ({ onViewBooking }) => {
                       </OverlayTrigger>
 
                       {row.booking_status === "Checked-Out" && (
-                        <OverlayTrigger overlay={<Tooltip>View GST Invoice</Tooltip>}>
+                        <OverlayTrigger overlay={<Tooltip>
+                                                         {row.gst_info?.gst_bill_no
+                                                           ? `GST Generated: ${row.gst_info.gst_bill_no}`
+                                                           : "GST Not Generated"}
+                                                       </Tooltip>}>
                           <Button
-                            variant="warning"
+                            variant={row.gst_info?.gst_bill_no ? "success" : "warning"}
                             size="sm"
                             onClick={() =>
                               onViewBooking({ ...row, openInvoice: true })

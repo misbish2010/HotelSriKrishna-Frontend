@@ -201,6 +201,8 @@ const ManageStepReviewConfirm = ({
                     <th>Amount</th>
                     <th>Date</th>
                     <th>Mode</th>
+                    <th>Status</th>
+                    <th>Notes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -210,6 +212,8 @@ const ManageStepReviewConfirm = ({
                       <td>₹{p.amount}</td>
                       <td>{p.date ? format(new Date(p.date), "dd MMM yyyy") : ""}</td>
                       <td>{p.mode}</td>
+                      <td>{p.status}</td>
+                      <td>{p.notes}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -166,42 +166,6 @@ export const updateBooking = async (bookingData) => {
 };
 
 
-// ✅ Cancel a booking
-//export async function cancelBooking(bookingId) {
-//  try {
-//    const res = await apiClient.post(`/bookings/${bookingId}/cancel`, {
-//        });
-//    return res.data;
-//  } catch (err) {
-//    console.error("Error cancelling booking:", err);
-//    return { success: false, message: "Network error" };
-//  }
-//}
-
-//// ✅ Checkout a booking
-//export async function checkoutBooking(bookingId) {
-//  try {
-//    const res = await apiClient.post(`/bookings/${bookingId}/checkout`, {
-//    });
-//    return res.data;
-//  } catch (err) {
-//    console.error("Error checking out booking:", err);
-//    return { success: false, message: "Network error" };
-//  }
-//}
-//
-//// ✅ Mark as Checked-In
-//export async function checkInBooking(bookingId, checkInDateTime) {
-//  try {
-//    const res = await apiClient.post(`/bookings/${bookingId}/checkin`, {
-//        });
-//    return res.data;
-//  } catch (err) {
-//    console.error("Error checking in booking:", err);
-//    return { success: false, message: "Network error" };
-//  }
-//}
-
 export const fetchBookingDashboard = async (fromDate, toDate) => {
     try {
         const response = await apiClient.get("/room/dashboard", {
@@ -313,25 +277,6 @@ export const fetchBookingsByDateRange = async (payload) => {
     const response = await apiClient.post('/bookings-by-date-range', payload);
     return response.data;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const fetchGSTDetails = async (bookingId, guestGSTNumber, companyName) => {
   try {

@@ -52,7 +52,7 @@ const formatStayDateForApi = (date) => {
 const getStatusRules = (status) => {
   const s = (status || "").toLowerCase();
   if (s.includes("checked out") || s.includes("checked-out") ) {
-      return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: false, actions: ["invoice"] };
+      return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: true, actions: ["invoice", "update"] };
   }
   if (s.includes("cancelled") || s.includes("canceled")) {
     return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: false, actions: [] };
@@ -634,7 +634,7 @@ const handleNext = async () => {
         if (extraPayment && extraPayment > 0) {
           updatedPayments.push({
             amount: Number(extraPayment),
-            date: formatDateForApi(),
+            date: formatDateForApi(checkoutDate),
             mode: paymentMode,
             notes: notes || "Final settlement",
             status: "paid",
@@ -645,8 +645,8 @@ const handleNext = async () => {
         if (extraDiscount && extraDiscount > 0) {
           updatedPayments.push({
             amount: -Number(extraDiscount),
-            date: formatDateForApi(),
-            mode: "Discount",
+            date: formatDateForApi(checkoutDate),
+            mode: "None",
             notes: notes || "Checkout discount",
             status: "Discount",
           });
@@ -656,7 +656,7 @@ const handleNext = async () => {
         if (extraRefund && extraRefund > 0) {
           updatedPayments.push({
             amount: -Number(extraRefund),
-            date: formatDateForApi(),
+            date: formatDateForApi(checkoutDate),
             mode: paymentMode,
             notes: notes || "Checkout Refund",
             status: "Refund",
@@ -722,7 +722,7 @@ const handleNext = async () => {
         if (extraPayment && extraPayment > 0) {
           updatedPayments.push({
             amount: Number(extraPayment),
-            date: formatDateForApi(),
+            date: formatDateForApi(checkInDate),
             mode: paymentMode,
             status: "paid",
           });

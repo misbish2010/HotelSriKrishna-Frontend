@@ -17,7 +17,7 @@ export const STATUS_META = {
   },
   continue_checked_in: {
     parts: ["Continue (Checked-In)"],
-    colors: ["warning"]
+    colors: ["danger"]
   },
   continue_confirmed: {
     parts: ["Continue (Confirmed)"],

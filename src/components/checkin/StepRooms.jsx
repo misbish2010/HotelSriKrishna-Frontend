@@ -139,9 +139,10 @@ const StepRooms = ({
                 >
                   <option value="">Select Room Number</option>
                   {filteredRoomOptions(index).map((r) => (
-                    <option key={r.room_id} value={r.room_number}>
-                      {r.room_number}
-                    </option>
+                                        <option key={r.room_id} value={r.room_number}>
+                                          {r.room_number}
+                                        </option>
+
                   ))}
                 </Form.Select>
               </Col>

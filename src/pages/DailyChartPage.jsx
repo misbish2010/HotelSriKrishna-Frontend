@@ -3,6 +3,32 @@ import React, { useEffect, useState, useMemo } from "react";
 import { fetchDailyChart } from "../api"; // adjust path if needed
 import StatusBadge from "./StatusBadge.jsx"
 import moment from "moment";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+
+const ConflictBadge = ({ conflicts }) => (
+  <OverlayTrigger
+    placement="right"
+    overlay={
+      <Tooltip>
+        <strong>Room Conflict</strong>
+        <hr className="my-1" />
+        {conflicts.map((c, i) => (
+          <div key={i} style={{ marginBottom: 6 }}>
+            <div><strong>{c.guest_name || "Unknown"}</strong></div>
+            <div>Status: {c.status}</div>
+            <div>
+              {moment(c.check_in).format("DD MMM")} →{" "}
+              {c.check_out ? moment(c.check_out).format("DD MMM") : "Open"}
+            </div>
+          </div>
+        ))}
+      </Tooltip>
+    }
+  >
+    <span className="badge bg-danger ms-2">⚠ Conflict</span>
+  </OverlayTrigger>
+);
+
 
 const showNamePhone = (name, phone) => {
   if (!name && !phone) return "—";
@@ -198,7 +224,11 @@ export default function DailyChartPage() {
             )}
             {filteredRooms.map(r => (
               <tr key={r.room_number}>
-                <td><strong>{r.room_number}</strong></td>
+                <td>
+                  <strong>{r.room_number}</strong>
+                  {r.conflict && <ConflictBadge conflicts={r.conflict_bookings || []} />}
+                </td>
+
                 <td><StatusBadge status={r.status} /></td>
 <td>
   <div style={{ lineHeight: 1.2 }}>
@@ -267,7 +297,11 @@ export default function DailyChartPage() {
                   <div className="d-flex justify-content-between align-items-start">
                     <div>
                       <div className="d-flex align-items-center gap-2">
-                        <h5 className="mb-0">Room {r.room_number}</h5>
+                        <h5 className="mb-0">
+                          Room {r.room_number}
+                          {r.conflict && <ConflictBadge conflicts={r.conflict_bookings || []} />}
+                        </h5>
+
                         <StatusBadge status={r.status} />
                       </div>
 
