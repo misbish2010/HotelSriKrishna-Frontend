@@ -3,7 +3,9 @@ import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Form, Button } from "react-bootstrap";
 import { fetchBookingById, updateGSTInfo, fetchGSTInvoice } from "../api";
 import "./gst-invoice.css";
-
+//import { sendWhatsAppGSTInvoice } from "../utils/sendWhatsAppGSTInvoice";
+import html2canvas from "html2canvas";
+import ReceiptPreviewModal from "../components/ReceiptPreviewModal"; // adjust path
 
 const HOTEL = {
   name: "Hotel Sri Krishna",
@@ -31,13 +33,20 @@ const rupee = (n) => `₹${(n || 0).toLocaleString("en-IN")}`;
 const ddmmyyyy = (d) =>
   d ? new Date(d).toLocaleDateString("en-GB") : "-";
 
-export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = "single" }) {
+export default function GSTInvoice({ bookingId, bookingDetails, onClose,mode = "single" }) {
   const [booking, setBooking] = useState(bookingDetails || null);
   const [gstForm, setGstForm] = useState({
     gst_bill_no: "",
     guest_gst_no: "",
     guest_company_name: "",
   });
+
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState({
+    imgData: null,
+    whatsappLink: null,
+  });
+
 
   useEffect(() => {
     async function load() {
@@ -77,10 +86,19 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose, mode = 
       const grossPrice = r.room_price || 0; // already includes GST
       const netPrice = grossPrice / (1 + HOTEL.taxRatePct / 100); // base before GST
       const gstAmount = grossPrice - netPrice;
+        const roomType = (r.room_type || "").toLowerCase();
+        const occupancy = (r.occupancy || "").toLowerCase();
 
+        let roomLabel = "";
+
+        if (roomType === "triple") {
+          roomLabel = "Triple";
+        } else {
+          roomLabel = `${r.occupancy} ${r.room_type}`;
+        }
       return {
         key: idx,
-        label: `${r.room_number} – ${r.is_ac ? "AC " : ""}${r.occupancy} ${r.room_type}`,
+        label: `${r.room_number} – ${r.is_ac ? "AC " : "Non AC "} ${roomLabel}`,
         checkIn: stay.check_in_date,
         checkOut: stay.check_out_date || stay.probable_check_out_date,
         nights,
@@ -113,6 +131,43 @@ const paid = (booking.payment_info || [])
     return { roomRows, subTotal, tax, grand, paid, balance, gst_price, net_price  };
   })();
 
+const handleSendWhatsAppGST = async () => {
+  try {
+    const element = window.__gstInvoiceRef;
+    if (!element) return alert("Invoice not ready");
+
+    // ✅ Force print layout
+    element.classList.add("print-mode");
+    await new Promise((r) => setTimeout(r, 300));
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+
+    element.classList.remove("print-mode");
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const phone = booking?.customer_info?.phone;
+    const text = encodeURIComponent(
+      `GST Invoice from Hotel Sri Krishna\nBill No: ${gstForm.gst_bill_no}`
+    );
+
+    const whatsappLink = phone
+      ? `https://wa.me/91${phone}?text=${text}`
+      : null;
+
+    setPreviewData({ imgData, whatsappLink });
+    setShowPreview(true);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to generate GST invoice image");
+  }
+};
+
+
 const handleSaveGST = async () => {
   try {
     const data = await fetchGSTInvoice(bookingId);
@@ -135,7 +190,12 @@ const handleSaveGST = async () => {
   }
 };
   return (
-    <Card className="invoice-card print-friendly">
+    <>
+    <Card
+      className="invoice-card print-friendly"
+      ref={(el) => (window.__gstInvoiceRef = el)}
+    >
+
       <Card.Header className="invoice-header d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-3">
           {HOTEL.logo && (
@@ -308,6 +368,16 @@ const handleSaveGST = async () => {
             <Button variant="success" onClick={() => window.print()}>
               Print
             </Button>
+            {gstForm.gst_bill_no && (
+              <Button
+                variant="success"
+                style={{ backgroundColor: "#25D366", border: "none" }}
+                onClick={handleSendWhatsAppGST}
+              >
+                📲 Send GST Bill on WhatsApp
+              </Button>
+            )}
+
           </div>
         )}
 
@@ -328,5 +398,12 @@ const handleSaveGST = async () => {
         </div>
       </Card.Body>
     </Card>
+    <ReceiptPreviewModal
+      show={showPreview}
+      onHide={() => setShowPreview(false)}
+      imgData={previewData.imgData}
+      whatsappLink={previewData.whatsappLink}
+    />
+   </>
   );
 }

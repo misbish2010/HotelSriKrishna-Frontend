@@ -201,8 +201,9 @@ const PaymentTable = () => {
             {type === "paid" && <th>Check In Date</th>}
 
             {/* PENDING TAB */}
+            {type === "pending" && <th style={{ textAlign: "right" }}>Price Per Night</th>}
+            {type === "pending" && <th style={{ textAlign: "right" }}>Advanced</th>}
             {type === "pending" && <th style={{ textAlign: "right" }}>Pending</th>}
-
 
             {/* EXPENSE TAB */}
             {type === "expense" && <th>Description</th>}
@@ -256,8 +257,20 @@ const PaymentTable = () => {
 
                 {/* PENDING */}
                 {type === "pending" && (
-                  <td style={{ textAlign: "right" }}>₹{payment.amount.toFixed(2)}</td>
+                  <>
+                    <td style={{ textAlign: "right" }}>
+                      ₹{Number(payment.agreed_price_per_night || 0).toFixed(2)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      ₹{Number(payment.advance_paid || 0).toFixed(2)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      ₹{Number(payment.net_pending_amount || 0).toFixed(2)}
+                    </td>
+                  </>
                 )}
+
+
 
 
                 {/* EXPENSE */}

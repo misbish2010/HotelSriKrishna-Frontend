@@ -64,31 +64,32 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
             rooms.length > 0 &&
             rooms.every(r => r.roomType && r.occupancy && r.roomNumber)
           );
+        case 3: {
+          const pricing = payment?.pricing_info;
+          const payments = payment?.payment_info || [];
 
-            case 3: {
-              const pricing = payment?.pricing_info;
-              const payments = payment?.payment_info || [];
+          const hasFinalPrice =
+            (pricing?.roomAgreedPrices && pricing.roomAgreedPrices.length > 0) ||
+            pricing?.totalPrice > 0;
 
-              const hasFinalPrice =
-                (pricing?.roomAgreedPrices && pricing.roomAgreedPrices.length > 0) ||
-                pricing?.totalPrice > 0;
+          const latestPayment =
+            payments.length > 0 ? payments[payments.length - 1] : null;
 
-              const latestPayment = payments.length > 0 ? payments[payments.length - 1] : null;
+          const amount = Number(latestPayment?.amount || 0);
 
-              const hasPaymentAmount =
-                latestPayment?.amount != null && latestPayment.amount !== "";
-              const hasPaymentDate =
-                latestPayment?.date != null && latestPayment.date !== "";
+          const hasPaymentDate =
+            latestPayment?.date != null && latestPayment.date !== "";
 
-              // Validation: if there's a payment amount, payment date must be entered
-              if (hasPaymentAmount && !hasPaymentDate) {
-                return false;
-              }
+          const hasPaymentMode =
+            latestPayment?.mode != null && latestPayment.mode !== "";
 
-              return hasFinalPrice && hasPaymentAmount;
-            }
+          // 👉 Enforce ONLY when amount > 0
+          if (amount > 0 && (!hasPaymentDate || !hasPaymentMode)) {
+            return false;
+          }
 
-
+          return hasFinalPrice;
+        }
 
         default:
           return true;
@@ -293,7 +294,9 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
 
   return (
     <Container className="py-4">
-      <h2 className="text-center mb-4">Hotel Check-In Wizard</h2>
+      <h2 className="text-center mb-4">
+        {mode === "advance" ? "Advance Booking Wizard" : "Check-In Wizard"}
+      </h2>
       <ProgressBar now={(currentStep / (steps.length - 1)) * 100} className="mb-4" />
       <Card className="shadow p-3">
         <Card.Title className="mb-3">Step {currentStep + 1}: {steps[currentStep]}</Card.Title>

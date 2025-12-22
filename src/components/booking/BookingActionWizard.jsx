@@ -58,7 +58,7 @@ const getStatusRules = (status) => {
     return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: false, actions: [] };
   }
   if (s.includes("checked in") || s.includes("checked-in")) {
-    return { canEditGuest: true, canEditStay: true, canEditRooms: false, canEditPayment: true, actions: ["money_receipt", "update", "checkout"] };
+    return { canEditGuest: true, canEditStay: true, canEditRooms: true, canEditPayment: true, actions: ["money_receipt", "update", "checkout"] };
   }
   // confirmed / booked / default
   return { canEditGuest: true, canEditStay: true, canEditRooms: true, canEditPayment: true, actions: ["money_receipt", "update", "cancel", "checkin"] };
@@ -405,7 +405,7 @@ const handleNext = async () => {
           date: p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ always "YYYY-MM-DD"
           mode: p.mode,
           notes: p.notes,
-          status: "paid"
+          status: p.status
         })),
       };
       const res = await updateBooking(payload);
@@ -523,7 +523,14 @@ const handleNext = async () => {
             now={(currentStep / (steps.length - 1)) * 100}
             style={{ flex: 1, marginRight: 12 }}
           />
-          <div><strong>Status:</strong> {formData.bookingStatus || "N/A"}</div>
+          <div className="d-flex gap-4 align-items-center">
+            <div className="text-primary">
+              <strong>Booking ID:</strong> {bookingDetails?.booking_id || "N/A"}
+            </div>
+            <div>
+              <strong>Status:</strong> {formData.bookingStatus || "N/A"}
+            </div>
+          </div>
         </div>
 
         <Card className="shadow p-3">
@@ -572,6 +579,7 @@ const handleNext = async () => {
             amount: -Number(refundAmount),
             date: formatDateForApi(),
             mode: paymentMode,
+            notes: "Cancel Refund",
             status: "Refund",
           });
         }
@@ -632,12 +640,15 @@ const handleNext = async () => {
 
         // ✅ add extra payment
         if (extraPayment && extraPayment > 0) {
+          const isPending =
+            typeof notes === "string" && notes.toLowerCase().includes("pending");
+
           updatedPayments.push({
             amount: Number(extraPayment),
             date: formatDateForApi(checkoutDate),
             mode: paymentMode,
             notes: notes || "Final settlement",
-            status: "paid",
+            status: isPending ? "Pending" : "Paid",
           });
         }
 
@@ -724,7 +735,7 @@ const handleNext = async () => {
             amount: Number(extraPayment),
             date: formatDateForApi(checkInDate),
             mode: paymentMode,
-            status: "paid",
+            status: "Paid",
           });
         }
         try {
@@ -776,7 +787,7 @@ const handleNext = async () => {
 
       {showGSTInvoice && (
         <GSTInvoice
-          bookingDetails={formData}
+          bookingDetails={bookingDetails}
           onClose={() => setShowGSTInvoice(false)}
         />
       )}

@@ -35,6 +35,14 @@ export const STATUS_META = {
     parts: ["Checkout", "New Booking"],
     colors: ["secondary", "primary"]
   },
+  checked_in_checkout: {
+    parts: ["Checked-In", "Checkout"],
+    colors: ["danger", "secondary"]
+  },
+  checked_in_checkout_to_new_booking: {
+    parts: ["Checked-In", "Checkout", "New Booking"],
+    colors: ["danger", "secondary", "primary"]
+  },
   unknown: {
     parts: ["Unknown"],
     colors: ["orange"]

@@ -113,21 +113,28 @@ const StepReviewConfirm = ({ formData }) => {
               </tr>
             </thead>
             <tbody>
-              {payment?.payment_info?.length > 0 ? (
-                payment.payment_info.map((p, idx) => (
-                  <tr key={idx}>
-                    <td>₹{p.amount}</td>
-                    <td>{p.date}</td>
-                    <td>{p.mode}</td>
-                    <td>{p.status}</td>
+              {payment?.payment_info
+                ?.filter(p => Number(p.amount) > 0)
+                .length > 0 ? (
+                  payment.payment_info
+                    .filter(p => Number(p.amount) > 0)
+                    .map((p, idx) => (
+                      <tr key={idx}>
+                        <td>₹{p.amount}</td>
+                        <td>{p.date}</td>
+                        <td>{p.mode}</td>
+                        <td>{p.status}</td>
+                      </tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center">
+                      No payment recorded
+                    </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="text-center">No payment recorded</td>
-                </tr>
-              )}
+                )}
             </tbody>
+
           </Table>
         </Card.Body>
       </Card>

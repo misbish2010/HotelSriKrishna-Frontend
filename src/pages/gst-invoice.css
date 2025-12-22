@@ -196,3 +196,33 @@
 .modal-content {
   overflow: visible !important;
 }
+
+/* ===============================
+   Force print layout for WhatsApp
+   =============================== */
+.print-mode button,
+.print-mode .d-print-none {
+  display: none !important;
+}
+
+/* ===============================
+   Print-mode layout adjustments
+   =============================== */
+
+.print-mode .totals-box {
+  margin-top: 20px !important;
+}
+
+/* Center totals box under table */
+.print-mode .totals-box {
+  width: 100% !important;
+}
+
+.print-mode .justify-content-end {
+  justify-content: center !important;
+}
+
+.print-mode .justify-content-end > .col-md-5 {
+  max-width: 100% !important;
+  flex: 0 0 100% !important;
+}

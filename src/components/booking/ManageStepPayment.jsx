@@ -67,7 +67,7 @@ const ManageStepPayment = ({ paymentInfo = [], onChange = () => {}, rooms = [], 
               {paymentsArray.map((p, i) => (
                 <tr key={i}>
                   <td><Form.Control type="number" value={p.amount ?? p.paymentAmount ?? ""} onChange={(e) => onPaymentChange(i, "amount", Number(e.target.value))} /></td>
-                  <td><Form.Select value={p.mode ?? p.paymentMode ?? ""} onChange={(e) => onPaymentChange(i, "mode", e.target.value)}><option value="">Select</option><option value="cash">Cash</option><option value="card">Card</option><option value="upi">UPI</option></Form.Select></td>
+                  <td><Form.Select value={p.mode ?? p.paymentMode ?? ""} onChange={(e) => onPaymentChange(i, "mode", e.target.value)}><option value="">Select</option><option value="cash">Cash</option><option value="upi">UPI</option></Form.Select></td>
                   <td><Form.Control type="date" value={(p.date ?? p.paymentDate ?? "").slice(0,10)} onChange={(e) => onPaymentChange(i, "date", e.target.value)} /></td>
                   <td><Form.Control value={p.status || ""} onChange={(e) => onPaymentChange(i, "status", e.target.value)} /></td>
                   <td><Form.Control value={p.notes || ""} onChange={(e) => onPaymentChange(i, "notes", e.target.value)} /></td>
