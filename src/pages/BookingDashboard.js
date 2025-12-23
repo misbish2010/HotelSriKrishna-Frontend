@@ -307,8 +307,8 @@ const BookingDashboard = ({ onViewBooking }) => {
                       {row.booking_status === "Checked-Out" && (
                         <OverlayTrigger overlay={<Tooltip>
                                                          {row.gst_info?.gst_bill_no
-                                                           ? `GST Generated: ${row.gst_info.gst_bill_no}`
-                                                           : "GST Not Generated"}
+                                                           ? `Bill Generated: ${row.gst_info.gst_bill_no}`
+                                                           : "Bill Not Generated"}
                                                        </Tooltip>}>
                           <Button
                             variant={row.gst_info?.gst_bill_no ? "success" : "warning"}

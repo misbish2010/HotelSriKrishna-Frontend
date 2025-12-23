@@ -119,7 +119,7 @@ const PaymentTable = () => {
         }
       });
 
-      pending_payment_details.forEach((p) => (pendingAmount += p.amount));
+      pending_payment_details.forEach((p) => (pendingAmount += p.net_pending_amount));
       expense_details.forEach((e) => (expenseAmount += e.amount));
 
       setTotalCashCollected(cashCollected);
@@ -132,6 +132,7 @@ const PaymentTable = () => {
       setExpenseTableData(expense_details);
       setPaymentTableData(payment_details);
       setPendingPaymentTableData(pending_payment_details);
+      console.log(pendingAmount)
       setTotalPending(pendingAmount);
 
       // NEW - advance adjusted
