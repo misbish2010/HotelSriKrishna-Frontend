@@ -252,29 +252,45 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
           )
         );
 
-        case 3: // Payment
-          if (disablePaymentEditing) return true; // ✅ Skip validation if read-only
+        case 3: { // Payment
+          if (disablePaymentEditing) return true;
 
-          // If payment array is empty → allowed (some bookings can have no payments yet)
-          if (!Array.isArray(formData.payment) || formData.payment.length === 0) {
-            console.log("✅ No payment entries (allowed)");
+          const payments = formData.payments; // ✅ CORRECT PATH
+
+          console.log("🧾 Payments seen by validator:", payments);
+
+          // ✅ Allow no payments at all
+          if (!Array.isArray(payments) || payments.length === 0) {
             return true;
           }
 
-          // Otherwise, validate each payment entry
-          const allValid = formData.payment.every((p, i) => {
-            const isValid =
-              p.amount != null &&
-              p.amount >= 0 && // ✅ allow 0
-              p.mode &&
-              p.date &&
-              !isNaN(new Date(p.date).getTime()); // valid date
+          // 🚫 Validate each payment row
+          for (let i = 0; i < payments.length; i++) {
+            const p = payments[i];
+            const amount = Number(p.amount);
 
-            if (!isValid) console.log("❌ Invalid payment entry at index", i, p);
-            return isValid;
-          });
+            // Amount must be > 0
+            if (!amount || amount <= 0) {
+              console.log("❌ Invalid amount", p);
+              return false;
+            }
 
-          return allValid;
+            // Mode mandatory
+            if (!p.mode) {
+              console.log("❌ Payment mode missing", p);
+              return false;
+            }
+
+            // Date mandatory
+            if (!p.date || isNaN(new Date(p.date).getTime())) {
+              console.log("❌ Payment date missing/invalid", p);
+              return false;
+            }
+          }
+
+          return true;
+        }
+
 
 
       default:

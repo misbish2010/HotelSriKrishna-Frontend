@@ -46,14 +46,13 @@ const ManageStepPayment = ({ paymentInfo = [], onChange = () => {}, rooms = [], 
       <h5 className="mt-4">Payment History</h5>
       {disablePaymentEditing ? (
         <Table bordered hover>
-          <thead><tr><th>Amount</th><th>Mode</th><th>Date</th><th>Status</th><th>Notes</th></tr></thead>
+          <thead><tr><th>Amount</th><th>Mode</th><th>Date</th><th>Notes</th></tr></thead>
           <tbody>
             {paymentsArray.length ? paymentsArray.map((p, i) => (
               <tr key={i}>
                 <td>₹{Number(p.amount || p.paymentAmount || 0).toFixed(2)}</td>
                 <td>{p.mode || p.paymentMode || "-"}</td>
                 <td>{p.date ? new Date(p.date).toLocaleString() : ""}</td>
-                <td>{p.status || "-"}</td>
                 <td>{p.notes || "-"}</td>
               </tr>
             )) : <tr><td colSpan={5} className="text-center">No payment records</td></tr>}
@@ -62,14 +61,13 @@ const ManageStepPayment = ({ paymentInfo = [], onChange = () => {}, rooms = [], 
       ) : (
         <>
           <Table bordered hover>
-            <thead><tr><th>Amount</th><th>Mode</th><th>Date</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Amount</th><th>Mode</th><th>Date</th><th>Notes</th><th>Actions</th></tr></thead>
             <tbody>
               {paymentsArray.map((p, i) => (
                 <tr key={i}>
                   <td><Form.Control type="number" value={p.amount ?? p.paymentAmount ?? ""} onChange={(e) => onPaymentChange(i, "amount", Number(e.target.value))} /></td>
                   <td><Form.Select value={p.mode ?? p.paymentMode ?? ""} onChange={(e) => onPaymentChange(i, "mode", e.target.value)}><option value="">Select</option><option value="cash">Cash</option><option value="upi">UPI</option></Form.Select></td>
                   <td><Form.Control type="date" value={(p.date ?? p.paymentDate ?? "").slice(0,10)} onChange={(e) => onPaymentChange(i, "date", e.target.value)} /></td>
-                  <td><Form.Control value={p.status || ""} onChange={(e) => onPaymentChange(i, "status", e.target.value)} /></td>
                   <td><Form.Control value={p.notes || ""} onChange={(e) => onPaymentChange(i, "notes", e.target.value)} /></td>
                   <td><Button size="sm" variant="danger" onClick={() => onRemovePayment && onRemovePayment(i)}>Remove</Button></td>
                 </tr>
