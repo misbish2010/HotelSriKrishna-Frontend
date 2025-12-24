@@ -5,33 +5,6 @@ import StatusBadge from "./StatusBadge.jsx"
 import moment from "moment";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
-function deriveStatus(r, date) {
-  const sameDayCO =
-    r.current_check_out_time &&
-    moment(r.current_check_out_time).isSame(date, "day");
-
-  const sameDayCI =
-    r.next_check_in_time &&
-    moment(r.next_check_in_time).isSame(date, "day");
-
-  // ✅ Highest priority: CI → CO → New Booking (same day)
-  if (
-    r.status === "checkout_to_new_booking" &&
-    sameDayCO &&
-    sameDayCI
-  ) {
-    return "checked_in_checkout_to_new_booking";
-  }
-
-  // ✅ CI → CO only (same day)
-  if (r.status === "checked_in" && sameDayCO) {
-    return "checked_in_checkout";
-  }
-
-  return r.status;
-}
-
-
 const ConflictBadge = ({ conflicts }) => (
   <OverlayTrigger
     placement="right"
@@ -127,7 +100,7 @@ export default function DailyChartPage() {
 
   const filteredRooms = useMemo(() => {
     let out = rooms.slice();
-    if (statusFilter !== "all") out = out.filter(r => deriveStatus(r, date) === statusFilter);
+    if (statusFilter !== "all") out = out.filter(r => r.status === statusFilter);
     if (search && search.trim()) {
       const q = search.trim().toLowerCase();
       out = out.filter(r =>
@@ -202,10 +175,6 @@ export default function DailyChartPage() {
             <option value="continue_confirmed">Continue (Confirmed)</option>
             <option value="checkout_available">Checkout → Available</option>
             <option value="checkout_to_new_booking">Checkout → New Booking</option>
-            <option value="checked_in_checkout">Checked-In → Checkout</option>
-            <option value="checked_in_checkout_to_new_booking">
-              Checked-In → Checkout → New Booking
-            </option>
           </select>
         </div>
 
@@ -260,8 +229,7 @@ export default function DailyChartPage() {
                   {r.conflict && <ConflictBadge conflicts={r.conflict_bookings || []} />}
                 </td>
 
-                <td><StatusBadge status={deriveStatus(r, date)} /></td>
-
+                <td><StatusBadge status={r.status} /></td>
 <td>
   <div style={{ lineHeight: 1.2 }}>
     {r.status === "checkout_to_new_booking" ? (
@@ -334,7 +302,7 @@ export default function DailyChartPage() {
                           {r.conflict && <ConflictBadge conflicts={r.conflict_bookings || []} />}
                         </h5>
 
-                        <StatusBadge status={deriveStatus(r, date)} />
+                        <StatusBadge status={r.status} />
                       </div>
 
                       {/* Guest Info + Timing */}
