@@ -19,6 +19,14 @@ const ManageStepRooms = ({
   };
   const [previousRooms, setPreviousRooms] = useState(rooms)
 
+const calculateAgreedPrice = (roomPrice, extraBedPrice, extraPersons) => {
+  const extras = Number(extraPersons) > 0
+    ? Number(extraBedPrice || 0) * Number(extraPersons)
+    : 0;
+
+  return (Number(roomPrice || 0) + extras).toFixed(2);
+};
+
 //   useEffect(() => {
 //     console.log("ManageStepRooms received rooms:", rooms);
 //     console.log("availableRooms length:", availableRooms);
@@ -51,12 +59,28 @@ const ManageStepRooms = ({
         updatedRoom.roomId = matchedRoom.room_id;
         updatedRoom.pricePerNight = matchedRoom.room_price;
         updatedRoom.extraBedPrice = matchedRoom.extra_bed_price;
-        updatedRoom.agreedPrice = ((matchedRoom.room_price + matchedRoom.extra_bed_price)* 1.05).toFixed(2); // ✅ include GST
+        const extraPersons = Number(updatedRoom.extraPersons || 0);
+
+        updatedRoom.agreedPrice = calculateAgreedPrice(
+          matchedRoom.room_price,
+          matchedRoom.extra_bed_price,
+          extraPersons
+        );
+
         updatedRoom.isAcRoom = matchedRoom.is_ac ? true : false;
         updatedRoom.roomType = matchedRoom.room_type;
         updatedRoom.occupancy = matchedRoom.occupancy;
       }
-    }
+    }else if (name === "extraPersons") {
+       updatedRoom.extraPersons = Number(value);
+
+       updatedRoom.agreedPrice = calculateAgreedPrice(
+         updatedRoom.pricePerNight,
+         updatedRoom.extraBedPrice,
+         updatedRoom.extraPersons
+       );
+     }
+
 
     const updatedRooms = [...rooms];
     updatedRooms[index] = updatedRoom;
