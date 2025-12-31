@@ -1,75 +1,71 @@
-/* Header.css */
 .main-navbar {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 10px 20px; /* Adjusted padding */
-    background-color: #343a40; /* Ensure background is visible */
-    flex-wrap: wrap; /* Allows elements to wrap on small screens */
+  background: linear-gradient(135deg, #1f2933, #111827);
 }
 
-/* Logo */
-.logo img {
-    height: 50px; /* Default size */
+/* Container */
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
-.hotel-name h1 {
-    font-family: 'Georgia', serif;
-    font-size: 2rem;
-    font-weight: bold;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 0;
+/* Title + Logo */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
-/* Date and Time */
+.hotel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+}
+
+.header-logo {
+  height: 36px;
+}
+
+/* Right Section */
+.header-right {
+  text-align: center;
+}
+
 .date-time {
-    font-size: 1.1rem;
-    color: white;
-    font-weight: bold;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  margin-bottom: 2px;
 }
 
-/* Auth Container */
-.auth-container {
-    background-color: #f8f9fa;
-    padding: 5px 10px;
+/* Welcome + Sign out single line */
+.auth-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 
-/* Welcome Message */
-.welcome-message {
-    font-size: 1rem;
-    color: #007bff;
-    margin-right: 20px;
+.welcome {
+  color: #3b82f6;
+  font-size: 0.9rem;
 }
 
-/* ✅ Mobile Adjustments */
-@media (max-width: 768px) {
-    .main-navbar {
-        flex-direction: column;
-        text-align: center;
-        padding: 15px 10px;
-    }
+/* ---------------- DESKTOP ---------------- */
+@media (min-width: 768px) {
+  .header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-    .logo img {
-        height: 40px; /* Smaller logo for mobile */
-        margin-bottom: 5px;
-    }
+  .header-right {
+    text-align: right;
+  }
 
-    .hotel-name h1 {
-        font-size: 1.5rem; /* Smaller font for mobile */
-        letter-spacing: 1px;
-    }
-
-    .date-time {
-        font-size: 1rem;
-        margin-top: 5px;
-    }
-
-    .welcome-message {
-        font-size: 0.9rem;
-        margin-right: 0;
-    }
+  .date-time {
+    margin-bottom: 4px;
+  }
 }

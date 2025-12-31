@@ -1,85 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { Navbar, Container, Button, Row, Col } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import './Header.css'; // Additional styling
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Navbar, Container, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import "./Header.css";
 
-function Header({ isLoggedIn, userName }) {
-    const navigate = useNavigate();
+function Header({ isLoggedIn, userName, onHomeClick }) {
+  const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState("");
 
-    const handleLoginClick = () => {
-        navigate('/login'); // Navigate to the login page
-    };
-    const handleSignUpClick = () => {
-        navigate('/signup'); // Navigate to the signup page
-     };
-    const handleSignOutClick = () => {
-        navigate('/signout'); // Navigate to the signup page
-    };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(
+        now.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      );
+    }, 60000); // update every minute
 
+    return () => clearInterval(interval);
+  }, []);
 
-    const [currentTime, setCurrentTime] = useState('');
+  return (
+    <Navbar bg="dark" className="main-navbar py-2">
+      <Container className="header-container">
 
-    // Update the time every second
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const now = new Date();
-            setCurrentTime(now.toLocaleString());
-        }, 1000);
+        {/* LEFT: Title + Logo */}
+        <div
+          className="header-left"
+          onClick={() => isLoggedIn && onHomeClick?.()}
+        >
+          <span className="hotel-title">Hotel Sri Krishna</span>
+          <img
+            src={process.env.PUBLIC_URL + "/static/images/logo.png"}
+            alt="Logo"
+            className="header-logo"
+          />
+        </div>
 
-        return () => clearInterval(interval);
-    }, []);
+        {/* RIGHT: Time + Auth */}
+        <div className="header-right">
+          <div className="date-time">{currentTime}</div>
 
+          {isLoggedIn ? (
+            <div className="auth-line">
+              <span className="welcome">Welcome, {userName}</span>
+              <Button
+                size="sm"
+                variant="outline-danger"
+                onClick={() => navigate("/signout")}
+              >
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <div className="auth-line">
+              <Button size="sm" onClick={() => navigate("/login")}>
+                Login
+              </Button>
+            </div>
+          )}
+        </div>
 
-    return (
-        <header>
-            <Navbar bg="dark" expand="lg" className="main-navbar">
-                <Container>
-                    {/* Left side: Logo */}
-                    <Navbar.Brand href="#" className="logo">
-                        <img
-                            src={process.env.PUBLIC_URL + '/static/images/logo.png'}
-                            alt="Hotel Logo"
-                            height="60"
-                        />
-                    </Navbar.Brand>
-
-                    {/* Center: Hotel name */}
-                    <Navbar.Text className="hotel-name mx-auto">
-                        <h1>Hotel Sri Krishna</h1>
-                    </Navbar.Text>
-
-                    {/* Right side: Date, Time, and Auth Buttons */}
-                                        <div className="text-end">
-                                            {/* Current Date and Time */}
-                                            <div className="date-time">{currentTime}</div>
-
-                                            {/* Login, Sign Up, or Sign Out */}
-                                            <div className="auth-buttons mt-2">
-                                                {!isLoggedIn ? (
-                                                    <>
-                                                       <Button variant="primary" size="sm" className="mx-1" onClick={handleLoginClick} >
-                                                            Login
-                                                        </Button>
-                                                        <Button variant="secondary" size="sm" className="mx-1" onClick={handleSignUpClick}>
-                                                            Sign Up
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="welcome-message me-2">Welcome, {userName}</span>
-                                                        <Button variant="outline-danger" size="sm" onClick={handleSignOutClick}>
-                                                            Sign Out
-                                                        </Button>
-
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                </Container>
-            </Navbar>
-        </header>
-    );
+      </Container>
+    </Navbar>
+  );
 }
 
 export default Header;

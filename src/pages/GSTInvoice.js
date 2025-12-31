@@ -15,7 +15,7 @@ const HOTEL = {
   email: "hotelsrikrishnakoraput@gmail.com",
   phones: "Phone No.: 06852 357172",
   gstin: "GSTIN: 21AHSPM7680F1Z1",
-  logo: process.env.PUBLIC_URL + "/static/images/logo.png",
+  logo: process.env.PUBLIC_URL + "/static/images/logo-round.png",
   taxRatePct: 5, // screenshot shows 5%
 };
 
@@ -223,7 +223,7 @@ const handleSaveGST = async () => {
         </div>
         <div className="text-end">
           <h3 className="m-0">INVOICE</h3>
-          <div>Date: {ddmmyyyy(new Date())}</div>
+          <div>Date: {ddmmyyyy(new Date(stay.check_out_date || stay.probable_check_out_date))}</div>
           <div>Bill No.: {gstForm.gst_bill_no || "-"}</div>
         </div>
       </Card.Header>
@@ -234,16 +234,16 @@ const handleSaveGST = async () => {
             <Row className="mb-2 w-100">
               <Col md={6} className="p-2 border rounded info-box">
                 <h6 className="fw-bold">Billing To:</h6>
-                <div>Name: {guest.name || "-"}</div>
-                <div>Address: {guest.address || "-"}</div>
+                <div>Name: {(guest.name || "-").toUpperCase()}</div>
+                <div>Address: {(guest.address || "-").toUpperCase()}</div>
                 <div>Phone: {guest.phone || "-"}</div>
                 {/*<div>Aadhar: {guest.identity || "-"}</div>*/}
                 {/* Print-only fields */}
                 {gstForm.guest_company_name && (
-                  <div>Company Name: {gstForm.guest_company_name}</div>
+                  <div>Company Name: {(gstForm.guest_company_name).toUpperCase()}</div>
                 )}
                 {gstForm.guest_gst_no && (
-                  <div>Guest GSTIN: {gstForm.guest_gst_no}</div>
+                  <div>Guest GSTIN: {(gstForm.guest_gst_no).toUpperCase()}</div>
                 )}
 
 

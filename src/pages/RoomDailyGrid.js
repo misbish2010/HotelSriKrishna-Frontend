@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Row, Col, Form, Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { fetchDailyChart } from "../api";
 import "./room-availability.css";
+import { PageHeader } from "./common/PageHeader";
+import { FaPersonWalkingLuggage } from "react-icons/fa6";
+import { FcCopyright } from "react-icons/fc";
+import { BsCSquareFill } from "react-icons/bs";
+import { BsCCircleFill } from "react-icons/bs";
+import { BsCCircle } from "react-icons/bs";
 
 const ROOM_GROUPS = [
   ["001", "002", "003"],
@@ -10,13 +16,15 @@ const ROOM_GROUPS = [
   ["301", "302", "303", "304", "305"],
 ];
 
+
+
 // backend status → css class
 const normalizeStatus = (room) => {
   if (!room || !room.status) return "available";
   return room.status;
 };
 
-export default function RoomGrid() {
+export default function RoomDailyGrid() {
   const [startDate, setStartDate] = useState(
     new Date().toISOString().slice(0, 10)
   );
@@ -124,6 +132,12 @@ export default function RoomGrid() {
     room.current_guest_name || room.next_guest_name;
 
   return (
+   <>
+   <PageHeader
+                 title="Rooms – Daily Grid"
+                 subtitle="Room availability for selected date"
+                 badge="Daily"
+               />
     <Row className="room-layout">
       {/* LEFT – ROOMS GRID */}
       <Col md={8}>
@@ -139,6 +153,22 @@ export default function RoomGrid() {
               const roomBox = (
                 <div className={`room-box ${statusClass}`}>
                   {roomNo}
+
+{[
+  "checkout_available",
+  "checkout_to_new_booking",
+  "checkout"
+].includes(statusClass) && (
+  <BsCSquareFill className="checkout-icon" />
+)}
+{[
+  "checked_in",
+  "new_booking"
+].includes(statusClass) && (
+  <FaPersonWalkingLuggage className="checkin-icon" />
+)}
+
+
                   {room.conflict && (
                     <Badge bg="warning" className="conflict-badge">
                       !
@@ -176,22 +206,6 @@ export default function RoomGrid() {
           />
         </Form.Group>
 
-        <Form.Group className="mb-4">
-          <Form.Label>
-            <strong>Nights</strong>
-          </Form.Label>
-          <Form.Select
-            value={nights}
-            onChange={(e) => setNights(Number(e.target.value))}
-          >
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n} Night{n > 1 && "s"}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-
         <div className="legend-box">
           <h6>Legend</h6>
 
@@ -208,20 +222,11 @@ export default function RoomGrid() {
           </div>
 
           <div className="legend-item">
-            <span className="legend-color checkout_to_new_booking" /> Checkout →
-            New Booking
-          </div>
-
-          <div className="legend-item">
-            <span className="legend-color checkout_available" /> Checkout →
-            Available
-          </div>
-
-          <div className="legend-item">
             <Badge bg="warning">!</Badge> Conflict / Double Booking
           </div>
         </div>
       </Col>
     </Row>
+    </>
   );
 }

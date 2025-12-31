@@ -20,13 +20,15 @@ import Footer from "./Footer";
 import BookingDashboard from "./pages/BookingDashboard";
 import DailyExpenseForm from "./pages/DailyExpenseForm";
 import PaymentTable from "./pages/PaymentTable";
-import RoomGrid from "./pages/Rooms";
+import RoomGridTimeBased from "./pages/RoomGridTimeBased";
+import RoomMultiNightGrid from "./pages/RoomMultiNightGrid";
+import RoomDailyGrid from "./pages/RoomDailyGrid";
 import GSTInvoice from "./pages/GSTInvoice";
 import BulkGSTInvoice from "./pages/BulkGSTInvoice";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import SignOut from "./pages/SignOut";
-
+import Dashboard from "./pages/Dashboard";
 function App() {
   //const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedBookingDetails, setSelectedBookingDetails] = useState(null);
@@ -47,6 +49,7 @@ function App() {
     setIsLoggedIn(true);
     setUserName(username);
     setIsAdmin(isAdmin);
+    setActiveComponent("dashboard")
   };
 
   const handleSignOut = () => {
@@ -60,7 +63,7 @@ function App() {
       <div className="app">
         <ToastContainer position="top-center" />
 
-        <Header isLoggedIn={isLoggedIn} userName={userName} />
+        <Header isLoggedIn={isLoggedIn} userName={userName} onHomeClick={() => setActiveComponent("dashboard")} />
 
         {isLoggedIn && (
           <Sidebar
@@ -88,6 +91,9 @@ function App() {
             <CheckInWizard mode="advance" isAdmin={true} />
           )}
 
+            {activeComponent === "dashboard" && (
+                        <Dashboard onNavigate={handleSidebarClick} />
+                      )}
 
           {activeComponent === "bookingSearch" && (
             <BookingSearchPage
@@ -111,7 +117,7 @@ function App() {
           )}
 
 
-{activeComponent === "dashboard" && (
+{activeComponent === "booking_dashboard" && (
   <BookingDashboard
     onViewBooking={(bookingObj) => {
       setSelectedBookingDetails(bookingObj);
@@ -128,9 +134,14 @@ function App() {
 )}
 
 
+{activeComponent === "rooms_time_based" && <RoomGridTimeBased />}
 
-          {activeComponent === "rooms" && <RoomGrid />}
-          {activeComponent === "dailyChart" && <DailyChartPage />}
+{activeComponent === "rooms_daily_chart" && <DailyChartPage />}
+
+{activeComponent === "rooms_daily_grid" && <RoomDailyGrid />}
+
+{activeComponent === "rooms_multi_night" && <RoomMultiNightGrid />}
+
           {activeComponent === "dailyExpense" && <DailyExpenseForm />}
           {activeComponent === "collection" && <PaymentTable />}
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Row, Col, Form, Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { fetchDailyChart } from "../api";
 import "./room-availability.css";
+import { PageHeader } from "./common/PageHeader";
 
 const ROOM_GROUPS = [
   ["001", "002", "003"],
@@ -16,7 +17,7 @@ const normalizeStatus = (room) => {
   return room.status;
 };
 
-export default function RoomGrid() {
+export default function RoomMultiNightGrid() {
   const [startDate, setStartDate] = useState(
     new Date().toISOString().slice(0, 10)
   );
@@ -24,19 +25,69 @@ export default function RoomGrid() {
   const [rooms, setRooms] = useState({});
 
   useEffect(() => {
-    loadData();
+    loadRooms();
   }, [startDate, nights]);
 
-  const loadData = async () => {
-    const res = await fetchDailyChart(startDate, nights);
-    console.log(res)
-    // backend gives array → convert to map by room_number
+const loadRooms = async () => {
+    const dateList = [];
+    for (let i = 0; i < nights; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      dateList.push(d.toISOString().slice(0, 10));
+    }
+
+    const dailyResults = await Promise.all(
+      dateList.map((d) => fetchDailyChart(d))
+    );
+
+    // Aggregate by room_number
     const roomMap = {};
-    (res.rooms || []).forEach((r) => {
-      roomMap[r.room_number] = r;
+     console.log(dailyResults)
+
+    dailyResults.forEach((day) => {
+      day.rooms.forEach((r) => {
+        if (!roomMap[r.room_number]) {
+          roomMap[r.room_number] = [];
+        }
+        roomMap[r.room_number].push(r);
+      });
+    });
+    console.log(roomMap)
+
+    const finalRoomMap = {};
+
+    Object.entries(roomMap).forEach(([roomNumber, entries]) => {
+      const statuses = entries.map(e => e.status);
+
+      let finalStatus = "available";
+      let conflict = false;
+
+      if (statuses.some(s =>
+        ["checked_in", "continue_checked_in", "confirmed", "continue_confirmed", "new_booking"].includes(s)
+      )) {
+        finalStatus = "occupied";
+      } else if (statuses.every(s => s === "available")) {
+        finalStatus = "available";
+        //conflict = true;
+      }
+
+      const sample = entries[0]; // for tooltip fields
+
+      finalRoomMap[roomNumber] = {
+        room_number: roomNumber,
+        status: finalStatus,
+        conflict,
+
+        // tooltip fields
+        current_guest_name: sample.current_guest_name,
+        current_check_out_time: sample.current_check_out_time,
+        next_guest_name: sample.next_guest_name,
+        next_check_in_time: sample.next_check_in_time,
+      };
     });
 
-    setRooms(roomMap);
+    setRooms(finalRoomMap);
+
   };
 
   // -----------------------------------
@@ -120,10 +171,23 @@ export default function RoomGrid() {
     );
   };
 
-  const hasTooltip = (room) =>
-    room.current_guest_name || room.next_guest_name;
+const hasTooltip = (room) =>
+  !!(
+    room.current_guest_name ||
+    room.next_guest_name ||
+    room.current_check_out_time ||
+    room.next_check_in_time
+  );
+
 
   return (
+    <>
+    <PageHeader
+      title="Rooms – Stay Planner"
+      subtitle="Multi-night booking overlap & conflicts"
+      badge="PLANNER"
+    />
+
     <Row className="room-layout">
       {/* LEFT – ROOMS GRID */}
       <Col md={8}>
@@ -200,21 +264,7 @@ export default function RoomGrid() {
           </div>
 
           <div className="legend-item">
-            <span className="legend-color checked_in" /> Checked-In / Continue
-          </div>
-
-          <div className="legend-item">
-            <span className="legend-color new_booking" /> New Booking / Continue
-          </div>
-
-          <div className="legend-item">
-            <span className="legend-color checkout_to_new_booking" /> Checkout →
-            New Booking
-          </div>
-
-          <div className="legend-item">
-            <span className="legend-color checkout_available" /> Checkout →
-            Available
+            <span className="legend-color occupied" /> Occupied
           </div>
 
           <div className="legend-item">
@@ -223,5 +273,6 @@ export default function RoomGrid() {
         </div>
       </Col>
     </Row>
+    </>
   );
 }

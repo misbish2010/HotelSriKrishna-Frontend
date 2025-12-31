@@ -414,7 +414,7 @@ const handleNext = async () => {
               (sum, r) => sum + (Number(r.agreedPrice ?? r.pricePerNight ?? 0) * (formData.stayInfo?.duration || 1)),
               0
             ),
-            gstRate: 5,
+            gstRate: 0,
           },
         payment_info: formData.payments.map((p) => ({
           amount: p.amount,

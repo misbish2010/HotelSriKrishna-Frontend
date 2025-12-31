@@ -156,7 +156,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
   }, [formData.stayInfo.checkIn, formData.stayInfo.checkOut]);
 
   // GST rate in percentage (change if needed)
-  const GST_RATE = 5;
+  const GST_RATE = 0;
 
   const totalAmount = (() => {
     const nights = formData.stayInfo?.duration || 1;

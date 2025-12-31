@@ -1,0 +1,128 @@
+.room-layout {
+  padding: 20px;
+}
+
+/* Room rows */
+.room-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.center-row {
+  justify-content: center;
+}
+
+/* Room box */
+.room-box {
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+.checkout-icon {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  font-size: 14px;
+  /*color: rgba(255, 255, 255, 0.9);*/
+  color: #FFD54F;
+}
+
+.checkin-icon {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 14px;
+  /*color: rgba(255, 255, 255, 0.9);*/
+  color: #FFD54F;
+}
+
+/* Status colors */
+.available {
+  background: #1b8754;
+}
+
+.occupied {
+  background: #dc3545;
+}
+
+.checked_in {
+  background: #dc3545;
+}
+
+.continue_checked_in {
+  background: #dc3545;
+}
+
+.new_booking {
+  background: #1769ff;
+}
+
+.continue_confirmed {
+  background: #1769ff;
+}
+
+.checkout_available {
+  background: #1b8754; /*#6c757d;*/
+}
+.checkout {
+  background: #6c757d;
+}
+
+.checkout_to_new_booking {
+  background: #1769ff;   /*#7cfc00;*/
+}
+
+
+
+/* Conflict badge */
+.conflict-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 14px;
+}
+
+/* Side panel */
+.side-panel {
+  border-left: 1px solid #ddd;
+  padding-left: 24px;
+}
+
+/* Legend */
+.legend-box {
+  margin-top: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.legend-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #f8f9fa;
+  border-left: 4px solid #0d6efd;
+  border-radius: 4px;
+}

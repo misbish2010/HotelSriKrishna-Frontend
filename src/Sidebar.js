@@ -79,20 +79,32 @@ function Sidebar({ isAdmin, onClick }) {
                     MANAGE BOOKING
                   </Nav.Link>
 
-        		  <Nav.Link onClick={() => onClick("dashboard")} href="#dashboard" className="sidebar-link">
+        		  <Nav.Link onClick={() => onClick("booking_dashboard")} href="#booking_dashboard" className="sidebar-link">
                     BOOKING DASHBOARD
                   </Nav.Link>
 
-                   <Nav.Link onClick={() => onClick("rooms")} href="#rooms" className="sidebar-link">
-                    ROOMS
+                   <Nav.Link onClick={() => onClick("rooms_daily_chart")} className="sidebar-link">
+                     DAILY CHART
+                   </Nav.Link>
+{/*
+                   <Nav.Link onClick={() => onClick("rooms_time_based")} className="sidebar-link">
+                     Rooms – Live Status
                    </Nav.Link>
 
-                   <Nav.Link onClick={() => onClick("dailyChart")} href="#chart" className="sidebar-link">
-                    DAILY CHART
+                   <Nav.Link onClick={() => onClick("rooms_daily_chart")} className="sidebar-link">
+                     Rooms – Daily Chart
+                   </Nav.Link>
+
+                   <Nav.Link onClick={() => onClick("rooms_daily_grid")} className="sidebar-link">
+                     Rooms – Daily Grid
+                   </Nav.Link>
+
+                   <Nav.Link onClick={() => onClick("rooms_multi_night")} className="sidebar-link">
+                     Rooms – Stay Planner
                    </Nav.Link>
 
                    <Nav.Link onClick={() => onClick("dailyExpense")} href="#expenditure" className="sidebar-link">
-                                       EXPENDITURE
+                      EXPENSES
                    </Nav.Link>
 
                  {isAdmin && (
@@ -101,11 +113,13 @@ function Sidebar({ isAdmin, onClick }) {
                     </Nav.Link>
                   )}
 
-
-                 <Nav.Link onClick={() => onClick("invoice_report")} href="#invoice_report" className="sidebar-link">
-                    GST Reports
+                  <Nav.Link onClick={() => onClick("dashboard")} href="#dashboard" className="sidebar-link">
+                    HOME
                   </Nav.Link>
 
+                  <Nav.Link onClick={() => onClick("invoice_report")} href="#invoice_report" className="sidebar-link">
+                       GST Reports
+                  </Nav.Link> */}
 
                 </Nav>
       </div>

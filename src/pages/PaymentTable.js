@@ -5,6 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { fetchPaymentDetails } from "../api";
 import { format } from "date-fns";
 import { FaMoneyBillWave, FaMobileAlt, FaUndo, FaClock, FaChartLine, FaReceipt } from "react-icons/fa";
+import { FaPersonWalkingLuggage } from "react-icons/fa6";
+import { FcSoundRecordingCopyright } from "react-icons/fc";
 
 const PaymentTable = () => {
   const [paymentTableData, setPaymentTableData] = useState([]);
@@ -405,7 +407,7 @@ const PaymentTable = () => {
         <StatCard icon={<FaUndo />} label="Cash Refunded" value={totalCashRefunded} color="#ffc107" />
         <StatCard icon={<FaUndo />} label="UPI Refunded" value={totalUPIRefunded} color="#fd7e14" />
         <StatCard icon={<FaChartLine />} label="Net Collection" value={totalCollection} color="#007bff" />
-        <StatCard icon={<FaClock />} label="Pending" value={totalPending} color="#6f42c1" />
+        <StatCard icon={<FaPersonWalkingLuggage />} label="Pending" value={totalPending} color="#6f42c1" />
         <StatCard icon={<FaReceipt />} label="Expenditure" value={totalExpenditure} color="#dc3545" />
       </div>
 

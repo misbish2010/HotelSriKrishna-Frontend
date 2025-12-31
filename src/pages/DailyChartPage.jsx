@@ -4,6 +4,7 @@ import { fetchDailyChart } from "../api"; // adjust path if needed
 import StatusBadge from "./StatusBadge.jsx"
 import moment from "moment";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { PageHeader } from "./common/PageHeader";
 
 const ConflictBadge = ({ conflicts }) => (
   <OverlayTrigger
@@ -43,31 +44,6 @@ function formatPhone(p) {
   return p;
 }
 
-function downloadCSV(filename, rows) {
-  if (!rows || !rows.length) return;
-  const headers = Object.keys(rows[0]);
-  const csv = [
-    headers.join(","),
-    ...rows.map(r => headers.map(h => {
-      const val = r[h] === null || r[h] === undefined ? "" : String(r[h]);
-      if (val.includes(",") || val.includes('"')) {
-        return `"${val.replace(/"/g, '""')}"`;
-      }
-      return val;
-    }).join(","))
-  ].join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.href = url;
-  link.setAttribute("download", filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
 export default function DailyChartPage() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [rooms, setRooms] = useState([]);
@@ -105,10 +81,8 @@ export default function DailyChartPage() {
       const q = search.trim().toLowerCase();
       out = out.filter(r =>
         (r.room_number && String(r.room_number).toLowerCase().includes(q)) ||
-        (r.guest_name && r.guest_name.toLowerCase().includes(q)) ||
         (r.current_guest_name && r.current_guest_name.toLowerCase().includes(q)) ||
         (r.next_guest_name && r.next_guest_name.toLowerCase().includes(q)) ||
-        (r.phone && String(r.phone).toLowerCase().includes(q)) ||
         (r.current_guest_phone && String(r.current_guest_phone).toLowerCase().includes(q)) ||
         (r.next_guest_phone && String(r.next_guest_phone).toLowerCase().includes(q))
       );
@@ -122,22 +96,19 @@ export default function DailyChartPage() {
     return out;
   }, [rooms, statusFilter, search]);
 
-  function exportVisibleCSV() {
-    const rows = filteredRooms.map(r => ({
-      room_number: r.room_number,
-      status: r.status,
-      guest_name: r.guest_name || r.current_guest_name || r.next_guest_name || "",
-      phone: r.phone || r.current_guest_phone || r.next_guest_phone || ""
-    }));
-    const filename = `daily-chart-${date}.csv`;
-    downloadCSV(filename, rows);
-  }
 
   function printView() {
     window.print();
   }
 
   return (
+      <>
+      <PageHeader
+        title="Rooms – Daily Chart"
+        subtitle="Room availability for selected date"
+        badge="DAY"
+      />
+
     <div className="container py-3">
       <div className="d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -156,10 +127,6 @@ export default function DailyChartPage() {
           <button className="btn btn-outline-secondary" onClick={fetchData} disabled={loading}>
             Refresh
           </button>
-{/*           <div className="btn-group" role="group" aria-label="export-print"> */}
-{/*             <button className="btn btn-outline-primary" onClick={exportVisibleCSV}>Export CSV</button> */}
-{/*             <button className="btn btn-outline-secondary" onClick={printView}>Print</button> */}
-{/*           </div> */}
         </div>
       </div>
 
@@ -256,8 +223,8 @@ export default function DailyChartPage() {
       <>
         <div>
           {showNamePhone(
-            r.guest_name || r.current_guest_name || r.next_guest_name,
-            r.phone || r.current_guest_phone || r.next_guest_phone
+            r.current_guest_name || r.next_guest_name,
+            r.current_guest_phone || r.next_guest_phone
           )}
         </div>
 
@@ -334,8 +301,8 @@ export default function DailyChartPage() {
                         ) : (
                           <>
                             {showNamePhone(
-                              r.guest_name || r.current_guest_name || r.next_guest_name,
-                              r.phone || r.current_guest_phone || r.next_guest_phone
+                              r.current_guest_name || r.next_guest_name,
+                              r.current_guest_phone || r.next_guest_phone
                             )}
                             {r.current_check_out_time && (
                               <div className="text-danger fw-bold mt-1">
@@ -385,5 +352,6 @@ export default function DailyChartPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }
