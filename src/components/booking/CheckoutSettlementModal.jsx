@@ -73,10 +73,10 @@ const hasMoneyMovement =
   Number(extraPayment || 0) > 0 || Number(extraRefund || 0) > 0;
 
   const handleConfirm = () => {
-     if (!paymentMode) {
-        alert("Please select a payment mode.");
-        return;
-     }
+  if (hasMoneyMovement && !paymentMode) {
+    alert("Please select a payment mode.");
+    return;
+  }
 
     if (finalBalance !== 0) {
       alert("Please settle the full balance before checkout.");

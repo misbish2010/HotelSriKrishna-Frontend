@@ -1,0 +1,83 @@
+/* =========================
+   PRINT ONLY
+========================= */
+.print-area {
+  display: none;
+}
+
+@media print {
+
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+
+  .btn,
+  .form-control,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .print-header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .print-header div {
+    font-size: 12px;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #000;
+    padding: 5px;
+    font-size: 11px;
+  }
+  .print-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10mm;
+  }
+
+  .print-section-title {
+    text-align: center;
+    margin: 6px 0;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .print-table td {
+    font-size: 11px;
+  }
+
+  .print-note {
+    color: #666;
+    font-style: italic;
+  }
+
+
+}

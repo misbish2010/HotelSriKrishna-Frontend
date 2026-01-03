@@ -5,6 +5,7 @@ import StatusBadge from "./StatusBadge.jsx"
 import moment from "moment";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { PageHeader } from "./common/PageHeader";
+import "./DailyChartPage.css";
 
 const ConflictBadge = ({ conflicts }) => (
   <OverlayTrigger
@@ -43,6 +44,7 @@ function formatPhone(p) {
   if (!p) return "—";
   return p;
 }
+
 
 export default function DailyChartPage() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -127,6 +129,15 @@ export default function DailyChartPage() {
           <button className="btn btn-outline-secondary" onClick={fetchData} disabled={loading}>
             Refresh
           </button>
+
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => window.print()}
+          >
+            Print
+          </button>
+
+
         </div>
       </div>
 
@@ -219,7 +230,19 @@ export default function DailyChartPage() {
           </div>
         </div>
       </>
-    ) : (
+    ) :  r.status === "new_booking"  ? (
+            // Align new booking to right
+            <div className="text-end">
+                    <div>
+                      {showNamePhone(r.next_guest_name, r.next_guest_phone)}
+                    </div>
+                    {r.next_check_in_time && (
+                      <div className="small text-primary">
+                        CI - {moment(r.next_check_in_time).format("hh:mm A")}
+                      </div>
+                    )}
+                  </div>
+          ):(
       <>
         <div>
           {showNamePhone(
@@ -342,15 +365,125 @@ export default function DailyChartPage() {
         </div>
       </div>
 
+      {/* =========================
+          PRINT ONLY LAYOUT
+      ========================= */}
+      <div className="print-area">
 
-      <style jsx="true">{`
-        @media print {
-          body * { visibility: hidden; }
-          .container, .container * { visibility: visible; }
-          .container { position: absolute; left: 0; top: 0; width: 100%; }
-          .btn, .form-control, .input, .btn-group { display: none !important; }
-        }
-      `}</style>
+        <div className="print-header">
+          <h2>Hotel Sri Krishna</h2>
+          <div>Daily Chart – {moment(date).format("DD MMM YYYY")}</div>
+        </div>
+
+   <div className="print-grid">
+
+     {/* ================= CHECK-IN TABLE ================= */}
+     <div>
+       <h4 className="print-section-title">CHECK-IN</h4>
+
+       <table className="print-table">
+         <thead>
+           <tr>
+             <th>Room</th>
+             <th>Guest</th>
+             <th>Phone</th>
+             <th>Time</th>
+           </tr>
+         </thead>
+         <tbody>
+           {filteredRooms.map(r => {
+             const isCheckIn =
+               r.status === "new_booking" ||
+               r.status === "checkout_to_new_booking";
+
+             let note = "";
+
+             if (
+               r.status === "checked_in" ||
+               r.status === "continue_checked_in"
+             ) {
+               note = "CONT’D (Occupied)";
+             } else if (r.status === "continue_confirmed") {
+               note = "CONT’D (Confirmed)";
+             } else if (r.status === "available") {
+               note = "AVAILABLE";
+             }
+
+             return (
+               <tr key={`ci-${r.room_number}`}>
+                 <td>{r.room_number}</td>
+
+                 <td>
+                   {isCheckIn
+                     ? r.next_guest_name || ""
+                     : note}
+                 </td>
+
+                 <td>
+                   {isCheckIn
+                     ? r.next_guest_phone || ""
+                     : ""}
+                 </td>
+
+                 <td>
+                   {isCheckIn && r.next_check_in_time
+                     ? moment(r.next_check_in_time).format("hh:mm A")
+                     : ""}
+                 </td>
+               </tr>
+             );
+           })}
+         </tbody>
+
+       </table>
+     </div>
+
+     {/* ================= CHECK-OUT TABLE ================= */}
+     <div>
+       <h4 className="print-section-title">CHECK-OUT</h4>
+
+       <table className="print-table">
+         <thead>
+           <tr>
+             <th>Room</th>
+             <th>Amount</th>
+             <th>Status</th>
+             <th>Time</th>
+           </tr>
+         </thead>
+         <tbody>
+           {filteredRooms.map(r => {
+             const isCheckout =
+               r.status === "checkout_available" ||
+               r.status === "checkout_to_new_booking";
+
+             const pending = Number(r.pending_amount || 0);
+
+             return (
+               <tr key={`co-${r.room_number}`}>
+                 <td>{r.room_number}</td>
+                 <td>{isCheckout ? pending : ""}</td>
+                 <td>
+                   {isCheckout ? (pending > 0 ? "Pending" : "Paid") : ""}
+                 </td>
+                 <td>
+                   {isCheckout && r.current_check_out_time
+                     ? moment(r.current_check_out_time).format("hh:mm A")
+                     : ""}
+                 </td>
+               </tr>
+             );
+           })}
+         </tbody>
+       </table>
+     </div>
+
+   </div>
+
+
+      </div>
+
+
     </div>
     </>
   );
