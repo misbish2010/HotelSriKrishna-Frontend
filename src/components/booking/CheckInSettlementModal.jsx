@@ -7,7 +7,7 @@ const formatDateForApi = (dateStr) => {
 };
 const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
   const [extraPayment, setExtraPayment] = useState(0);
-  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [paymentMode, setPaymentMode] = useState("");
 
   // ✅ checkout date-time (default = formData.stayInfo.checkOut or now)
   const [checkInDateTime, setCheckInDateTime] = useState(
@@ -47,10 +47,21 @@ const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
     totalPaid + Number(extraPayment || 0)
   const balance = totalPayable - newPaid;
 
-  const handleConfirm = () => {
-    // ✅ pass checkinDate and duration back
-    onConfirm(extraPayment, paymentMode, checkInDateTime);
-  };
+  const hasPayment = Number(extraPayment || 0) > 0;
+
+const handleConfirm = () => {
+  if (hasPayment && !paymentMode) {
+    alert("Please select a payment mode.");
+    return;
+  }
+
+  onConfirm(
+    Number(extraPayment || 0),
+    paymentMode || null,   // null when no payment
+    checkInDateTime
+  );
+};
+
 
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -90,16 +101,24 @@ const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Payment Mode</Form.Label>
-          <Form.Select
-            value={paymentMode}
-            onChange={(e) => setPaymentMode(e.target.value)}
-          >
-            <option value="Cash">Cash</option>
-            <option value="UPI">UPI</option>
-          </Form.Select>
-        </Form.Group>
+<Form.Group className="mb-3">
+  <Form.Label>
+    Payment Mode{" "}
+    {hasPayment && <span className="text-danger">*</span>}
+  </Form.Label>
+
+
+  <Form.Select
+    value={paymentMode}
+    onChange={(e) => setPaymentMode(e.target.value)}
+    required={hasPayment}
+  >
+    <option value="">-- Select Payment Mode --</option>
+    <option value="Cash">Cash</option>
+    <option value="UPI">UPI</option>
+  </Form.Select>
+</Form.Group>
+
 
       </Modal.Body>
       <Modal.Footer>
@@ -109,6 +128,7 @@ const CheckInSettlementModal = ({ show, onHide, formData, onConfirm }) => {
         <Button
           variant="success"
           onClick={handleConfirm}
+          disabled={hasPayment && !paymentMode}
         >
           Confirm CheckIn
         </Button>

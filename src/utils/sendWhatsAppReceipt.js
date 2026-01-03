@@ -7,7 +7,7 @@ import { format } from "date-fns";
  * Returns: { imgData, whatsappLink }
  */
 export async function sendWhatsAppReceipt(bookingDetails) {
-  const logo = "/static/images/logo.png";
+  const logo = "/static/images/logo-square.png";
   const stamp = "/static/images/hotel-stamp-preview.png";
 
   if (!bookingDetails) return { imgData: null, whatsappLink: null };

@@ -227,12 +227,15 @@ const calculateAgreedPrice = (roomPrice, extraBedPrice, extraPersons) => {
                 <Form.Control
                   type="number"
                   name="extraPersons"
-                  value={room.extraPersons || 0}
+                  min={0}
+                  max={3}
+                  value={room.extraPersons ?? 0}
                   onChange={(e) => handleChange(e, index)}
                   disabled={disableRoomEditing}
                 />
               </Form.Group>
             </Col>
+
 
             {/* Agreed Price */}
             <Col md={2}>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 
 const CancelSettlementModal = ({ show, onHide, formData, onConfirm }) => {
   const [extraRefund, setExtraRefund] = useState(0);
-  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [paymentMode, setPaymentMode] = useState("");
   const totalPaid = (formData.payments || []).reduce(
     (sum, p) => sum + (p.amount || 0),
     0
@@ -11,14 +11,24 @@ const CancelSettlementModal = ({ show, onHide, formData, onConfirm }) => {
 
   const newPaid = Number(extraRefund || 0) ;
   const balance = totalPaid - newPaid;
+  const hasRefund = Number(extraRefund || 0) > 0;
 
-  const handleConfirm = () => {
-    if (balance !== 0) {
-      alert("Please settle the full balance before Cancel.");
-      return;
-    }
-    onConfirm(extraRefund, paymentMode); // pass settlement info back
-  };
+const handleConfirm = () => {
+  if (balance !== 0) {
+    alert("Please settle the full balance before Cancel.");
+    return;
+  }
+
+  if (hasRefund && !paymentMode) {
+    alert("Please select a payment mode for refund.");
+    return;
+  }
+
+  onConfirm(
+    Number(extraRefund || 0),
+    paymentMode || null   // null when no refund
+  );
+};
 
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -37,21 +47,29 @@ const CancelSettlementModal = ({ show, onHide, formData, onConfirm }) => {
             onChange={(e) => setExtraRefund(e.target.value)}
           />
         </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Payment Mode</Form.Label>
-          <Form.Select
-            value={paymentMode}
-            onChange={(e) => setPaymentMode(e.target.value)}
-          >
-            <option value="Cash">Cash</option>
-            <option value="UPI">UPI</option>
-          </Form.Select>
-        </Form.Group>
+<Form.Group className="mb-3">
+<Form.Label>
+  Payment Mode{" "}
+  {hasRefund && <span className="text-danger">*</span>}
+</Form.Label>
+
+  <Form.Select
+    value={paymentMode}
+    onChange={(e) => setPaymentMode(e.target.value)}
+    required={hasRefund}
+  >
+    <option value="">-- Select Payment Mode --</option>
+    <option value="Cash">Cash</option>
+    <option value="UPI">UPI</option>
+  </Form.Select>
+</Form.Group>
 
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Cancel</Button>
-        <Button variant="success" onClick={handleConfirm} disabled={balance !== 0}>
+        <Button variant="success" onClick={handleConfirm}
+        disabled={balance !== 0 || (hasRefund && !paymentMode)}
+        >
           Confirm Cancel
         </Button>
       </Modal.Footer>

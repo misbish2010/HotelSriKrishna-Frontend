@@ -2,6 +2,8 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 
 function ReceiptPreviewModal({ show, onHide, imgData, whatsappLink }) {
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const copyImageToClipboard = async () => {
     try {
       const blob = await (await fetch(imgData)).blob();
@@ -11,11 +13,29 @@ function ReceiptPreviewModal({ show, onHide, imgData, whatsappLink }) {
       alert("✅ Image copied to clipboard!");
     } catch (err) {
       console.error(err);
-      alert("❌ Copy failed — please long-press and copy manually.");
+      alert("❌ Copy not supported on this device.");
     }
   };
 
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const shareImageMobile = async () => {
+    try {
+      const blob = await (await fetch(imgData)).blob();
+      const file = new File([blob], "receipt.png", { type: blob.type });
+
+      if (navigator.share) {
+        await navigator.share({
+          title: "Hotel Receipt",
+          text: "Hotel Sri Krishna Receipt",
+          files: [file],
+        });
+      } else {
+        alert("❌ Share not supported on this browser.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Sharing failed.");
+    }
+  };
 
   return (
     <Modal show={show} onHide={onHide} centered size="md">
@@ -35,27 +55,34 @@ function ReceiptPreviewModal({ show, onHide, imgData, whatsappLink }) {
           }}
         />
         <p style={{ fontSize: "13px", color: "#555" }}>
-          You can copy or share the receipt.
+          {isMobile
+            ? "Tap Share or long-press the image to save."
+            : "Click Copy to copy the receipt image."}
         </p>
       </Modal.Body>
 
       <Modal.Footer style={{ justifyContent: "center" }}>
-        {whatsappLink ? (
+        {whatsappLink && (
           <Button
             variant="success"
             as="a"
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ backgroundColor: "#25D366", border: "none" }}
           >
             📲 Send via WhatsApp
           </Button>
-        ) : null}
+        )}
 
-        <Button variant="primary" onClick={copyImageToClipboard}>
-          📋 Copy Image
-        </Button>
+        {isMobile ? (
+          <Button variant="primary" onClick={shareImageMobile}>
+            📤 Share Image
+          </Button>
+        ) : (
+          <Button variant="primary" onClick={copyImageToClipboard}>
+            📋 Copy Image
+          </Button>
+        )}
 
         <Button variant="secondary" onClick={onHide}>
           Close
