@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 //const API_BASE_URL = "http://3.111.153.106:5000/api";
-const API_BASE_URL = "/api";
 //const API_BASE_URL = "http://localhost:5000/api";
+//const API_BASE_URL = "http://192.168.29.5:5000/api";
+const API_BASE_URL = "/api";
 // Create an Axios instance with default configurations
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -140,9 +141,15 @@ export const fetchAllRooms = async (
 };
 
 //Search Booking
-export const searchBooking = async ({ bookingId, phoneNumber, roomNumber, checkInDate, bookingStatus }) => {
+export const searchBooking = async ({
+    bookingId,
+    phoneNumber,
+    roomNumber,
+    checkInDate,
+    bookingStatus
+}) => {
     try {
-        const response = await apiClient.get(`${API_BASE_URL}/search_booking`, {
+        const response = await apiClient.get("/search_booking", {
             params: {
                 bookingId,
                 phoneNumber,
@@ -226,7 +233,7 @@ export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
 // Function to fetch payment details
 export const fetchPaymentDetails = async (startDate, endDate) => {
   try {
-        const response = await axios.get(`${API_BASE_URL}/get_payment`, {
+        const response = await apiClient.get("/get_payment", {
       params: { startDate, endDate },
     });
     return response.data ;
@@ -238,18 +245,17 @@ export const fetchPaymentDetails = async (startDate, endDate) => {
 
 // search by booking id (re-usable)
 export const fetchBookingById = async ({ bookingId }) => {
-      try {
-          const response = await apiClient.get(`${API_BASE_URL}/search_booking?bookingId=${encodeURIComponent(bookingId)}`, {
-              params: {
-                  bookingId
-              },
-          });
-          return response.data;
-      } catch (error) {
-          console.error("Error fetching booking details:", error);
-          throw error;
-      }
-}
+    try {
+        const response = await apiClient.get("/search_booking", {
+            params: { bookingId },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching booking details:", error);
+        throw error;
+    }
+};
+
 
 export const fetchGSTInvoice = async (bookingId) => {
   try {
