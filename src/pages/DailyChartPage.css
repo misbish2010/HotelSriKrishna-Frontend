@@ -72,6 +72,20 @@
     border-collapse: collapse;
   }
 
+  .print-col {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .print-col:first-child {
+      width: 70%;   /* CHECK-IN */
+    }
+
+    .print-col:last-child {
+      width: 30%;   /* CHECK-OUT */
+    }
+
   .print-table th,
   .print-table td {
     border: 1px solid #000;
@@ -108,6 +122,13 @@
     gap: 10mm;
   }
 
+/* Row container */
+  .print-grid-row {
+    display: flex;
+    width: 100%;
+    gap: 8mm;
+    align-items: flex-start;
+  }
   /* ===== Notes ===== */
   .print-note {
     color: #555;
@@ -123,22 +144,22 @@
 
   .checkin-table th:nth-child(2),
   .checkin-table td:nth-child(2) {
-    width: 45%;   /* Guest (WIDER) */
+    width: 53%;   /* Guest (WIDER) */
   }
 
   .checkin-table th:nth-child(3),
   .checkin-table td:nth-child(3) {
-    width: 25%;   /* Phone */
+    width: 24%;   /* Phone */
   }
 
   .checkin-table th:nth-child(4),
   .checkin-table td:nth-child(4) {
-    width: 22%;   /* Time */
+    width: 15%;   /* Time */
   }
   /* CHECK-OUT */
     .checkout-table th:nth-child(1),
     .checkout-table td:nth-child(1) {
-      width: 10%;   /* Room */
+      width: 20%;   /* Room */
     }
 
     .checkout-table th:nth-child(2),
@@ -161,6 +182,20 @@
       .checkout-table td {
         white-space: nowrap;
       }
+/* =========================
+     CHECK-IN → FULL WIDTH
+  ========================= */
+  .checkin-table {
+    width: 100%;
+  }
 
+  /* =========================
+     CHECK-OUT → 60% WIDTH
+  ========================= */
+  .checkout-table {
+    width: 100%;
+    margin-left: 0;       /* align left */
+    margin-right: auto;   /* do NOT center */
+  }
 
 }

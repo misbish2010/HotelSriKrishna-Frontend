@@ -375,72 +375,70 @@ export default function DailyChartPage() {
           <div>Daily Chart – {moment(date).format("DD MMM YYYY")}</div>
         </div>
 
-   <div className="print-grid">
-
+   <div class="print-grid-row"  >
      {/* ================= CHECK-IN TABLE ================= */}
-     <div>
-       <h4 className="print-section-title">CHECK-IN</h4>
+     <div className="print-col">
+         <div className="print-section-title">CHECK-IN</div>
+               <table className="print-table checkin-table">
+                 <thead>
+                   <tr>
+                     <th>Room</th>
+                     <th>Guest</th>
+                     <th>Phone</th>
+                     <th>Time</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {filteredRooms.map(r => {
+                     const isCheckIn =
+                       r.status === "new_booking" ||
+                       r.status === "checkout_to_new_booking";
 
-       <table className="print-table checkin-table">
-         <thead>
-           <tr>
-             <th>Room</th>
-             <th>Guest</th>
-             <th>Phone</th>
-             <th>Time</th>
-           </tr>
-         </thead>
-         <tbody>
-           {filteredRooms.map(r => {
-             const isCheckIn =
-               r.status === "new_booking" ||
-               r.status === "checkout_to_new_booking";
+                     let note = "";
 
-             let note = "";
+                     if (
+                       r.status === "checked_in" ||
+                       r.status === "continue_checked_in"
+                     ) {
+                       note = "CONT’D";
+                     } else if (r.status === "continue_confirmed") {
+                       note = "CONT’D";
+                     } else if (r.status === "available") {
+                       note = "AVAILABLE";
+                     }
 
-             if (
-               r.status === "checked_in" ||
-               r.status === "continue_checked_in"
-             ) {
-               note = "CONT’D";
-             } else if (r.status === "continue_confirmed") {
-               note = "CONT’D";
-             } else if (r.status === "available") {
-               note = "AVAILABLE";
-             }
+                     return (
+                       <tr key={`ci-${r.room_number}`}>
+                         <td>{r.room_number}</td>
 
-             return (
-               <tr key={`ci-${r.room_number}`}>
-                 <td>{r.room_number}</td>
+                         <td>
+                           {isCheckIn
+                             ? r.next_guest_name || ""
+                             : note}
+                         </td>
 
-                 <td>
-                   {isCheckIn
-                     ? r.next_guest_name || ""
-                     : note}
-                 </td>
+                         <td>
+                           {isCheckIn
+                             ? r.next_guest_phone || ""
+                             : ""}
+                         </td>
 
-                 <td>
-                   {isCheckIn
-                     ? r.next_guest_phone || ""
-                     : ""}
-                 </td>
+                         <td>
+                           {isCheckIn && r.next_check_in_time
+                             ? moment(r.next_check_in_time).format("hh:mm A")
+                             : ""}
+                         </td>
+                       </tr>
+                     );
+                   })}
+                 </tbody>
 
-                 <td>
-                   {isCheckIn && r.next_check_in_time
-                     ? moment(r.next_check_in_time).format("hh:mm A")
-                     : ""}
-                 </td>
-               </tr>
-             );
-           })}
-         </tbody>
-
-       </table>
-     </div>
+               </table>
+            </div>
 
      {/* ================= CHECK-OUT TABLE ================= */}
-     <div>
-       <h4 className="print-section-title">CHECK-OUT</h4>
+      <div className="print-col">
+          <div className="print-section-title">CHECK-OUT</div>
 
        <table className="print-table checkout-table">
          <thead>
@@ -476,7 +474,7 @@ export default function DailyChartPage() {
            })}
          </tbody>
        </table>
-     </div>
+       </div>
 
    </div>
 
