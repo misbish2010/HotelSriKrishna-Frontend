@@ -68,6 +68,7 @@
   /* ===== Tables ===== */
   .print-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
   }
 
@@ -113,5 +114,53 @@
     font-style: italic;
     font-size: 11px;
   }
+
+ /* CHECK-IN */
+  .checkin-table th:nth-child(1),
+  .checkin-table td:nth-child(1) {
+    width: 8%;    /* Room */
+  }
+
+  .checkin-table th:nth-child(2),
+  .checkin-table td:nth-child(2) {
+    width: 45%;   /* Guest (WIDER) */
+  }
+
+  .checkin-table th:nth-child(3),
+  .checkin-table td:nth-child(3) {
+    width: 25%;   /* Phone */
+  }
+
+  .checkin-table th:nth-child(4),
+  .checkin-table td:nth-child(4) {
+    width: 22%;   /* Time */
+  }
+  /* CHECK-OUT */
+    .checkout-table th:nth-child(1),
+    .checkout-table td:nth-child(1) {
+      width: 10%;   /* Room */
+    }
+
+    .checkout-table th:nth-child(2),
+    .checkout-table td:nth-child(2) {
+      width: 25%;   /* Amount */
+      text-align: right;
+    }
+
+    .checkout-table th:nth-child(3),
+    .checkout-table td:nth-child(3) {
+      width: 25%;   /* Status */
+    }
+
+    .checkout-table th:nth-child(4),
+    .checkout-table td:nth-child(4) {
+      width: 20%;   /* Time */
+    }
+
+    .checkin-table td:nth-child(2),
+      .checkout-table td {
+        white-space: nowrap;
+      }
+
 
 }

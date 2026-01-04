@@ -381,7 +381,7 @@ export default function DailyChartPage() {
      <div>
        <h4 className="print-section-title">CHECK-IN</h4>
 
-       <table className="print-table">
+       <table className="print-table checkin-table">
          <thead>
            <tr>
              <th>Room</th>
@@ -442,7 +442,7 @@ export default function DailyChartPage() {
      <div>
        <h4 className="print-section-title">CHECK-OUT</h4>
 
-       <table className="print-table">
+       <table className="print-table checkout-table">
          <thead>
            <tr>
              <th>Room</th>
