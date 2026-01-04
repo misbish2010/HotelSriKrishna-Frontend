@@ -111,11 +111,11 @@ const PaymentTable = () => {
 
       payment_details.forEach((payment) => {
         if (payment.payment_mode === "CASH") {
-          payment.amount > 0
+          payment.booking_status != "Cancelled"
             ? (cashCollected += payment.amount)
             : (cashRefunded += Math.abs(payment.amount));
         } else if (payment.payment_mode === "UPI") {
-          payment.amount > 0
+          payment.booking_status != "Cancelled"
             ? (upiCollected += payment.amount)
             : (upiRefunded += Math.abs(payment.amount));
         }
@@ -192,7 +192,7 @@ const PaymentTable = () => {
             {/* COMMON COLUMNS */}
             {type !== "expense" && <th>Room</th>}
             {type !== "expense" && <th>Booking ID</th>}
-            {type !== "expense" && <th>Booking Status</th>}
+            {type !== "expense" && type !== "advance"  && <th>Booking Status</th>}
             {type !== "expense" && <th>Customer</th>}
             {type !== "expense" && <th>Contact</th>}
 
@@ -237,7 +237,7 @@ const PaymentTable = () => {
                 )}
 
                 {type !== "expense" && <td>{payment.booking_id}</td>}
-                {type !== "expense" && <td>{payment.booking_status}</td>}
+                {type !== "expense" && type !== "advance" && <td>{payment.booking_status}</td>}
                 {type !== "expense" && <td>{payment.customer_name}</td>}
                 {type !== "expense" && <td>{payment.contact_number}</td>}
 
@@ -245,13 +245,13 @@ const PaymentTable = () => {
 
                 {type === "paid" && (
                   <td style={{ textAlign: "right" }}>
-                    {payment.amount > 0 ? `₹${payment.amount.toFixed(2)}` : "-"}
+                    {payment.booking_status != "Cancelled" ? `₹${payment.amount.toFixed(2)}` : "-"}
                   </td>
                 )}
 
                 {type === "paid" && (
                   <td style={{ textAlign: "right" }}>
-                    {payment.amount < 0 ? `₹${Math.abs(payment.amount).toFixed(2)}` : "-"}
+                    {payment.booking_status === "Cancelled" ? `₹${Math.abs(payment.amount).toFixed(2)}` : "-"}
                   </td>
                 )}
 

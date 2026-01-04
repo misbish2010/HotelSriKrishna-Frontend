@@ -1,11 +1,13 @@
 /* =========================
    PRINT ONLY
 ========================= */
+
 .print-area {
   display: none;
 }
 
 @media print {
+
 
   @page {
     size: A4 landscape;
@@ -25,6 +27,7 @@
     display: block;
     position: absolute;
     inset: 0;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
   .btn,
@@ -33,20 +36,36 @@
     display: none !important;
   }
 
+  /* ===== Header ===== */
   .print-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   .print-header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
   }
 
   .print-header div {
-    font-size: 12px;
+    font-size: 10px;
+    font-weight: 700;
   }
 
+  /* ===== Section Title ===== */
+  .print-section-title {
+    text-align: center;
+    margin: 8px 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid #000;
+    padding-bottom: 4px;
+  }
+
+  /* ===== Tables ===== */
   .print-table {
     width: 100%;
     border-collapse: collapse;
@@ -55,29 +74,44 @@
   .print-table th,
   .print-table td {
     border: 1px solid #000;
-    padding: 5px;
+    padding: 6px;
     font-size: 11px;
   }
+
+  .print-table th {
+    font-weight: 700;
+    background-color: #f2f2f2;
+    text-align: center;
+  }
+
+  .print-table td {
+    font-weight: 700;
+  }
+
+  /* ===== Highlight Important Numbers ===== */
+  .print-bold {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .print-total {
+    font-weight: 800;
+    font-size: 13px;
+    background-color: #eaeaea;
+  }
+
+  /* ===== Grid Layout ===== */
   .print-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10mm;
   }
 
-  .print-section-title {
-    text-align: center;
-    margin: 6px 0;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  .print-table td {
+  /* ===== Notes ===== */
+  .print-note {
+    color: #555;
+    font-style: italic;
     font-size: 11px;
   }
-
-  .print-note {
-    color: #666;
-    font-style: italic;
-  }
-
 
 }

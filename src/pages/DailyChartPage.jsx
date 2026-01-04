@@ -402,9 +402,9 @@ export default function DailyChartPage() {
                r.status === "checked_in" ||
                r.status === "continue_checked_in"
              ) {
-               note = "CONT’D (Occupied)";
+               note = "CONT’D";
              } else if (r.status === "continue_confirmed") {
-               note = "CONT’D (Confirmed)";
+               note = "CONT’D";
              } else if (r.status === "available") {
                note = "AVAILABLE";
              }
@@ -462,9 +462,9 @@ export default function DailyChartPage() {
              return (
                <tr key={`co-${r.room_number}`}>
                  <td>{r.room_number}</td>
-                 <td>{isCheckout ? pending : ""}</td>
+                 <td>{isCheckout ? pending.toFixed(2) : ""}</td>
                  <td>
-                   {isCheckout ? (pending > 0 ? "Pending" : "Paid") : ""}
+                    {isCheckout ? (pending > 0 ? "Pending" : "Paid") : ""}
                  </td>
                  <td>
                    {isCheckout && r.current_check_out_time
