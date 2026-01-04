@@ -386,10 +386,10 @@ export default function DailyChartPage() {
                <table className="print-table checkin-table">
                  <thead>
                    <tr>
-                     <th>Room</th>
-                     <th>Guest</th>
-                     <th>Phone</th>
-                     <th>Time</th>
+                     <th>ROOM</th>
+                     <th>GUEST NAME</th>
+                     <th>CONTACT</th>
+                     <th>TIME</th>
                    </tr>
                  </thead>
                  <tbody>
@@ -447,10 +447,10 @@ export default function DailyChartPage() {
        <table className="print-table checkout-table">
          <thead>
            <tr>
-             <th>Room</th>
-             <th>Amount</th>
-             <th>Status</th>
-             <th>Time</th>
+             <th>ROOM</th>
+             <th>AMOUNT</th>
+             <th>STATUS</th>
+             <th>TIME</th>
            </tr>
          </thead>
          <tbody>
@@ -466,7 +466,7 @@ export default function DailyChartPage() {
                  <td>{r.room_number}</td>
                  <td>{isCheckout ? pending.toFixed(2) : ""}</td>
                  <td>
-                    {isCheckout ? (pending > 0 ? "Pending" : "Paid") : ""}
+                    {isCheckout ? (pending > 0 ? "PENDING" : "PAID") : ""}
                  </td>
                  <td>
                    {isCheckout && r.current_check_out_time
