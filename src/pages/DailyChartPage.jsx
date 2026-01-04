@@ -374,7 +374,7 @@ export default function DailyChartPage() {
           <div className="print-header-row">
             <div className="hotel-name">Hotel Sri Krishna</div>
             <div className="print-date">
-              Daily Chart – {moment(date).format("DD MMM YYYY")}
+              Daily Chart – {moment(date).format("DD/MM/YYYY")}
             </div>
           </div>
         </div>

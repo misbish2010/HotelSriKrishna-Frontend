@@ -285,8 +285,8 @@ const BookingDashboard = ({ onViewBooking }) => {
                   </span>
                 </td>
 
-                <td>₹{row.paidAmount}</td>
-                <td>₹{row.balance}</td>
+                <td>₹{row.paidAmount.toFixed(2)}</td>
+                <td>₹{row.balance.toFixed(2)}</td>
 
                 <td>
                   {row.booking_status !== "Available" && (
