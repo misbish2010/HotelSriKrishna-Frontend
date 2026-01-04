@@ -10,7 +10,7 @@
 
 
   @page {
-    size: A4 landscape;
+    size: landscape;
     margin: 10mm;
   }
 
@@ -197,5 +197,10 @@
     margin-left: 0;       /* align left */
     margin-right: auto;   /* do NOT center */
   }
+@media print {
+  @page {
+    size: landscape !important;
+  }
+}
 
 }
