@@ -8,6 +8,7 @@ import { FcCopyright } from "react-icons/fc";
 import { BsCSquareFill } from "react-icons/bs";
 import { BsCCircleFill } from "react-icons/bs";
 import { BsCCircle } from "react-icons/bs";
+import { format } from 'date-fns';
 
 const ROOM_GROUPS = [
   ["001", "002", "003"],
@@ -30,6 +31,7 @@ export default function RoomDailyGrid() {
   );
   const [nights, setNights] = useState(1);
   const [rooms, setRooms] = useState({});
+  const formatDate = (date) => format(date, "dd/MM/yyyy hh:mm a");
 
   useEffect(() => {
     loadData();
@@ -63,7 +65,7 @@ export default function RoomDailyGrid() {
             </div>
             {room.current_check_out_time && (
               <div className="text-danger">
-                CO: {new Date(room.current_check_out_time).toLocaleTimeString()}
+                CO ⏰: {formatDate(new Date(room.current_check_out_time))}
               </div>
             )}
 
@@ -74,7 +76,7 @@ export default function RoomDailyGrid() {
             </div>
             {room.next_check_in_time && (
               <div className="text-primary">
-                CI: {new Date(room.next_check_in_time).toLocaleTimeString()}
+                CI ⏰: {formatDate(new Date(room.next_check_in_time))}
               </div>
             )}
           </>
@@ -89,7 +91,7 @@ export default function RoomDailyGrid() {
             {room.current_check_out_time && (
               <div className="text-danger">
                 Checkout:{" "}
-                {new Date(room.current_check_out_time).toLocaleString()}
+                {formatDate(new Date(room.current_check_out_time))}
               </div>
             )}
           </>
@@ -104,7 +106,7 @@ export default function RoomDailyGrid() {
             {room.next_check_in_time && (
               <div className="text-primary">
                 Check-in:{" "}
-                {new Date(room.next_check_in_time).toLocaleString()}
+                {formatDate(new Date(room.next_check_in_time))}
               </div>
             )}
           </>
@@ -119,7 +121,7 @@ export default function RoomDailyGrid() {
             {room.current_check_out_time && (
               <div className="text-danger">
                 Checkout:{" "}
-                {new Date(room.current_check_out_time).toLocaleString()}
+                {formatDate(new Date(room.current_check_out_time))}
               </div>
             )}
           </>
