@@ -88,7 +88,7 @@ function Sidebar({ isAdmin, onClick }) {
                    </Nav.Link>
 
                    <Nav.Link onClick={() => onClick("rooms_daily_grid")} className="sidebar-link">
-                     Rooms – Daily Grid
+                     Daily GRID
                    </Nav.Link>
 {/*
                    <Nav.Link onClick={() => onClick("rooms_time_based")} className="sidebar-link">
