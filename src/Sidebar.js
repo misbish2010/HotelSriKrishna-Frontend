@@ -86,6 +86,10 @@ function Sidebar({ isAdmin, onClick }) {
                    <Nav.Link onClick={() => onClick("rooms_daily_chart")} className="sidebar-link">
                      DAILY CHART
                    </Nav.Link>
+
+                   <Nav.Link onClick={() => onClick("rooms_daily_grid")} className="sidebar-link">
+                     Rooms – Daily Grid
+                   </Nav.Link>
 {/*
                    <Nav.Link onClick={() => onClick("rooms_time_based")} className="sidebar-link">
                      Rooms – Live Status
@@ -95,9 +99,7 @@ function Sidebar({ isAdmin, onClick }) {
                      Rooms – Daily Chart
                    </Nav.Link>
 
-                   <Nav.Link onClick={() => onClick("rooms_daily_grid")} className="sidebar-link">
-                     Rooms – Daily Grid
-                   </Nav.Link>
+
 
                    <Nav.Link onClick={() => onClick("rooms_multi_night")} className="sidebar-link">
                      Rooms – Stay Planner

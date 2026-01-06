@@ -98,7 +98,7 @@ export default function RoomDailyGrid() {
         )}
 
         {/* New booking / Continue confirmed */}
-        {["new_booking", "continue_confirmed"].includes(room.status) && (
+        {["new_booking"].includes(room.status) && (
           <>
             <div>
               <strong>{room.next_guest_name || "—"}</strong>
@@ -111,6 +111,19 @@ export default function RoomDailyGrid() {
             )}
           </>
         )}
+        {["continue_confirmed"].includes(room.status) && (
+                  <>
+                    <div>
+                      <strong>{room.current_guest_name || "—"}</strong>
+                    </div>
+                    {room.next_check_in_time && (
+                      <div className="text-primary">
+                        Check-in:{" "}
+                        {formatDate(new Date(room.next_check_in_time))}
+                      </div>
+                    )}
+                  </>
+       )}
 
         {/* Checkout → Available */}
         {room.status === "checkout_available" && (
@@ -158,10 +171,17 @@ export default function RoomDailyGrid() {
 
 {[
   "checkout_available",
-  "checkout_to_new_booking",
   "checkout"
 ].includes(statusClass) && (
   <BsCSquareFill className="checkout-icon" />
+)}
+{[
+  "checkout_to_new_booking",
+].includes(statusClass) && (
+  <>
+  <FaPersonWalkingLuggage className="checkin-icon" />
+  <BsCSquareFill className="checkout-icon" />
+  </>
 )}
 {[
   "checked_in",
