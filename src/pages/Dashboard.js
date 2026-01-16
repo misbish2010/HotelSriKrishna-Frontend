@@ -11,7 +11,7 @@ function Dashboard({ onNavigate }) {
       <Row className="g-3 mb-3">
         <Col xs={6} md={3}>
           <Button className="dashboard-btn" onClick={() => onNavigate("checkin")}>
-            ➕ New Booking / Check-in
+            ➕ Check-in
           </Button>
         </Col>
 

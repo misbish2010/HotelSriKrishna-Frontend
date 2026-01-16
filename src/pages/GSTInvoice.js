@@ -191,10 +191,12 @@ const handleSaveGST = async () => {
 };
   return (
     <>
-    <Card
-      className="invoice-card print-friendly"
+    <div
+      id="gst-capture-wrapper"
       ref={(el) => (window.__gstInvoiceRef = el)}
+      className="print-friendly"
     >
+      <Card className="invoice-card">
 
       <Card.Header className="invoice-header d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-3">
@@ -398,6 +400,7 @@ const handleSaveGST = async () => {
         </div>
       </Card.Body>
     </Card>
+    </div>
     <ReceiptPreviewModal
       show={showPreview}
       onHide={() => setShowPreview(false)}

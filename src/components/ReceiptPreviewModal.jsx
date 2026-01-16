@@ -84,6 +84,64 @@ function ReceiptPreviewModal({ show, onHide, imgData, whatsappLink }) {
           </Button>
         )}
 
+<Button
+  variant="primary"
+  onClick={() => {
+    const w = window.open("");
+    w.document.write(`
+      <html>
+        <head>
+          <style>
+            @page {
+              size: A4;
+              margin: 8mm;
+            }
+
+            body {
+              margin: 0;
+              display: flex;
+              justify-content: center;
+              align-items: flex-start;
+              background: white;
+            }
+
+            .print-frame {
+              width: 190mm;      /* fits safely in A4 */
+              border: 2px solid #000;  /* YOUR SQUARE FRAME */
+              padding: 6mm;
+              box-sizing: border-box;
+              background: white;
+            }
+
+            .print-frame img {
+              width: 100%;
+              height: auto;
+              display: block;
+            }
+          </style>
+        </head>
+
+        <body>
+          <div class="print-frame">
+            <img src="${imgData}" />
+          </div>
+
+          <script>
+            window.onload = function() {
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 300);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+  }}
+>
+  🖨 Print Invoice Image
+</Button>
+
         <Button variant="secondary" onClick={onHide}>
           Close
         </Button>

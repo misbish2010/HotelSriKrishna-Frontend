@@ -1,14 +1,17 @@
-/* src/pages/gst-invoice.css */
+/* ===============================
+   BASE INVOICE STYLING (SCREEN)
+   =============================== */
 
-/* General Invoice Card */
 .invoice-card {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   border: 1px solid #ccc;
   font-family: "Segoe UI", Arial, sans-serif;
   font-size: 14px;
   color: #333;
   background: #fff;
+  box-sizing: border-box;
+  margin-top: 3mm !important;
 }
 
 /* Header */
@@ -25,39 +28,15 @@
   height: 50px;
   width: auto;
 }
-.stamp-img {
-  width: 80px;
-  height: auto;
-  opacity: 0.9;
-  position: absolute;
-  top: 100px;
-  right: 120px;
-}
 
-.signature-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: 0px;
-}
-
-.signature-box {
-  width: 30%;
-  text-align: center;
-}
-
-.sign-line {
-  border-top: 1px dashed #555;
-  margin: 40px 0 8px 0;
-  height: 1px;
-}
-
+/* Stamp */
 .stamp {
   width: 60px;
   height: 60px;
   object-fit: contain;
   margin-bottom: 0px;
-  background: transparent; /* ensure stamp bg blends */
+  background: transparent;
+  mix-blend-mode: multiply;
 }
 
 /* Section Headings */
@@ -68,14 +47,14 @@
   font-weight: 600;
 }
 
-/* Info Rows (side by side always) */
+/* Billing + Stay side-by-side */
 .info-row {
   display: flex;
   justify-content: space-between;
   width: 100%;
   gap: 20px;
-   margin-left: 10px;   /* ✅ shifts Billing/Stay boxes right */
-    margin-right: 10px;  /* keeps balance */
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .info-box {
@@ -84,7 +63,7 @@
   background: #fff;
 }
 
-/* Tables */
+/* Table */
 .invoice-card table {
   width: 100%;
   border-collapse: collapse;
@@ -103,7 +82,7 @@
   font-weight: 600;
 }
 
-/* Totals Box */
+/* Totals */
 .totals-box {
   background: #fdfdfd;
   font-size: 15px;
@@ -116,36 +95,42 @@
   justify-content: space-between;
 }
 
-/* Signature Section */
-.invoice-card .signature {
-  margin-top: 0px;
-  font-size: 14px;
+/* Signatures */
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 20px;
 }
 
-.invoice-card .signature div {
-  border-top: 1px dashed #999;
-  padding-top: 6px;
-  text-align: right;
+.signature-box {
+  width: 30%;
+  text-align: center;
 }
-/* ✅ Keep Billing To & Stay Details side by side on print */
 
-.stamp {
-  mix-blend-mode: multiply;
-}
-/* Print Optimisation */
+/* ===============================
+   PRINT SETTINGS (CRITICAL)
+   =============================== */
+
 @page {
   size: A4;
-  margin: 15mm 12mm 15mm 12mm; /* top right bottom left */
+  margin: 12mm;
 }
 
 @media print {
 
-  html, body {
-      overflow: visible !important;
-      height: auto !important;
-    }
+  /* ---- KEY FIX FOR TOP CUT-OFF ---- */
+  @page {
+    size: A4;
+    margin: 8mm 10mm 12mm 10mm;   /* more space on top */
+  }
 
+  body {
+    margin: 0;
+    padding: 0;
+  }
 
+  /* Hide everything except invoice */
   body * {
     visibility: hidden;
   }
@@ -154,70 +139,53 @@
   .print-friendly * {
     visibility: visible;
   }
-    .print-friendly {
-      overflow: visible !important;
-      height: auto !important;
-      max-height: none !important;
-    }
 
-
-  .invoice-table,
-  .totals-box {
-    page-break-inside: avoid;
+  /* CRITICAL FIX: keep invoice inside printable area */
+  .print-friendly {
+    position: absolute;
+    left: 0;
+    top: 0;          /* <-- important */
+    width: 100%;
   }
 
-  button {
+  /* DO NOT scale too much — this was cutting your header */
+  .invoice-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 8mm;
+    border: 1px solid #000;
+    transform: scale(0.98);      /* gentle scale only */
+    transform-origin: top left;  /* prevents top cropping */
+  }
+
+  /* Prevent row cutting */
+  table tr {
+    page-break-inside: avoid !important;
+  }
+
+  .info-box,
+  .totals-box,
+  .signature-section {
+    page-break-inside: avoid !important;
+  }
+
+  /* Hide buttons in print */
+  button,
+  .d-print-none {
     display: none !important;
   }
-      .invoice-card {
-          width: 100%;
-          max-width: 700px;
-          margin: 0 auto;
-          border: 1px solid #000;
-          box-sizing: border-box;
-          padding: 10mm;
-        }
-
-
-    /* ✅ Keep Billing To & Stay Details side by side */
-  .info-row {
-      display: flex !important;
-      flex-direction: row !important;
-      gap: 20px !important;
-    }
-
-    .info-box {
-      flex: 1 1 50% !important;
-      max-width: 50% !important;
-      page-break-inside: avoid;
-    }
-
-}
-.modal-content {
-  overflow: visible !important;
 }
 
 /* ===============================
-   Force print layout for WhatsApp
+   WHATSAPP IMAGE (html2canvas)
    =============================== */
+
 .print-mode button,
 .print-mode .d-print-none {
   display: none !important;
 }
 
-/* ===============================
-   Print-mode layout adjustments
-   =============================== */
-
-.print-mode .totals-box {
-  margin-top: 20px !important;
-}
-
-/* Center totals box under table */
-.print-mode .totals-box {
-  width: 100% !important;
-}
-
+/* Center totals when screenshotting */
 .print-mode .justify-content-end {
   justify-content: center !important;
 }
@@ -225,4 +193,26 @@
 .print-mode .justify-content-end > .col-md-5 {
   max-width: 100% !important;
   flex: 0 0 100% !important;
+}
+
+/* Ensure modal does not clip preview */
+.modal-content {
+  overflow: visible !important;
+}
+
+/* ======== VERY IMPORTANT: FRAME FOR CAPTURE ======== */
+
+
+#gst-capture-wrapper {
+  width: 100%;          /* ← CRITICAL */
+  background: white;    /* no grey */
+  padding: 2px;
+  border-radius: 16px;
+  display: block;       /* ← VERY IMPORTANT */
+  justify-content: flex;
+}
+/* keep invoice slightly rounded inside frame */
+.invoice-card {
+  border-radius: 15px;
+  max-width: 2000px;
 }
