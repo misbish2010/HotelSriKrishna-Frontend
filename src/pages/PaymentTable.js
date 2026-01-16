@@ -187,7 +187,7 @@ const PaymentTable = () => {
       <table className="table table-bordered table-striped">
         <thead>
           <tr>
-            <th>#</th>
+
 
             {/* COMMON COLUMNS */}
             {type !== "expense" && <th>Room</th>}
@@ -226,7 +226,6 @@ const PaymentTable = () => {
           {data.length > 0 ? (
             data.map((payment, index) => (
               <tr key={index}>
-                <td>{index + 1}</td>
 
                 {type !== "expense" && (
                   <td>
