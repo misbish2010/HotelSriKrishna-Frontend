@@ -140,7 +140,7 @@ const BookingActionWizard = ({ bookingDetails, onDone, isAdmin, onViewInvoice  }
   useEffect(() => {
     if (!bookingDetails) return;
     setLoadingMap(true);
-
+    console.log(bookingDetails)
     const paymentsFromBackend = (bookingDetails.payment_info || []).map((p) => ({
       amount: p.amount ?? p.paymentAmount ?? 0,
       date: p.date ? (typeof p.date === "string" ? p.date : new Date(p.date).toISOString()) : "",
@@ -542,6 +542,9 @@ const handleNext = async () => {
           <div className="d-flex gap-4 align-items-center">
             <div className="text-primary">
               <strong>Booking ID:</strong> {bookingDetails?.booking_id || "N/A"}
+            </div>
+            <div className="text-primary">
+               <strong>Name:</strong> {bookingDetails?.customer_info.name || "N/A"}
             </div>
             <div>
               <strong>Status:</strong> {formData.bookingStatus || "N/A"}
