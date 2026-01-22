@@ -3,11 +3,11 @@
    =============================== */
 
 .invoice-card {
-  max-width: 1000px;
+  max-width: 100%;
   margin: 3mm auto 0 auto;
   border: 1px solid #000;
   font-family: "Segoe UI", Arial, sans-serif;
-  font-size: 14px;
+  font-size: 22px;
   color: #000;
   background: #fff;
   box-sizing: border-box;
@@ -19,7 +19,7 @@
 .invoice-header {
   background-color: #f8f9fa;
   padding: 15px;
-  border-bottom: 1px solid #000;
+  border-bottom: 2px solid #000;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -32,8 +32,8 @@
 
 /* Stamp */
 .stamp {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   margin-bottom: 0px;
   background: transparent;
@@ -103,7 +103,7 @@
 
 .totals-box {
   background: #fdfdfd;
-  font-size: 15px;
+  font-size: 22px;
   margin-top: 10px;
   border: 1px solid #000;   /* card border */
   border-radius: 10px;
@@ -132,7 +132,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
 .signature-box {

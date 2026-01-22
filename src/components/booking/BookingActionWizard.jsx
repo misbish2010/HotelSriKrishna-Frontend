@@ -52,7 +52,7 @@ const formatStayDateForApi = (date) => {
 const getStatusRules = (status) => {
   const s = (status || "").toLowerCase();
   if (s.includes("checked out") || s.includes("checked-out") ) {
-      return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: true, actions: ["invoice", "update"] };
+      return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: true, actions: ["money_receipt","invoice", "update"] };
   }
   if (s.includes("cancelled") || s.includes("canceled")) {
     return { canEditGuest: false, canEditStay: false, canEditRooms: false, canEditPayment: false, actions: [] };

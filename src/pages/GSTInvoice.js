@@ -367,9 +367,9 @@ const handleSaveGST = async () => {
             <Button variant="primary" onClick={handleSaveGST}>
               Save GST Info
             </Button>
-            <Button variant="success" onClick={() => window.print()}>
+            {/*<Button variant="success" onClick={() => window.print()}>
               Print
-            </Button>
+            </Button>*/}
             {gstForm.gst_bill_no && (
               <Button
                 variant="success"
