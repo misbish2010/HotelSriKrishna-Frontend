@@ -216,6 +216,7 @@ const PaymentTable = () => {
 
             {/* ADVANCE ADJUSTED */}
             {type === "advance" && <th>Total Advance</th>}
+            {type === "advance" && <th>Mode</th>}
             {type === "advance" && <th>Advance Paid Dates</th>}
             {type === "advance" && <th>Adjusted On</th>}
             {type === "advance" && <th>Check-In Date</th>}
@@ -286,16 +287,27 @@ const PaymentTable = () => {
                 )}
 
                 {/* ADVANCE ADJUSTED TAB */}
-                {type === "advance" && <td>₹{payment.total_advance}</td>}
-
+                {/* ADVANCE ADJUSTED TAB */}
                 {type === "advance" && (
-                  <td>
-                    {payment.advance_paid_dates && payment.advance_paid_dates.length > 0
-                      ? payment.advance_paid_dates.map((d, idx) => (
-                          <div key={idx}>{formatDate(new Date(d))}</div>
-                        ))
-                      : "-"}
-                  </td>
+                  <>
+                    <td>₹{payment.total_advance.toFixed(2)}</td>
+
+                    <td>
+                      {payment.advance_payments?.length > 0
+                        ? payment.advance_payments.map((p, idx) => (
+                            <div key={idx}>{p.mode}</div>
+                          ))
+                        : "-"}
+                    </td>
+
+                    <td>
+                      {payment.advance_payments?.length > 0
+                        ? payment.advance_payments.map((p, idx) => (
+                            <div key={idx}>{formatDate(new Date(p.date))}</div>
+                          ))
+                        : "-"}
+                    </td>
+                  </>
                 )}
 
                 {type === "advance" && <td>{formatDate(payment.adjusted_on)}</td>}
