@@ -99,6 +99,7 @@ export default function DailyChartPage() {
   }, [rooms, statusFilter, search]);
 
 
+
   function printView() {
     window.print();
   }
@@ -153,6 +154,8 @@ export default function DailyChartPage() {
             <option value="continue_confirmed">Continue (Confirmed)</option>
             <option value="checkout_available">Checkout → Available</option>
             <option value="checkout_to_new_booking">Checkout → New Booking</option>
+            <option value="checkout_completed_available">Checkout Done → Available</option>
+            <option value="checkout_completed_to_new_booking">Checkout Done → New Booking</option>
           </select>
         </div>
 
@@ -210,7 +213,8 @@ export default function DailyChartPage() {
                 <td><StatusBadge status={r.status} /></td>
 <td>
   <div style={{ lineHeight: 1.2 }}>
-    {r.status === "checkout_to_new_booking" ? (
+    {r.status === "checkout_to_new_booking" ||
+     r.status === "checkout_completed_to_new_booking" ? (
       <>
         <div className="d-flex justify-content-between">
           <div>
@@ -297,7 +301,8 @@ export default function DailyChartPage() {
 
                       {/* Guest Info + Timing */}
                       <div className="small mt-1">
-                        {r.status === "checkout_to_new_booking" ? (
+                        {r.status === "checkout_to_new_booking" ||
+                         r.status === "checkout_completed_to_new_booking" ? (
                           <>
                             {/* Current Guest */}
                             <div>
@@ -396,7 +401,8 @@ export default function DailyChartPage() {
                    {filteredRooms.map(r => {
                      const isCheckIn =
                        r.status === "new_booking" ||
-                       r.status === "checkout_to_new_booking";
+                       r.status === "checkout_to_new_booking" ||
+                       r.status === "checkout_completed_to_new_booking";
 
                      let note = "";
 
@@ -457,7 +463,9 @@ export default function DailyChartPage() {
            {filteredRooms.map(r => {
              const isCheckout =
                r.status === "checkout_available" ||
-               r.status === "checkout_to_new_booking";
+               r.status === "checkout_to_new_booking" ||
+               r.status === "checkout_completed_available" ||
+               r.status === "checkout_completed_to_new_booking";
 
              const pending = Number(r.pending_amount || 0);
 
@@ -481,11 +489,7 @@ export default function DailyChartPage() {
        </div>
 
    </div>
-
-
       </div>
-
-
     </div>
     </>
   );
