@@ -36,6 +36,8 @@
   color: #FFD54F;
 }
 
+
+
 .checkin-icon {
   position: absolute;
   top: 6px;
@@ -73,11 +75,20 @@
 .checkout_available {
   background: #1b8754; /*#6c757d;*/
 }
+
+.checkout_completed_available {
+  background: #1b8754; /*#6c757d;*/
+}
+
 .checkout {
   background: #6c757d;
 }
 
 .checkout_to_new_booking {
+  background: #1769ff;   /*#7cfc00;*/
+}
+
+.checkout_completed_to_new_booking {
   background: #1769ff;   /*#7cfc00;*/
 }
 

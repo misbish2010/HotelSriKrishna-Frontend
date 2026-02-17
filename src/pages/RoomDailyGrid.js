@@ -9,6 +9,8 @@ import { BsCSquareFill } from "react-icons/bs";
 import { BsCCircleFill } from "react-icons/bs";
 import { BsCCircle } from "react-icons/bs";
 import { format } from 'date-fns';
+import { BsCheckCircleFill } from "react-icons/bs";   // completed ✓
+import { BsClockFill } from "react-icons/bs";         // pending ⏳
 
 const ROOM_GROUPS = [
   ["001", "002", "003"],
@@ -58,7 +60,7 @@ export default function RoomDailyGrid() {
     return (
       <Tooltip id={`tooltip-${room.room_number}`}>
         {/* Checkout → New Booking */}
-        {room.status === "checkout_to_new_booking" && (
+         {["checkout_to_new_booking", "checkout_completed_to_new_booking"].includes(room.status) && (
           <>
             <div>
               <strong>Current:</strong> {room.current_guest_name || "—"}
@@ -81,6 +83,8 @@ export default function RoomDailyGrid() {
             )}
           </>
         )}
+
+
 
         {/* Checked-in / Continue Checked-in */}
         {["checked_in", "continue_checked_in"].includes(room.status) && (
@@ -126,7 +130,7 @@ export default function RoomDailyGrid() {
        )}
 
         {/* Checkout → Available */}
-        {room.status === "checkout_available" && (
+        {["checkout_available", "checkout_completed_available"].includes(room.status) && (
           <>
             <div>
               <strong>{room.current_guest_name || "—"}</strong>
@@ -175,6 +179,13 @@ export default function RoomDailyGrid() {
 ].includes(statusClass) && (
   <BsCSquareFill className="checkout-icon" />
 )}
+
+{[
+  "checkout_completed_available",
+].includes(statusClass) && (
+  <FcCopyright className="checkout-icon" />
+)}
+
 {[
   "checkout_to_new_booking",
 ].includes(statusClass) && (
@@ -183,6 +194,15 @@ export default function RoomDailyGrid() {
   <BsCSquareFill className="checkout-icon" />
   </>
 )}
+{[
+  "checkout_completed_to_new_booking"
+].includes(statusClass) && (
+  <>
+  <FaPersonWalkingLuggage className="checkin-icon" />
+  <FcCopyright className="checkout-icon" />
+  </>
+)}
+
 {[
   "checked_in",
   "new_booking"
