@@ -69,9 +69,12 @@ const BookingDashboard = ({ onViewBooking }) => {
       console.log(data)
 
       const transformedBookings = (data.bookings || []).map((b) => {
-        const paidAmount = (b.payment_info || [])
-          .filter((p) => ["completed", "paid", "refund"].includes((p.status || "").toLowerCase()))
-          .reduce((sum, p) => sum + (p.amount || 0), 0);
+          const paidAmount = (b.payment_info || [])
+            .filter((p) => ["completed", "paid", "refund"].includes((p.status || "").toLowerCase()))
+            .reduce((sum, p) => {
+              const status = (p.status || "").toLowerCase();
+              return status === "refund" ? sum - (p.amount || 0) : sum + (p.amount || 0);
+            }, 0);
 
         const paymentModes = new Set(
           (b.payment_info || [])
