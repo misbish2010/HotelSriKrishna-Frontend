@@ -43,7 +43,7 @@ const StepStayInfo = ({ stayInfo, onChange, mode, isAdmin }) => {
               disabled={!isAdmin}
               minDate={
                 isAdmin
-                  ? new Date(new Date().setDate(new Date().getDate() - 30))
+                  ? new Date(new Date().setDate(new Date().getDate() - 60))
                   : mode === "advance"
                     ? new Date()
                     : new Date(new Date().setHours(new Date().getHours() + 1)) // walk-in must be at least 1hr later
