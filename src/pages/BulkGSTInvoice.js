@@ -26,6 +26,13 @@ export default function BulkGSTInvoice({ onClose }) {
       monthOptions.push({ value: `${y}-${m}`, label: `${months[m]} ${y}` });
     }
   }
+  const formatDT = (d) =>
+    d
+      ? new Date(d).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "-";
 
   const handleMonthChange = (e) => {
     const [year, monthIndex] = e.target.value.split("-");
@@ -112,9 +119,8 @@ export default function BulkGSTInvoice({ onClose }) {
         "Room No."          : roomNos,
         "Room Type"         : roomTypes,
         "Check-In"          : b.stay_info?.check_in_date
-                                ? b.stay_info.check_in_date.slice(0, 10) : "",
-        "Check-Out"         : (b.stay_info?.probable_check_out_date || b.stay_info?.check_out_date || "")
-                                .toString().slice(0, 10),
+                                ? formatDT(b.stay_info.check_in_date) : "",
+        "Check-Out"         : formatDT(b.stay_info?.probable_check_out_date || b.stay_info?.check_out_date || ""),
         "No. of Days"       : b.stay_info?.duration      || "",
         "Taxable Amt (₹)"   : taxableAmt,
         "GST Rate (%)"      : gstRate,
