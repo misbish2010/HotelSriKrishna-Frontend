@@ -111,9 +111,43 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
+  const normalizePhone = (phone) => {
+    if (!phone) return "";
+
+    // Remove everything except digits
+    let digits = phone.replace(/\D/g, "");
+
+    // Remove country code 91
+    if (digits.startsWith("91") && digits.length === 12) {
+      digits = digits.substring(2);
+    }
+
+    // Remove leading zero
+    if (digits.startsWith("0") && digits.length === 11) {
+      digits = digits.substring(1);
+    }
+
+    return digits;
+  };
+
+  const isValidIndianMobile = (phone) => {
+    return /^[6-9]\d{9}$/.test(phone);
+  };
+
   const handlePhoneBlur = async () => {
-    const phone = formData.guestInfo.phone;
-    if (phone && phone.length === 10) {
+      const phone = normalizePhone(formData.guestInfo.phone);
+
+       // Update textbox with normalized value
+        updateFormData("guestInfo", {
+          ...formData.guestInfo,
+          phone,
+        });
+
+        if (!isValidIndianMobile(phone)) {
+          toast.error("Please enter a valid 10-digit Indian mobile number.");
+          return;
+        }
+
       try {
         const user = await fetchUserDetails(phone);
         if (user) {
@@ -138,7 +172,7 @@ const CheckInWizard = ({ mode = "checkin", isAdmin }) => {
       } catch (err) {
         console.error("Failed to fetch guest:", err);
       }
-    }
+
   };
 
 

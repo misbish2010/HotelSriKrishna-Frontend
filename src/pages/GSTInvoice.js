@@ -6,6 +6,16 @@ import "./gst-invoice.css";
 //import { sendWhatsAppGSTInvoice } from "../utils/sendWhatsAppGSTInvoice";
 import html2canvas from "html2canvas";
 import ReceiptPreviewModal from "../components/ReceiptPreviewModal"; // adjust path
+import { ToWords } from "to-words";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+  },
+});
 
 const HOTEL = {
   name: "Hotel Sri Krishna",
@@ -119,8 +129,16 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose,mode = "
 //       .reduce((sum, p) => sum + (p.amount || 0), 0);
 
 const paid = (booking.payment_info || [])
-  .filter((p) => ["paid", "completed"].includes((p.status || "").toLowerCase()))
-  .reduce((sum, p) => sum + (p.amount || 0), 0);
+  .filter((p) => ["paid", "completed", "refund"].includes((p.status || "").toLowerCase()))
+  .reduce((sum, p) => {
+    const amount = Number(p.amount || 0);
+
+    if ((p.status|| "").toLowerCase() === "refund") {
+      return sum - amount;
+    }
+
+    return sum + amount;
+  }, 0);
 
     const net_price = paid / (1 + HOTEL.taxRatePct / 100); // base before GST
     const gst_price = paid - net_price
@@ -226,6 +244,7 @@ const handleSaveGST = async () => {
         <div className="text-end">
           <h3 className="m-0">INVOICE</h3>
           <div>Date: {ddmmyyyy(new Date(stay.check_out_date || stay.probable_check_out_date))}</div>
+          <div>Booking Id: {bookingId || "-"}</div>
           <div>Bill No.: {gstForm.gst_bill_no || "-"}</div>
         </div>
       </Card.Header>
@@ -383,6 +402,9 @@ const handleSaveGST = async () => {
           </div>
         )}
 
+        <div className="text-center mt-2 fw-bold">
+          <strong>Amount in Words:</strong> {toWords.convert(calc.paid)}
+        </div>
 
         {/* Signatures */}
         <div className="signature-section">

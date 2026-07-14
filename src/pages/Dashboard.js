@@ -86,7 +86,14 @@ function Dashboard({ onNavigate }) {
             📒 Expenses
           </Button>
         </Col>
+
+        <Col xs={6} md={3}>
+           <Button className="dashboard-btn" onClick={() => onNavigate("monthlyOverview")}>
+            📊 MMT SUPPORT
+           </Button>
+        </Col>
       </Row>
+
 
     </Container>
   );

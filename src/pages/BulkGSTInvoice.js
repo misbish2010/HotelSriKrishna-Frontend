@@ -90,15 +90,23 @@ export default function BulkGSTInvoice({ onClose }) {
       const rooms       = b.room_details || [];
       const roomNos     = rooms.map(r => r.room_number).join(", ");
       const roomTypes   = rooms.map(r => r.room_type).join(", ");
-      const totalPrice  = b.total_price || 0;
+
+      // paid = sum of paid/completed payments (exclude discount/pending)
+    const paidAmt = (b.payment_info || [])
+      .filter((p) => ["paid", "completed", "refund"].includes((p.status || "").toLowerCase()))
+      .reduce((sum, p) => {
+        const amount = Number(p.amount || 0);
+
+        if ((p.status|| "").toLowerCase() === "refund") {
+          return sum - amount;
+        }
+
+        return sum + amount;
+      }, 0);
+      const totalPrice  = paidAmt || 0;
       const gstRate     = 5;                                      // hotel GST is 5% for <7500
       const taxableAmt  = parseFloat((totalPrice / 1.05).toFixed(2));
       const gstAmt      = parseFloat((totalPrice - taxableAmt).toFixed(2));
-
-      // paid = sum of paid/completed payments (exclude discount/pending)
-      const paidAmt = (b.payment_info || [])
-        .filter(p => ["paid", "completed"].includes((p.status || "").toLowerCase()))
-        .reduce((sum, p) => sum + (p.amount || 0), 0);
 
       // payment modes (dedupe)
       const modes = [...new Set(
@@ -127,7 +135,6 @@ export default function BulkGSTInvoice({ onClose }) {
         "GST Amt (₹)"       : gstAmt,
         "Total Amt (₹)"     : totalPrice,
         "Amount Paid (₹)"   : paidAmt,
-        "Pending Amt (₹)"   : parseFloat((totalPrice - paidAmt).toFixed(2)),
         "Payment Mode"      : modes,
       };
     });
@@ -152,7 +159,6 @@ export default function BulkGSTInvoice({ onClose }) {
       "GST Amt (₹)"       : parseFloat(sum("GST Amt (₹)").toFixed(2)),
       "Total Amt (₹)"     : parseFloat(sum("Total Amt (₹)").toFixed(2)),
       "Amount Paid (₹)"   : parseFloat(sum("Amount Paid (₹)").toFixed(2)),
-      "Pending Amt (₹)"   : parseFloat(sum("Pending Amt (₹)").toFixed(2)),
       "Payment Mode"      : "",
     };
 

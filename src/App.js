@@ -19,6 +19,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import BookingDashboard from "./pages/BookingDashboard";
 import DailyExpenseForm from "./pages/DailyExpenseForm";
+import MonthlyOverview from "./pages/MonthlyOverview";
 import PaymentTable from "./pages/PaymentTable";
 import RoomGridTimeBased from "./pages/RoomGridTimeBased";
 import RoomMultiNightGrid from "./pages/RoomMultiNightGrid";
@@ -144,7 +145,7 @@ function App() {
 
           {activeComponent === "dailyExpense" && <DailyExpenseForm />}
           {activeComponent === "collection" && <PaymentTable />}
-
+          {activeComponent === "monthlyOverview" && <MonthlyOverview />}
 
 
           {activeComponent === "invoice" && selectedBookingDetails && (

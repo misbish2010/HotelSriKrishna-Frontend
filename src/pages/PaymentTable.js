@@ -247,16 +247,7 @@ const PaymentTable = () => {
                 {type === "paid" && <td>{payment.payment_mode}</td>}
 
                 {/* FIX #1 - payment status column with color */}
-                {type === "paid" && (
-                  <td>
-                    <span style={{
-                      color: isRefundPayment(payment) ? "#dc3545" : "#28a745",
-                      fontWeight: "bold",
-                    }}>
-                      {(payment.payment_status || "").toUpperCase()}
-                    </span>
-                  </td>
-                )}
+
 
                 {/* FIX #1 - credited: non-refund only */}
                 {type === "paid" && (

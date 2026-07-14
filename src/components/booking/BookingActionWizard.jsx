@@ -18,9 +18,6 @@ import { sendWhatsAppReceipt } from "../../utils/sendWhatsAppReceipt";
 import ReceiptPreviewModal from "../ReceiptPreviewModal";
 import {
   updateBooking,
-  cancelBooking,
-  checkoutBooking,
-  checkInBooking,
   fetchModifyAvailableRooms,
   fetchAllRooms
 } from "../../api"; // implement as discussed
