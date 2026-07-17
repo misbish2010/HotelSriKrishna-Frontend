@@ -413,13 +413,20 @@ const handleNext = async () => {
             ),
             gstRate: 0,
           },
-        payment_info: formData.payments.map((p) => ({
-          amount: p.amount,
-          date: p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ always "YYYY-MM-DD"
-          mode: p.mode,
-          notes: p.notes,
-          status: p.status
-        })),
+
+        payment_info: formData.payments.map((p) => {
+          const isPending =
+            typeof p.notes === "string" &&
+            p.notes.toLowerCase().includes("pending");
+
+          return {
+            amount: p.amount,
+            date: p.date ? new Date(p.date).toISOString().split("T")[0] : null,
+            mode: p.mode,
+            notes: p.notes,
+            status: isPending ? "Pending" : "Paid",
+          };
+        }),
       };
       const res = await updateBooking(payload);
       if (res?.success) { toast.success("Updated booking"); onDone && onDone(); }
