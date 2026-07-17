@@ -129,7 +129,7 @@ export default function GSTInvoice({ bookingId, bookingDetails, onClose,mode = "
 //       .reduce((sum, p) => sum + (p.amount || 0), 0);
 
 const paid = (booking.payment_info || [])
-  .filter((p) => ["paid", "completed", "refund"].includes((p.status || "").toLowerCase()))
+  .filter((p) => ["paid", "completed", "refund", "pending"].includes((p.status || "").toLowerCase()))
   .reduce((sum, p) => {
     const amount = Number(p.amount || 0);
 
