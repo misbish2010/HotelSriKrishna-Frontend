@@ -415,16 +415,21 @@ const handleNext = async () => {
           },
 
         payment_info: formData.payments.map((p) => {
-          const isPending =
-            typeof p.notes === "string" &&
-            p.notes.toLowerCase().includes("pending");
+          const notes = (p.notes || "").toLowerCase();
+
+          const isPending = notes.includes("pending");
+          const isDiscount = notes.includes("discount");
 
           return {
             amount: p.amount,
             date: p.date ? new Date(p.date).toISOString().split("T")[0] : null,
             mode: p.mode,
             notes: p.notes,
-            status: isPending ? "Pending" : "Paid",
+            status: isDiscount
+              ? "Discount"
+              : isPending
+              ? "Pending"
+              : "Paid",
           };
         }),
       };
