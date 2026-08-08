@@ -58,7 +58,7 @@ export const createBooking = async (bookingData) => {
 //API to fetch User Detail if existing
 export const fetchUserDetails = async (phoneNumber) => {
   console.log(phoneNumber)
-  if (!phoneNumber || phoneNumber.length === 0) {
+  if (!phoneNumber || phoneNumber.length < 10) {
     throw new Error('Invalid phone number'); // Handle invalid input gracefully
   }
   try {
@@ -210,6 +210,24 @@ export const fetchDailyChart = async (date) => {
   }
 };
 
+export const fetchMonthlyChart = async (month, year) => {
+  try {
+    const response = await apiClient.get("/monthly-chart", {
+      params: { month, year },
+      headers: { "Accept": "application/json" }
+    });
+
+    return response.data; // contains { month, year, month_name, days }
+  } catch (error) {
+    const msg =
+      error.response?.data?.error ||
+      error.message ||
+      "Failed to fetch monthly chart";
+
+    console.error("Monthly chart error:", msg);
+    throw new Error(msg);
+  }
+};
 
 // Fetch room status based on selected date and window period
 export const fetchRoomStatus = async (selectedDate, windowPeriod) => {
@@ -312,21 +330,21 @@ export const fetchBookings = async () => {
     }
 };
 
-//Api to Cancel or Checkout booking
-export const checkoutOrCancelBooking = async (bookingId,checkOutDateTime, stayDuration, bookingStatus) => {
-    try {
-        console.log(bookingId)
-        const response = await apiClient.post('/update_booking', {
-            bookingId,
-            checkOutDateTime,
-            stayDuration,
-            bookingStatus
-        });
-        return response.data; // Return data for success handling
-    } catch (error) {
-        throw error.response ? error.response.data : new Error("Unknown error occurred"); // Handle error details
-    }
-};
+////Api to Cancel or Checkout booking
+//export const checkoutOrCancelBooking = async (bookingId,checkOutDateTime, stayDuration, bookingStatus) => {
+//    try {
+//        console.log(bookingId)
+//        const response = await apiClient.post('/update_booking', {
+//            bookingId,
+//            checkOutDateTime,
+//            stayDuration,
+//            bookingStatus
+//        });
+//        return response.data; // Return data for success handling
+//    } catch (error) {
+//        throw error.response ? error.response.data : new Error("Unknown error occurred"); // Handle error details
+//    }
+//};
 
 
 //Api to pay or refund

@@ -4,16 +4,14 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fetchPaymentDetails } from "../api";
 import { format } from "date-fns";
-import { FaMoneyBillWave, FaMobileAlt, FaUndo, FaClock, FaChartLine, FaReceipt } from "react-icons/fa";
+import { FaMoneyBillWave, FaMobileAlt, FaUndo, FaChartLine, FaReceipt } from "react-icons/fa";
 import { FaPersonWalkingLuggage } from "react-icons/fa6";
-import { FcSoundRecordingCopyright } from "react-icons/fc";
 
 const PaymentTable = () => {
   const [paymentTableData, setPaymentTableData] = useState([]);
   const [expenseTableData, setExpenseTableData] = useState([]);
   const [pendingPaymentTableData, setPendingPaymentTableData] = useState([]);
   const [advanceAdjustedTableData, setAdvanceAdjustedTableData] = useState([]);
-
   const [filteredPaymentData, setFilteredPaymentData] = useState([]);
 
   const [selectedFromDate, setSelectedFromDate] = useState(new Date());
@@ -40,6 +38,10 @@ const PaymentTable = () => {
 
   const formatDate = (date) => format(date, "dd MMM yyyy");
   const formatExpenseDate = (date) => format(new Date(date), "dd MMM yyyy");
+
+  // FIX #1 - helper to detect refund by payment_status not booking_status
+  const isRefundPayment = (payment) =>
+    (payment.payment_status || "").toLowerCase() === "refund";
 
   const quickRanges = {
     today: () => {
@@ -109,15 +111,17 @@ const PaymentTable = () => {
         pendingAmount = 0,
         expenseAmount = 0;
 
+      // FIX #1 - use payment_status to detect refunds, not booking_status
       payment_details.forEach((payment) => {
+        const isRefund = isRefundPayment(payment);
         if (payment.payment_mode === "CASH") {
-          payment.booking_status != "Cancelled"
-            ? (cashCollected += payment.amount)
-            : (cashRefunded += Math.abs(payment.amount));
+          isRefund
+            ? (cashRefunded += Math.abs(payment.amount))
+            : (cashCollected += payment.amount);
         } else if (payment.payment_mode === "UPI") {
-          payment.booking_status != "Cancelled"
-            ? (upiCollected += payment.amount)
-            : (upiRefunded += Math.abs(payment.amount));
+          isRefund
+            ? (upiRefunded += Math.abs(payment.amount))
+            : (upiCollected += payment.amount);
         }
       });
 
@@ -130,7 +134,6 @@ const PaymentTable = () => {
       setTotalUPIRefunded(upiRefunded);
       setTotalCollection(cashCollected + upiCollected - cashRefunded - upiRefunded);
       setTotalExpenditure(expenseAmount);
-
       setExpenseTableData(expense_details);
       setPaymentTableData(payment_details);
       setPendingPaymentTableData(pending_payment_details);
@@ -243,15 +246,20 @@ const PaymentTable = () => {
 
                 {type === "paid" && <td>{payment.payment_mode}</td>}
 
+                {/* FIX #1 - payment status column with color */}
+
+
+                {/* FIX #1 - credited: non-refund only */}
                 {type === "paid" && (
                   <td style={{ textAlign: "right" }}>
-                    {payment.booking_status != "Cancelled" ? `₹${payment.amount.toFixed(2)}` : "-"}
+                    {!isRefundPayment(payment) ? `₹${payment.amount.toFixed(2)}` : "-"}
                   </td>
                 )}
 
+                {/* FIX #1 - refunded: refund status regardless of booking_status */}
                 {type === "paid" && (
                   <td style={{ textAlign: "right" }}>
-                    {payment.booking_status === "Cancelled" ? `₹${Math.abs(payment.amount).toFixed(2)}` : "-"}
+                    {isRefundPayment(payment) ? `₹${Math.abs(payment.amount).toFixed(2)}` : "-"}
                   </td>
                 )}
 

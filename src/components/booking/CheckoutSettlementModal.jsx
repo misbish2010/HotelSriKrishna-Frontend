@@ -148,22 +148,23 @@ const hasMoneyMovement =
         </Form.Group>
         </>
 )}
-<Form.Group className="mb-3">
-  <Form.Label>
-    Payment Mode{" "}
-    {hasMoneyMovement && <span className="text-danger">*</span>}
-  </Form.Label>
+{hasMoneyMovement && (
+  <Form.Group className="mb-3">
+    <Form.Label>
+      Payment Mode <span className="text-danger">*</span>
+    </Form.Label>
 
-  <Form.Select
-    value={paymentMode}
-    onChange={(e) => setPaymentMode(e.target.value)}
-    required={hasMoneyMovement}
-  >
-    <option value="">-- Select Payment Mode --</option>
-    <option value="Cash">Cash</option>
-    <option value="UPI">UPI</option>
-  </Form.Select>
-</Form.Group>
+    <Form.Select
+      value={paymentMode}
+      onChange={(e) => setPaymentMode(e.target.value)}
+      required={hasMoneyMovement}
+    >
+      <option value="">-- Select Payment Mode --</option>
+      <option value="Cash">Cash</option>
+      <option value="UPI">UPI</option>
+    </Form.Select>
+  </Form.Group>
+)}
 
 
         <Form.Group className="mb-3">

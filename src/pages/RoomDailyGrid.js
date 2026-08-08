@@ -266,6 +266,17 @@ export default function RoomDailyGrid() {
           <div className="legend-item">
             <Badge bg="warning">!</Badge> Conflict / Double Booking
           </div>
+
+         <div className="legend-item">
+            <FcCopyright className="checkout-legend-icon" />
+            Checkout Completed
+          </div>
+
+          <div className="legend-item">
+            <BsCSquareFill className="checkout-legend-icon" />
+            Checkout Pending
+          </div>
+
         </div>
       </Col>
     </Row>

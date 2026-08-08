@@ -122,6 +122,12 @@ const ManageStepReviewConfirm = ({
           </Row>
           <Row>
             <Col sm={4}>
+              <strong>Duration:</strong>
+            </Col>
+            <Col sm={8}>{stayInfo.duration}</Col>
+          </Row>
+          <Row>
+            <Col sm={4}>
               <strong>Booking Mode:</strong>
             </Col>
             <Col sm={8}>{stayInfo.bookingMode}</Col>

@@ -18,9 +18,6 @@ import { sendWhatsAppReceipt } from "../../utils/sendWhatsAppReceipt";
 import ReceiptPreviewModal from "../ReceiptPreviewModal";
 import {
   updateBooking,
-  cancelBooking,
-  checkoutBooking,
-  checkInBooking,
   fetchModifyAvailableRooms,
   fetchAllRooms
 } from "../../api"; // implement as discussed
@@ -416,13 +413,25 @@ const handleNext = async () => {
             ),
             gstRate: 0,
           },
-        payment_info: formData.payments.map((p) => ({
-          amount: p.amount,
-          date: p.date ? new Date(p.date).toISOString().split("T")[0] : null, // ✅ always "YYYY-MM-DD"
-          mode: p.mode,
-          notes: p.notes,
-          status: p.status
-        })),
+
+        payment_info: formData.payments.map((p) => {
+          const notes = (p.notes || "").toLowerCase();
+
+          const isPending = notes.includes("pending");
+          const isDiscount = notes.includes("discount");
+
+          return {
+            amount: p.amount,
+            date: p.date ? new Date(p.date).toISOString().split("T")[0] : null,
+            mode: p.mode,
+            notes: p.notes,
+            status: isDiscount
+              ? "Discount"
+              : isPending
+              ? "Pending"
+              : "Paid",
+          };
+        }),
       };
       const res = await updateBooking(payload);
       if (res?.success) { toast.success("Updated booking"); onDone && onDone(); }
