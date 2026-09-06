@@ -110,6 +110,13 @@ const S = {
            borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 700 },
     none: { color: "#6b7280", fontSize: 12 },
   },
+  // Past row overrides — everything becomes grey
+  pastRow:  { background: "#f0f0f0", borderLeft: "3px solid #d1d5db" },
+  pastChip: { background: "#e5e7eb", color: "#9ca3af" },
+  pastDot:  { background: "#d1d5db" },
+  pastText: { color: "#9ca3af" },
+  pastBadge:{ background: "#e5e7eb", color: "#9ca3af",
+              borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600 },
 };
 
 // ─────────────────────────────────────────────────────────
@@ -117,9 +124,11 @@ const S = {
 // ─────────────────────────────────────────────────────────
 
 /** Coloured circle with booked/total inside */
-function RoomChip({ booked, total, label, accent }) {
+function RoomChip({ booked, total, label, isPast }) {
   const col = getChipColor(booked, total);
   const dim = booked === 0;
+  const chipStyle = isPast ? S.pastChip : S.chipBg[col];
+  const dotStyle  = isPast ? S.pastDot  : S.dot[col];
   return (
     <span
       style={{
@@ -132,7 +141,7 @@ function RoomChip({ booked, total, label, accent }) {
         fontWeight: 500,
         opacity: dim ? 0.3 : 1,
         whiteSpace: "nowrap",
-        ...S.chipBg[col],
+        ...chipStyle,
       }}
     >
       <span
@@ -140,7 +149,7 @@ function RoomChip({ booked, total, label, accent }) {
           width: 8, height: 8,
           borderRadius: "50%",
           flexShrink: 0,
-          ...S.dot[col],
+          ...dotStyle,
         }}
       />
       {booked}/{total} {label}
@@ -149,7 +158,7 @@ function RoomChip({ booked, total, label, accent }) {
 }
 
 /** Large occupancy badge (circle) in date column */
-function OccBadge({ booked, color }) {
+function OccBadge({ booked, color, isPast }) {
   return (
     <div
       style={{
@@ -161,7 +170,7 @@ function OccBadge({ booked, color }) {
         fontSize: 11,
         fontWeight: 700,
         flexShrink: 0,
-        ...S.chipBg[color],
+        ...(isPast ? S.pastChip : S.chipBg[color]),
       }}
     >
       {booked}
@@ -170,9 +179,9 @@ function OccBadge({ booked, color }) {
 }
 
 /** MMT booking count badge */
-function MmtBadge({ count }) {
-  if (count === 0) return <span style={S.mmtBadge.none}>—</span>;
-  return <span style={S.mmtBadge.has}>{count}</span>;
+function MmtBadge({ count, isPast }) {
+  if (count === 0) return <span style={isPast ? S.pastText : S.mmtBadge.none}>—</span>;
+  return <span style={isPast ? S.pastBadge : S.mmtBadge.has}>{count}</span>;
 }
 
 /** Suggestion tag */
@@ -205,7 +214,7 @@ function SuggestionTag({ suggestions }) {
 }
 
 /** Thin occupancy bar */
-function OccBar({ pct, color }) {
+function OccBar({ pct, color, isPast }) {
   return (
     <div style={{ width: 80 }}>
       <div style={{
@@ -217,10 +226,10 @@ function OccBar({ pct, color }) {
           width: `${pct}%`,
           borderRadius: 3,
           transition: "width .4s ease",
-          ...S.dot[color],
+          ...(isPast ? S.pastDot : S.dot[color]),
         }} />
       </div>
-      <div style={{ fontSize: 10, color: "#9ca3af", textAlign: "right", marginTop: 2 }}>
+      <div style={{ fontSize: 10, color: isPast ? "#c0c0c0" : "#9ca3af", textAlign: "right", marginTop: 2 }}>
         {pct}%
       </div>
     </div>
@@ -666,18 +675,24 @@ export default function MonthlyOverview() {
             <tbody>
               {days.map(d => {
                 const isToday   = d.date === todayStr;
+                const isPast    = d.date < todayStr;
                 const dateObj   = new Date(d.date + "T00:00:00");
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                const isPast    = d.date < todayStr;
                 const dateLabel = format(dateObj, "EEE, dd MMM yyyy");
 
-                const rowStyle = {
-                  cursor: isPast ? "default" : "pointer",
-                  background: isToday ? "#eff6ff" : isPast ? "#f9f9f9" : isWeekend ? "#fafafa" : "#fff",
+                const rowStyle = isPast ? {
+                  // ── PAST ROW — clear grey block ───────────────
+                  cursor:     "default",
+                  background: "#f0f0f0",
+                  borderLeft: "3px solid #d1d5db",
+                  transition: "background .12s",
+                } : {
+                  // ── FUTURE / TODAY ROW ────────────────────────
+                  cursor:     "pointer",
+                  background: isToday ? "#eff6ff" : isWeekend ? "#fafafa" : "#fff",
                   borderLeft: isToday ? "3px solid #3b82f6" : "3px solid transparent",
                   transition: "background .12s",
-                  opacity: isPast ? 0.45 : 1,
                 };
 
                 return (
@@ -689,16 +704,17 @@ export default function MonthlyOverview() {
                       if (!isPast) e.currentTarget.style.background = "#f0f9ff";
                     }}
                     onMouseLeave={e => {
+                      if (isPast) return;
                       e.currentTarget.style.background =
-                        isToday ? "#eff6ff" : isPast ? "#f9f9f9" : isWeekend ? "#fafafa" : "#fff";
+                        isToday ? "#eff6ff" : isWeekend ? "#fafafa" : "#fff";
                     }}
                   >
                     {/* DATE */}
                     <td style={{ ...tdStyle, padding: "8px 10px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <OccBadge booked={d.total_booked} color={d.color} />
+                        <OccBadge booked={d.total_booked} color={d.color} isPast={isPast} />
                         <div>
-                          <div style={{ fontSize: 11, color: "#6b7280" }}>
+                          <div style={{ fontSize: 11, color: isPast ? "#b0b0b0" : "#6b7280" }}>
                             {format(dateObj, "EEE")}
                             {isToday && (
                               <span style={{
@@ -712,12 +728,15 @@ export default function MonthlyOverview() {
                               <span style={{
                                 marginLeft: 5,
                                 fontSize: 9, fontWeight: 600,
-                                background: "#e5e7eb", color: "#9ca3af",
+                                background: "#d1d5db", color: "#9ca3af",
                                 padding: "1px 5px", borderRadius: 3,
                               }}>PAST</span>
                             )}
                           </div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", whiteSpace: "nowrap" }}>
+                          <div style={{
+                            fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
+                            color: isPast ? "#b0b0b0" : "#111827",
+                          }}>
                             {format(dateObj, "dd MMM yyyy")}
                           </div>
                         </div>
@@ -730,6 +749,7 @@ export default function MonthlyOverview() {
                         booked={d.luxury.ac.booked}
                         total={d.luxury.ac.total}
                         label="AC"
+                      isPast={isPast}
                       />
                     </td>
 
@@ -739,6 +759,7 @@ export default function MonthlyOverview() {
                         booked={d.luxury.non_ac.booked}
                         total={d.luxury.non_ac.total}
                         label="Non-AC"
+                      isPast={isPast}
                       />
                     </td>
 
@@ -748,6 +769,7 @@ export default function MonthlyOverview() {
                         booked={d.studio.ac.booked}
                         total={d.studio.ac.total}
                         label="AC"
+                      isPast={isPast}
                       />
                     </td>
 
@@ -757,6 +779,7 @@ export default function MonthlyOverview() {
                         booked={d.studio.non_ac.booked}
                         total={d.studio.non_ac.total}
                         label="Non-AC"
+                      isPast={isPast}
                       />
                     </td>
 
@@ -766,6 +789,7 @@ export default function MonthlyOverview() {
                         booked={d.triple.ac.booked}
                         total={d.triple.ac.total}
                         label="AC"
+                      isPast={isPast}
                       />
                     </td>
 
@@ -775,27 +799,31 @@ export default function MonthlyOverview() {
                         booked={d.triple.non_ac.booked}
                         total={d.triple.non_ac.total}
                         label="Non-AC"
+                      isPast={isPast}
                       />
                     </td>
 
                     {/* MMT LUXURY */}
                     <td style={tdCenterStyle}>
-                      <MmtBadge count={d.mmt.luxury} />
+                      <MmtBadge count={d.mmt.luxury} isPast={isPast} />
                     </td>
 
                     {/* MMT STUDIO */}
                     <td style={tdCenterStyle}>
-                      <MmtBadge count={d.mmt.studio} />
+                      <MmtBadge count={d.mmt.studio} isPast={isPast} />
                     </td>
 
                     {/* SUGGESTION */}
                     <td style={tdStyle}>
-                      <SuggestionTag suggestions={d.suggestions} />
+                      {isPast
+                        ? <span style={{ color: "#c0c0c0", fontSize: 11 }}>—</span>
+                        : <SuggestionTag suggestions={d.suggestions} />
+                      }
                     </td>
 
                     {/* OCCUPANCY BAR */}
                     <td style={tdCenterStyle}>
-                      <OccBar pct={d.occupancy_pct} color={d.color} />
+                      <OccBar pct={d.occupancy_pct} color={d.color} isPast={isPast} />
                     </td>
 
 
