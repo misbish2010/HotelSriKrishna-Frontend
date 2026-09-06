@@ -669,28 +669,26 @@ export default function MonthlyOverview() {
                 const dateObj   = new Date(d.date + "T00:00:00");
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                const isPast    = d.date < todayStr;
                 const dateLabel = format(dateObj, "EEE, dd MMM yyyy");
 
                 const rowStyle = {
-                  cursor: isPast ? "default" : "pointer",
-                  background: isToday ? "#eff6ff" : isPast ? "#f9f9f9" : isWeekend ? "#fafafa" : "#fff",
+                  cursor: "pointer",
+                  background: isToday ? "#eff6ff" : isWeekend ? "#fafafa" : "#fff",
                   borderLeft: isToday ? "3px solid #3b82f6" : "3px solid transparent",
                   transition: "background .12s",
-                  opacity: isPast ? 0.45 : 1,
                 };
 
                 return (
                   <tr
                     key={d.date}
                     style={rowStyle}
-                    onClick={() => !isPast && setModalDate(d.date)}
+                    onClick={() => setModalDate(d.date)}
                     onMouseEnter={e => {
-                      if (!isPast) e.currentTarget.style.background = "#f0f9ff";
+                      e.currentTarget.style.background = "#f0f9ff";
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.background =
-                        isToday ? "#eff6ff" : isPast ? "#f9f9f9" : isWeekend ? "#fafafa" : "#fff";
+                        isToday ? "#eff6ff" : isWeekend ? "#fafafa" : "#fff";
                     }}
                   >
                     {/* DATE */}
@@ -707,14 +705,6 @@ export default function MonthlyOverview() {
                                 background: "#3b82f6", color: "#fff",
                                 padding: "1px 5px", borderRadius: 3,
                               }}>TODAY</span>
-                            )}
-                            {isPast && !isToday && (
-                              <span style={{
-                                marginLeft: 5,
-                                fontSize: 9, fontWeight: 600,
-                                background: "#e5e7eb", color: "#9ca3af",
-                                padding: "1px 5px", borderRadius: 3,
-                              }}>PAST</span>
                             )}
                           </div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", whiteSpace: "nowrap" }}>
